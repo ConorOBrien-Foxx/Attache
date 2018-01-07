@@ -607,13 +607,15 @@ class AtState
         "Accumulate" => lambda { |inst, list|
             prefixes(list)[1..-1].map { |e| sum e }
         },
-        "Series" => lambda { |inst, f, max|
-            i = 0
+        "Series" => lambda { |inst, f, max, start=0|
+            i = start
             collect = []
             loop {
                 value = f[inst, i]
-                break if value >= max
-                collect.push value
+                unless value.nil?
+                    break if value >= max
+                    collect.push value
+                end
                 i += 1
             }
             collect
