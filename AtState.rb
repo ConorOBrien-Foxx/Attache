@@ -70,7 +70,8 @@ $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $PRECEDENCE = {
     "&"     => [26, :left],
-    "&:"     => [26, :left],
+    "&:"    => [26, :left],
+    "~"     => [25, :left],#temporary precedence
     "@"     => [24, :left],
     "@@"    => [24, :left],
     "=>"    => [20, :right],
@@ -411,8 +412,40 @@ def force_list(list)
     return list.digits  if list.is_a? Numeric
 end
 
+def pythagorean2(m, n)
+    [m*m - n*n, 2*m*n, m*m + n*n]
+end
+
+$PYTHAGOREAN_GEN_CACHE = []
+$PYTHAGOREAN_GEN = Enumerator.new { |enum|
+    m = 2
+    loop {
+        (1...m).each { |n|
+            enum.yield pythagorean2 m, n
+        }
+        m += 1
+    }
+}.with_index
+
+def pythagorean(n)
+    if n < $PYTHAGOREAN_GEN_CACHE.size
+        $PYTHAGOREAN_GEN_CACHE[n]
+    else
+        repeat = n - $PYTHAGOREAN_GEN_CACHE.size + 1
+        repeat.times {
+            e, i = $PYTHAGOREAN_GEN.next
+            $PYTHAGOREAN_GEN_CACHE[i] = e
+        }
+        $PYTHAGOREAN_GEN_CACHE[n]
+    end
+end
+
 def slices(list, skew)
     force_list(list).each_cons(skew).to_a
+end
+
+def resize(list, n)
+    (0...n).map { |i| list[i % list.size] }
 end
 
 class AtState
@@ -457,6 +490,12 @@ class AtState
             else
                 list.all? { |e| AtState.truthy?(f[inst, e]) }
             end
+        },
+        "Pythagorean" => vectorize_monad { |inst, n|
+            pythagorean n
+        },
+        "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
+            list.index ind
         },
         "Count" => lambda { |inst, list, f|
             if f.is_a? Proc
@@ -646,6 +685,13 @@ class AtState
                 vectorize { |inst, *args|
                     f[inst, *args]
                 }
+            else
+                inst.get_value f
+            end
+        },
+        "~" => lambda { |inst, f|
+            if f.is_a? Proc
+                
             else
                 inst.get_value f
             end
