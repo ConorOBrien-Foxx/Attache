@@ -287,7 +287,7 @@ class AtState
             args.sum
         },
         "Collatz" => vectorize_monad { |inst, n| collatz n },
-        "CollatzSize" => vectorize_monad { |inst, n| collatz(n).size },
+        "CollatzSize" => vectorize_monad { |inst, n| collatz(n).size - 1 },
         "Double" => vectorize_monad { |inst, n| @@operators["*"][inst, n, 2] },
         "Even" => vectorize_monad { |inst, n| n.even? },
         "Fibonacci" => lambda { |inst, n| nth_fibonacci(n) },

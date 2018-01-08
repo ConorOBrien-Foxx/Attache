@@ -204,7 +204,16 @@ def periodicloop(f, n)
 end
 
 def collatz(n)
-    periodicloop(lambda { |n| n.even? ? n/2 : n*3+1 }, n)
+    array = []
+    until n == 1
+        array << n
+        if n.even?
+            n /= 2
+        else
+            n = n * 3 + 1
+        end
+    end
+    array + [1]
 end
 
 def lcm(arr)
