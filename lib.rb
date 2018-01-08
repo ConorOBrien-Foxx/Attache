@@ -189,8 +189,22 @@ end
 def fixpoint(f, n)
     loop {
         old = n
-        # n = f[
+        n = f[n]
+        break n if n == old
     }
+end
+
+def periodicloop(f, n)
+    results = []
+    loop {
+        break results if results[0..-2].include? n
+        results << n
+        n = f[n]
+    }
+end
+
+def collatz(n)
+    periodicloop(lambda { |n| n.even? ? n/2 : n*3+1 }, n)
 end
 
 def lcm(arr)
@@ -212,12 +226,20 @@ def simplify_number(n)
     return n
 end
 
+def to_number(s)
+    if /\./ === s
+        return s.to_f
+    else
+        return s.to_i
+    end
+end
+
 def force_number(n)
     simplify_number case n
         when Array
-            n.join.to_f
+            to_number n.join
         when String
-            n.to_f
+            to_number n
         when Numeric
             n
         else

@@ -286,11 +286,15 @@ class AtState
         "Add" => lambda { |inst, *args|
             args.sum
         },
+        "Collatz" => vectorize_monad { |inst, n| collatz n },
+        "CollatzSize" => vectorize_monad { |inst, n| collatz(n).size },
+        "Double" => vectorize_monad { |inst, n| @@operators["*"][inst, n, 2] },
         "Even" => vectorize_monad { |inst, n| n.even? },
         "Fibonacci" => lambda { |inst, n| nth_fibonacci(n) },
         "GCD" => lambda { |inst, *args|
             gcd args.flatten
         },
+        "Halve" => vectorize_monad { |inst, n| @@operators["/"][inst, n, 2] },
         "LCM" => lambda { |inst, *args|
             lcm args.flatten
         },
@@ -330,12 +334,21 @@ class AtState
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
         ##############################
+        "Agenda" => lambda { |inst, flist, cond|
+            lambda { |inst, *args|
+                ind = from_numlike cond[inst, *args]
+                flist[ind][inst, *args]
+            }
+        },
         "Bond" => lambda { |inst, func, larg|
             lambda { |inst, *args| func[inst, larg, *args] }
         },
         "C" => lambda { |inst, arg| lambda { |inst, *discard| arg } },
         "Call" => vectorize_dyad(LEFT) { |inst, f, *args|
             f[inst, *args]
+        },
+        "Fixpoint" => lambda { |inst, f, n|
+            fixpoint f.bind(inst), n
         },
         "Fork" => lambda { |inst, f, g, h|
             lambda { |inst, *args| g[inst, f[inst, *args], h[inst, *args]] }
@@ -345,6 +358,12 @@ class AtState
                 e = f[inst, e]
             }
             e
+        },
+        "PeriodicSteps" => lambda { |inst, f|
+            lambda { |inst, x| periodicloop f.bind(inst), x }
+        },
+        "Periodic" => lambda { |inst, f|
+            lambda { |inst, x| periodicloop(f.bind(inst), x).last }
         },
         "RBond" => lambda { |inst, func, rarg|
             lambda { |inst, *args| func[inst, *args, rarg] }
@@ -412,6 +431,7 @@ class AtState
                 (min..max).to_a
             end
         },
+        "Resize" => lambda { |inst, list, size| resize [*list], size },
         "Same" => lambda { |inst, *args|
             list = args.flatten
             list.all? { |e| e == list[0] }
@@ -455,6 +475,7 @@ class AtState
         "Rot" => lambda { |inst, str, amount=13|
             rotN(str, amount)
         },
+        "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""| list.join joiner },
         
         
         ##################
@@ -466,7 +487,7 @@ class AtState
     # operators with two arguments
     @@operators = {
         "*" => vectorize_dyad { |inst, a, b| a * b },
-        "/" => vectorize_dyad { |inst, a, b| a * 1.0 / b },
+        "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
         "-" => vectorize_dyad { |inst, a, b| a - b },
         "+" => vectorize_dyad { |inst, a, b| a + b },
         "^" => vectorize_dyad { |inst, a, b| a ** b },
