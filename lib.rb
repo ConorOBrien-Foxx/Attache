@@ -100,6 +100,21 @@ class Array
     end
 end
 
+# extend TrueClass and FalseClass
+
+[TrueClass, FalseClass].each { |klass|
+    klass.define_method(:to_i) {
+        # p "arg = #{self}"
+        self ? 1 : 0
+    }
+    klass.define_method(:coerce) { |other|
+        [other, self.to_i]
+    }
+    [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :-@, :~@].each { |prop|
+        klass.define_method(prop) { |*args| to_i.send(prop, *args) }
+    }
+}
+
 ## GENERIC HELPER FUNCTIONS ##
 
 def print_table(table)
@@ -231,6 +246,7 @@ def from_numlike(n)
 end
 
 def simplify_number(n)
+    n = from_numlike n
     return n.to_i if n == n.to_i
     return n
 end
@@ -296,4 +312,84 @@ end
 
 def resize(list, n)
     (0...n).map { |i| list[i % list.size] }
+end
+
+$MAKE_REGEX_ESCAPE = {
+    "l" => "[A-Za-z]",
+    "L" => "[^A-Za-z]",
+    "m" => "[a-z]",
+    "M" => "[^a-z]",
+    "o" => "[A-Z]",
+    "O" => "[^A-Z]",
+    "i" => "[A-Za-z0-9]",
+    "I" => "[^A-Za-z0-9]",
+}
+$MAKE_REGEX_STANDARD = "abcfnrv\\'\"^$*+?/(){}|[]bBdDwWsSc0123456789."
+def make_regex(str)
+    return str if str.is_a? Regexp
+    
+    build = ""
+    i = 0
+    while i < str.size
+        if str[i] == "`"
+            i += 1
+            while i < str.size
+                if str[i] == "`"
+                    break if str[i + 1] != "`"
+                    i += 1
+                end
+                build += RegExp.escape str[i]
+                i += 1
+            end
+        elsif str[i] == "\\"
+            i += 1
+            cur = str[i]
+            if cur == nil
+                build += "\\\\"
+            elsif $MAKE_REGEX_STANDARD.include? cur
+                build += "\\" + cur
+            elsif $MAKE_REGEX_ESCAPE.has_key? cur
+                build += $MAKE_REGEX_ESCAPE[cur]
+            else
+                build += cur
+            end
+        else
+            build += str[i]
+        end
+        i += 1
+    end
+    
+    Regexp.new build
+end
+
+def format_replace(repl, str, data, i)
+    repl.gsub(/\$(\d+|.)/) {
+        orig = $&
+        spec = $1
+        case spec
+            when /\d+/
+                data[spec.to_i]
+            when ":"
+                str
+            when "#"
+                i
+            when "@"
+                data[0].size
+            when "&"
+                data[0]
+            else
+                orig
+        end
+    }
+end
+
+def replace(str, search, replace)
+    # p [str, search, replace]
+    i = 0
+    str.gsub(search) {
+        data = $~
+        res = format_replace(replace, str, data, i)
+        i += 1
+        res
+    }
 end

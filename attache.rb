@@ -46,6 +46,14 @@ class AttacheParser
                 options[:show_program] = v
             end
             
+            opts.on(
+                "-e", "--execute CODE",
+                String,
+                "Execute the following string as code",
+            ) do |v|
+                options[:program] = v
+            end
+            
             opts.on_tail(
                 "-h", "--help",
                 "Show this help message"
@@ -64,10 +72,8 @@ class AttacheParser
 end
 
 options = AttacheParser.parse(ARGV)
-# p options
-# p ARGV
 
-program = File.read ARGV[0]
+program = options[:program] || File.read(ARGV[0])
 
 if options[:show_program]
     puts "[program]"

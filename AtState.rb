@@ -424,12 +424,15 @@ class AtState
         },
         "Powerset" => lambda { |inst, list| list.powerset },
         "Prod" => lambda { |inst, list| list.prod },
-        "Range" => lambda { |inst, min, max=nil|
+        "Range" => vectorize_dyad { |inst, min, max=nil|
             if max.nil?
                 (0..min).to_a
             else
                 (min..max).to_a
             end
+        },
+        "Iota" => vectorize_monad { |inst, min|
+            ((0...min) rescue (0...min.size)).to_a
         },
         "Resize" => lambda { |inst, list, size| resize [*list], size },
         "Same" => lambda { |inst, *args|
@@ -476,7 +479,14 @@ class AtState
             rotN(str, amount)
         },
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""| list.join joiner },
-        
+        "Split" => vectorize_dyad { |inst, str, sep| str.split sep },
+        "Replace" => lambda { |inst, str, search, replace|
+            replace str, search, replace
+        },
+        "Upcase" => vectorize_monad { |inst, str| str.upcase },
+        "Downcase" => vectorize_monad { |inst, str| str.downcase },
+        "IsUpcase" => vectorize_monad { |inst, str| str.upcase == str },
+        "IsDowncase" => vectorize_monad { |inst, str| str.downcase == str },
         
         ##################
         #### UNSORTED ####
@@ -543,6 +553,7 @@ class AtState
     @@unary_operators = {
         "-" => vectorize_monad { |inst, n| -n },
         "#" => lambda { |inst, n| n.size },
+        "/" => lambda { |inst, r| make_regex r },
         "@" => lambda { |inst, f|
             if f.is_a? Proc
                 vectorize { |inst, *args|
@@ -578,6 +589,9 @@ class AtState
         @variables = {
             "true" => true,
             "false" => false,
+            "lf" => "\n",
+            "cr" => "\r",
+            "nul" => "\0",
         }
         @stack = []
         @last_values = []
