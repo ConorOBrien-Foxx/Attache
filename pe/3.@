@@ -1,0 +1,4 @@
+Define[$PE3,
+Max@PrimeFactors
+]
+Print[PE3[600851475143]]

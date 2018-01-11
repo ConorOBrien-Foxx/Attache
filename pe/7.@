@@ -1,0 +1,4 @@
+Define[$PE7,
+Prime
+]
+Print[PE7[10001]]

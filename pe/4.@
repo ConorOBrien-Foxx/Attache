@@ -1,0 +1,5 @@
+Define[$PE4,
+{Max[Palindromic\Outer[`*,_,_]]}
+]
+
+Print[PE4[100..999]]

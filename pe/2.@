@@ -1,0 +1,4 @@
+Define[$PE2,
+{Sum[Even\Series[Fibonacci,_]]}
+]
+Print[PE2[4000000]]

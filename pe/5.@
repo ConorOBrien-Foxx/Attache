@@ -1,0 +1,4 @@
+Define[$PE5,
+{LCM[2.._]}
+]
+Print[PE5[20]]

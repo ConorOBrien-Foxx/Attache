@@ -1,0 +1,5 @@
+Define[$PE10,
+Sum@Series&:Prime@`+&1
+]
+
+Print[PE10[2000000]]

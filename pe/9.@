@@ -1,0 +1,5 @@
+Define[$PE9,
+Index#(Map&:Sum)@Pythagorean@Range
+]
+
+Print[PE9[1000]]

@@ -1,0 +1,5 @@
+Define[$PE6,
+(Square@Sum#`-#Sum@Square)@Range
+]
+
+Print[PE6[100]]
