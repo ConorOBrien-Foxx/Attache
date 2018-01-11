@@ -135,7 +135,9 @@ end
 def debug_obj(title,**obj)
     puts "[#{title}]"
     obj.each{|v,k|puts"  #{v} -> #{k}"}
-enddef rotN(str, n)
+end
+
+def rotN(str, n)
     str.gsub(/[a-z]/i) { |letter|
         res = $ALPHA_LOWER[($ALPHA_LOWER.index(letter.downcase) + n) % 26]
         letter == letter.upcase ? res.upcase : res
@@ -392,4 +394,12 @@ def replace(str, search, replace)
         i += 1
         res
     }
+end
+
+def sample(list, n)
+    if n.nil?
+        force_list(list).sample
+    else
+        force_list(list).sample(n)
+    end
 end

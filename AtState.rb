@@ -15,6 +15,7 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $PRECEDENCE = {
+    
     "&"     => [26, :left],
     "&:"    => [26, :left],
     "~"     => [25, :left],#temporary precedence
@@ -41,6 +42,7 @@ $PRECEDENCE = {
     "..."   => [5, :left],
     "and"   => [4, :left],
     "or"    => [3, :left],
+    "->"    => [1, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
@@ -72,6 +74,7 @@ $DATA = [
     :call_func,
     :function,
     :abstract,
+    :make_lambda
 ]
 $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 
@@ -198,7 +201,7 @@ def vectorize_dyad(lr = LEFT | RIGHT, &fn)
             if use_left
                 x.map { |e| res[inst, e] }
             else
-                res[inst, x]
+                fn[inst, x]
             end
         elsif use_left
             if use_right
@@ -226,6 +229,96 @@ def vectorize(&fn)
     }
 end
 
+class Node
+    DISP_WIDTH = 4
+    NODE_PREFIX = "\\- "
+    LEAF_PREFIX = "-- "
+    def initialize(head, children=[])
+        @head = head
+        @children = children
+    end
+    
+    attr_reader :head, :children
+    
+    def add_child(children)
+        @children.concat children
+    end
+    
+    def to_ary
+        [@head.clone, @children.clone]
+    end
+    
+    def to_s(depth = 0)
+        res = ""
+        res += " " * DISP_WIDTH * depth
+        res += NODE_PREFIX + @head.inspect
+        res += "\n"
+        depth += 1
+        @children.each { |child|
+            if child.is_a? Node
+                res += child.to_s(depth)
+            else
+                res += " " * DISP_WIDTH * depth + LEAF_PREFIX + child.inspect
+            end
+            res += "\n"
+        }
+        depth -= 1
+        depth == 0 ? res.chomp : res
+    end
+end
+
+#idk
+class AtLambda
+    def initialize(inner_ast)
+        @tokens = inner_ast[0]
+    end
+    
+    def [](inst, *args)
+        inst.evaluate_node(@tokens, args)
+    end
+end
+
+class ConfigureValue
+    def initialize(key, value)
+        @key = key.to_sym
+        @value = value
+    end
+    
+    def to_a
+        [@key, @value]
+    end
+    alias_method :to_ary, :to_a
+    
+    attr_accessor :key, :value
+end
+
+def ast(program)
+    shunted = parse program rescue program
+    roots = []
+    stack = []
+    build = nil
+    shunted.each { |ent|
+        raw, type = ent
+        if type == :call_func
+            args = stack.pop(raw)
+            func = stack.pop
+            cur = Node.new func, args
+            stack.push cur
+        elsif type == :operator
+            args = stack.pop(2)
+            cur = Node.new ent, args
+            stack.push cur
+            
+        elsif $DATA.include? type
+            stack.push ent
+        else
+            p ent
+            raise
+        end
+    }
+    stack
+end
+
 class AtState
     def AtState.truthy?(ent)
         ent && ent != 0 && (ent.size != 0 rescue true)
@@ -245,27 +338,40 @@ class AtState
         ## - memory manipulation
         ## - i/o
         ## - functions that are necessary
-        "Define" => lambda { |inst, *args|
+        "Define" => lambda { |inst, *args, **opts|
             inst.define *args
         },
-        "Print" => lambda { |inst, *args|
-            puts args.map(&:to_s).join(" ")
+        "Print" => lambda { |inst, *args, **opts|
+            print args.map(&:to_s).join(" ")
+            print opts[:end] || "\n"
         },
-        "Stdin" => lambda { |inst| STDIN.read },
-        "Stdout" => lambda { |inst, *args| print args.flatten.join },
-        "V" => lambda { |inst, *args| args },
+        "Stdin" => lambda { |inst, **opts|
+            STDIN.read
+        },
+        "Stdout" => lambda { |inst, *args, **opts|
+            print args.flatten.join
+        },
+        "V" => lambda { |inst, *args, **opts|
+            args
+        },
         
         #############################
         #### UNIVERSAL FUNCTIONS ####
         #############################
-        "Id" => lambda { |inst, a| a },
-        "Palindromic" => lambda { |inst, ent| reverse(ent) == ent },
-        "Reverse" => lambda { |inst, ent| reverse ent },
+        "Id" => lambda { |inst, a, **opts|
+            a
+        },
+        "Palindromic" => lambda { |inst, ent, **opts|
+            reverse(ent) == ent
+        },
+        "Reverse" => lambda { |inst, ent, **opts|
+            reverse ent
+        },
         
         ##########################
         #### HYBRID FUNCTIONS ####
         ##########################
-        "Series" => lambda { |inst, f, max, start=0|
+        "Series" => lambda { |inst, f, max, start=0, **opts|
             i = start
             collect = []
             loop {
@@ -282,51 +388,77 @@ class AtState
         ###########################
         #### NUMERIC FUNCTIONS ####
         ###########################
-        "Abs" => vectorize_monad { |inst, n| n.abs },
-        "Add" => lambda { |inst, *args|
+        "Abs" => vectorize_monad { |inst, n, **opts|
+            n.abs
+        },
+        "Add" => lambda { |inst, *args, **opts|
             args.sum
         },
-        "Collatz" => vectorize_monad { |inst, n| collatz n },
-        "CollatzSize" => vectorize_monad { |inst, n| collatz(n).size - 1 },
-        "Double" => vectorize_monad { |inst, n| @@operators["*"][inst, n, 2] },
-        "Even" => vectorize_monad { |inst, n| n.even? },
-        "Fibonacci" => lambda { |inst, n| nth_fibonacci(n) },
-        "GCD" => lambda { |inst, *args|
+        "Collatz" => vectorize_monad { |inst, n, **opts|
+            collatz n
+        },
+        "CollatzSize" => vectorize_monad { |inst, n, **opts|
+            collatz(n).size - 1
+        },
+        "Double" => vectorize_monad { |inst, n, **opts|
+            @@operators["*"][inst, n, 2]
+        },
+        "Even" => vectorize_monad { |inst, n, **opts|
+            n.even?
+        },
+        "Fibonacci" => lambda { |inst, n, **opts|
+            nth_fibonacci(n)
+        },
+        "GCD" => lambda { |inst, *args, **opts|
             gcd args.flatten
         },
-        "Halve" => vectorize_monad { |inst, n| @@operators["/"][inst, n, 2] },
-        "LCM" => lambda { |inst, *args|
+        "Halve" => vectorize_monad { |inst, n, **opts|
+            @@operators["/"][inst, n, 2]
+        },
+        "LCM" => lambda { |inst, *args, **opts|
             lcm args.flatten
         },
-        "N" => lambda { |inst, n| force_number n },
-        "Odd" => vectorize_monad { |inst, n| n.odd? },
-        "Polygonal" => lambda { |inst, n, order=3|
+        "N" => lambda { |inst, n, **opts|
+            force_number n
+        },
+        "Odd" => vectorize_monad { |inst, n, **opts|
+            n.odd?
+        },
+        "Polygonal" => lambda { |inst, n, order=3, **opts|
             gonal n, order
         },
-        "Pythagorean" => vectorize_monad { |inst, n|
+        "Pythagorean" => vectorize_monad { |inst, n, **opts|
             pythagorean n
         },
-        "Sign" => vectorize_monad { |inst, n| sign n },
-        "Sqrt" => vectorize_monad { |inst, n| Math.sqrt n },
-        "Square" => vectorize_monad { |inst, n| n * n },
-        "Triangular" => lambda { |inst, n| gonal n, 3 },
+        "Sign" => vectorize_monad { |inst, n, **opts|
+            sign n
+        },
+        "Sqrt" => vectorize_monad { |inst, n, **opts|
+            Math.sqrt n
+        },
+        "Square" => vectorize_monad { |inst, n, **opts|
+            n * n
+        },
+        "Triangular" => lambda { |inst, n, **opts|
+            gonal n, 3
+        },
         
         ##-----------------##
         ## Prime Functions ##
         ##-----------------##
-        "IsPrime" => vectorize_monad { |inst, n|
+        "IsPrime" => vectorize_monad { |inst, n, **opts|
             Prime.prime? n
         },
-        "Prime" => vectorize_monad { |inst, n|
+        "Prime" => vectorize_monad { |inst, n, **opts|
             nth_prime n
         },
-        "PrimeDivision" => vectorize_monad { |inst, n|
+        "PrimeDivision" => vectorize_monad { |inst, n, **opts|
             Prime.prime_division n
         },
-        "PrimeFactors" => vectorize_monad { |inst, n|
+        "PrimeFactors" => vectorize_monad { |inst, n, **opts|
             prime_factors n
         },
-        "Primes" => vectorize_monad { |inst, n|
+        "Primes" => vectorize_monad { |inst, n, **opts|
             Prime.first n
         },
         
@@ -334,53 +466,67 @@ class AtState
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
         ##############################
-        "Agenda" => lambda { |inst, flist, cond|
+        "Agenda" => lambda { |inst, flist, cond, **opts|
             lambda { |inst, *args|
                 ind = from_numlike cond[inst, *args]
                 flist[ind][inst, *args]
             }
         },
-        "Bond" => lambda { |inst, func, larg|
-            lambda { |inst, *args| func[inst, larg, *args] }
+        "Bond" => lambda { |inst, func, larg, **opts|
+            lambda { |inst, *args|
+                func[inst, larg, *args]
+            }
         },
-        "C" => lambda { |inst, arg| lambda { |inst, *discard| arg } },
-        "Call" => vectorize_dyad(LEFT) { |inst, f, *args|
-            f[inst, *args]
+        "C" => lambda { |inst, arg, **opts|
+            lambda { |inst, *discard|
+                arg
+            }
         },
-        "Fixpoint" => lambda { |inst, f, n|
+        "Call" => lambda { |inst, f, *args, **opts|
+            f[inst, *args, **opts]
+        },
+        "Fixpoint" => lambda { |inst, f, n, **opts|
             fixpoint f.bind(inst), n
         },
-        "Fork" => lambda { |inst, f, g, h|
-            lambda { |inst, *args| g[inst, f[inst, *args], h[inst, *args]] }
+        "Fork" => lambda { |inst, f, g, h, **opts|
+            lambda { |inst, *args|
+                g[inst, f[inst, *args], h[inst, *args]]
+            }
         },
-        "Nest" => lambda { |inst, f, e, n|
+        "Nest" => lambda { |inst, f, e, n, **opts|
             from_numlike(n).times {
                 e = f[inst, e]
             }
             e
         },
-        "PeriodicSteps" => lambda { |inst, f|
-            lambda { |inst, x| periodicloop f.bind(inst), x }
+        "PeriodicSteps" => lambda { |inst, f, **opts|
+            lambda { |inst, x, **opts|
+                periodicloop f.bind(inst), x
+            }
         },
-        "Periodic" => lambda { |inst, f|
-            lambda { |inst, x| periodicloop(f.bind(inst), x).last }
+        "Periodic" => lambda { |inst, f, **opts|
+            lambda { |inst, x, **opts|
+                periodicloop(f.bind(inst), x).last
+            }
         },
-        "RBond" => lambda { |inst, func, rarg|
-            lambda { |inst, *args| func[inst, *args, rarg] }
+        "RBond" => lambda { |inst, func, rarg, **opts|
+            lambda { |inst, *args|
+                func[inst, *args, rarg]
+            }
         },
         
         
         #########################
         #### LOGIC FUNCTIONS ####
         #########################
-        "All" => lambda { |inst, f, list=nil|
+        "All" => lambda { |inst, f, list=nil, **opts|
             if list.nil?
                 f.all? { |e| AtState.truthy? e }
             else
                 list.all? { |e| AtState.truthy?(f[inst, e]) }
             end
         },
-        "If" => lambda { |inst, cond, t, f|
+        "If" => lambda { |inst, cond, t, f, **opts|
             if AtState.truthy? cond
                 t
             else
@@ -392,62 +538,98 @@ class AtState
         ########################
         #### LIST FUNCTIONS ####
         ########################
-        "Accumulate" => lambda { |inst, list|
+        "Accumulate" => lambda { |inst, list, **opts|
             prefixes(list)[1..-1].map { |e| sum e }
         },
-        "Average" => lambda { |inst, list| list.average },
-        "Count" => lambda { |inst, list, f|
+        "Average" => lambda { |inst, list, **opts|
+            list.average
+        },
+        "Count" => lambda { |inst, list, f, **opts|
             if f.is_a? Proc
                 list.count { |e| f[inst, e] }
             else
                 list.count f
             end
         },
-        "Delta" => lambda { |inst, list| list.delta },
-        "First" => lambda { |inst, list| list.first },
-        "Flat" => lambda { |inst, list, n=nil| list.flatten(n) },
-        "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
+        "Delta" => lambda { |inst, list, **opts|
+            list.delta
+        },
+        "First" => lambda { |inst, list, **opts|
+            list.first
+        },
+        "Flat" => lambda { |inst, list, n=nil, **opts|
+            list.flatten(n)
+        },
+        "Get" => vectorize_dyad(RIGHT) { |inst, list, inds, **opts|
             list[inds]
         },
-        "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
+        "Index" => vectorize_dyad(RIGHT) { |inst, list, ind, **opts|
             list.index ind
         },
-        "Last" => lambda { |inst, list| list.last },
-        "Max" => lambda { |inst, *args| args.flatten.max },
-        "Median" => lambda { |inst, list| list.median },
-        "Min" => lambda { |inst, *args| args.flatten.min },
-        "Outers" => vectorize_dyad(RIGHT) { |inst, arr, n=1|
+        "Iota" => vectorize_monad { |inst, min, **opts|
+            ((0...min) rescue (0...min.size)).to_a
+        },
+        "Last" => lambda { |inst, list, **opts|
+            list.last
+        },
+        "Max" => lambda { |inst, *args, **opts|
+            args.flatten.max
+        },
+        "Median" => lambda { |inst, list, **opts|
+            list.median
+        },
+        "Min" => lambda { |inst, *args, **opts|
+            args.flatten.min
+        },
+        "Outers" => vectorize_dyad(RIGHT) { |inst, arr, n=1, **opts|
             arr[0...n] + arr[-n..-1]
         },
-        "Prefixes" => lambda { |inst, list|
+        "Prefixes" => lambda { |inst, list, **opts|
             prefixes list
         },
-        "Powerset" => lambda { |inst, list| list.powerset },
-        "Prod" => lambda { |inst, list| list.prod },
-        "Range" => vectorize_dyad { |inst, min, max=nil|
+        "Powerset" => lambda { |inst, list, **opts|
+            list.powerset
+        },
+        "Prod" => lambda { |inst, list, **opts|
+            list.prod
+        },
+        "Range" => vectorize_dyad { |inst, min, max=nil, **opts|
             if max.nil?
                 (0..min).to_a
             else
                 (min..max).to_a
             end
         },
-        "Iota" => vectorize_monad { |inst, min|
-            ((0...min) rescue (0...min.size)).to_a
+        "Resize" => lambda { |inst, list, size, **opts|
+            resize [*list], size
         },
-        "Resize" => lambda { |inst, list, size| resize [*list], size },
-        "Same" => lambda { |inst, *args|
+        "Same" => lambda { |inst, *args, **opts|
             list = args.flatten
             list.all? { |e| e == list[0] }
         },
-        "Size" => lambda { |inst, list| list.size },
-        "Slices" => vectorize_dyad(RIGHT) { |inst, list, skew|
+        "Sample" => vectorize_dyad(RIGHT) { |inst, list, n=nil, **opts|
+            sample list, n },
+        "Size" => lambda { |inst, list, **opts|
+            list.size
+        },
+        "Slices" => vectorize_dyad(RIGHT) { |inst, list, skew, **opts|
             slices list, skew
         },
-        "Sort" => lambda { |inst, list| list.sort },
-        "StdDev" => lambda { |inst, list| list.stddev },
-        "Sum" => lambda { |inst, list| list.sum },
-        "Unique" => lambda { |inst, a| a.uniq },
-        "Variance" => lambda { |inst, list| list.variance },
+        "Sort" => lambda { |inst, list, **opts|
+            list.sort
+        },
+        "StdDev" => lambda { |inst, list, **opts|
+            list.stddev
+        },
+        "Sum" => lambda { |inst, list, **opts|
+            list.sum
+        },
+        "Unique" => lambda { |inst, a, **opts|
+            a.uniq
+        },
+        "Variance" => lambda { |inst, list, **opts|
+            list.variance
+        },
         
         ##---------------------------##
         ## List Functional Functions ##
@@ -455,16 +637,16 @@ class AtState
         "Map" => lambda { |inst, f, list|
             list.map { |e| f[inst, e] }
         },
-        "MaxBy" => lambda { |inst, f, list|
+        "MaxBy" => lambda { |inst, f, list, **opts|
             list.max { |e| f[inst, e] }
         },
-        "MinBy" => lambda { |inst, f, list|
+        "MinBy" => lambda { |inst, f, list, **opts|
             list.min { |e| f[inst, e] }
         },
-        "Outer" => lambda { |inst, f, a, b|
+        "Outer" => lambda { |inst, f, a, b, **opts|
             a.product(b).map { |e| f[inst, *e] }
         },
-        "Select" => lambda { |inst, f, list|
+        "Select" => lambda { |inst, f, list, **opts|
             # p [f,list]
             list.select { |e| f[inst, e] }
         },
@@ -473,20 +655,36 @@ class AtState
         ##########################
         #### STRING FUNCTIONS ####
         ##########################
-        "Chars" => vectorize_monad { |inst, n| n.chars },
-        "Format" => lambda { |inst, str, *args| str % args },
+        "Chars" => vectorize_monad { |inst, n, **opts|
+            n.chars
+        },
+        "Format" => lambda { |inst, str, *args, **opts|
+            str % args
+        },
         "Rot" => lambda { |inst, str, amount=13|
             rotN(str, amount)
         },
-        "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""| list.join joiner },
-        "Split" => vectorize_dyad { |inst, str, sep| str.split sep },
-        "Replace" => lambda { |inst, str, search, replace|
+        "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner="", **opts|
+            list.join joiner
+        },
+        "Split" => vectorize_dyad { |inst, str, sep, **opts|
+            str.split sep
+        },
+        "Replace" => lambda { |inst, str, search, replace, **opts|
             replace str, search, replace
         },
-        "Upcase" => vectorize_monad { |inst, str| str.upcase },
-        "Downcase" => vectorize_monad { |inst, str| str.downcase },
-        "IsUpcase" => vectorize_monad { |inst, str| str.upcase == str },
-        "IsDowncase" => vectorize_monad { |inst, str| str.downcase == str },
+        "Upcase" => vectorize_monad { |inst, str, **opts|
+            str.upcase
+        },
+        "Downcase" => vectorize_monad { |inst, str, **opts|
+            str.downcase
+        },
+        "IsUpcase" => vectorize_monad { |inst, str, **opts|
+            str.upcase == str
+        },
+        "IsDowncase" => vectorize_monad { |inst, str, **opts|
+            str.downcase == str
+        },
         
         ##################
         #### UNSORTED ####
@@ -528,9 +726,13 @@ class AtState
         },
         "&" => lambda { |inst, a, b|
             if a.is_a? Proc
-                lambda { |inst, *args| a[inst, *args, b] }
+                lambda { |inst, *args, **opts|
+                    a[inst, *args, b, **opts]
+                }
             elsif b.is_a? Proc
-                lambda { |inst, *args| b[inst, a, *args] }
+                lambda { |inst, *args, **opts|
+                    b[inst, a, *args, **opts]
+                }
             else
                 STDERR.puts "idk"
                 raise
@@ -548,6 +750,9 @@ class AtState
         },
         "=>" => @@functions["Map"],
         "\\" => @@functions["Select"],
+        "->" => lambda { |inst, key, value|
+            ConfigureValue.new key[0], value
+        }
     }
     
     @@unary_operators = {
@@ -585,48 +790,57 @@ class AtState
     }
     
     def initialize(program)
-        @tokens = parse(program)
+        @trees = ast(program)
         @variables = {
             "true" => true,
             "false" => false,
             "lf" => "\n",
             "cr" => "\r",
             "nul" => "\0",
+            "es" => "",
         }
         @stack = []
-        @last_values = []
         @i = 0
     end
-    attr_reader :stack, :last_values
+    attr_reader :stack
     
     def get_value(obj)
         # p obj
         raw, type = obj
         if type == :reference
             raw[1..-1]
-        elsif type == :save_last_value
-            @last_values.push @stack.pop
-        elsif type == :abstract
-            number = @last_values.size - get_abstract_number(raw) - 1
-            if number < 0
-                raise "no value to obtain"
-            end
-            p @last_values
-            @last_values[number]
+            
+        # elsif type == :abstract
+        
         elsif type == :string
             raw[1..-2].gsub(/""/, '"')
+        
         elsif @variables.has_key? raw
             @variables[raw]
+        
         elsif @@functions.has_key? raw
             @@functions[raw]
+        
+        elsif type == :operator
+            @@operators[raw] || @@unary_operators[raw]
+        
         elsif type == :op_quote
             ref = raw[1..-1]
             lambda { |inst, *args|
                 source = args.size == 1 ? @@unary_operators : @@operators
                 source[ref][inst, *args]
             }
+        
+        elsif type == :number
+            eval raw
+        
+        elsif type == :make_lambda
+            AtLambda.new(ast raw)
+        
         else
-            eval(obj[0].to_s)
+            puts "Unidentified get_value thing #{type.inspect}"
+            p obj
+            raise
         end
     end
     
@@ -634,64 +848,106 @@ class AtState
         @variables[name] = value
     end
     
-    # modifies stack
-    def exec_op(tok)
-        raw, type = tok
-        # puts "tok = #{tok}"
-        @stack << case type
-            when :call_func
-                args = stack.pop(raw)
-                func = @stack.pop
-                func[self, *args]
-                
-            when :make_lambda
-                lambda { |inst, *args|
-                    raw.each { |arg|
-                        arg_raw, arg_type = arg
-                        if arg_type == :abstract
-                            number = get_abstract_number(arg_raw)
-                            inst.exec_op [args[number], :normal]
-                        else
-                            # p inst, arg
-                            inst.exec_op arg
-                        end
-                    }
-                    inst.stack.pop
-                }
-            when :operator
-                ref = @@operators[raw]
-                if ref.nil?
-                    STDERR.puts "Invalid operator #{raw.inspect}"
-                    raise
-                end
-                args = @stack.pop(2)
-                ref[self, *args]
-            when :unary_operator
-                ref = @@unary_operators[raw]
-                arg = @stack.pop
-                if ref.nil?
-                    STDERR.puts "Invalid unary operator #{raw.inspect}"
-                    raise
-                end
-                ref[self, arg]
-            when *$DATA
-                # p @stack
-                get_value(tok)
-            when :normal
-                raw
+    def evaluate_node(node, blank_args = [])
+        return nil unless node.is_a? Node
+        head, children = node
+        args = []
+        # special cases
+        if "->" == head[0]
+            args << children.shift
+        end
+        children.map! { |child|
+            raw, type = child
+            if child.is_a? Node
+                evaluate_node child, blank_args
+            elsif type == :abstract
+                n = get_abstract_number(raw)
+                blank_args[n]
             else
-                STDERR.puts "Unknown type #{type.inspect}"
-                raise
+                get_value child
+            end
+        }
+        args.concat children
+
+        # filter ConfigureValue
+        split = args.group_by { |e| e.is_a? ConfigureValue }
+        config = split[true].to_h
+        args = split[false]
+        
+        
+        func = get_value head
+        # todo: fix
+        if func.arity < 0
+            func[self, *args, **config]
+        else
+            func[self, *args]
         end
     end
     
-    def step
-        tok = @tokens[@i]
-        exec_op tok
-        @i += 1
+    def run
+        @trees.each { |tree|
+            evaluate_node tree
+        }
     end
     
-    def run
-        step while @i < @tokens.size
-    end
+    # # modifies stack
+    # def exec_op(tok)
+        # raw, type = tok
+        # # puts "tok = #{tok}"
+        # @stack << case type
+            # when :call_func
+                # args = stack.pop(raw)
+                # func = @stack.pop
+                # func[self, *args]
+                
+            # when :make_lambda
+                # lambda { |inst, *args|
+                    # raw.each { |arg|
+                        # arg_raw, arg_type = arg
+                        # if arg_type == :abstract
+                            # number = get_abstract_number(arg_raw)
+                            # inst.exec_op [args[number], :normal]
+                        # else
+                            # # p inst, arg
+                            # inst.exec_op arg
+                        # end
+                    # }
+                    # inst.stack.pop
+                # }
+            # when :operator
+                # ref = @@operators[raw]
+                # if ref.nil?
+                    # STDERR.puts "Invalid operator #{raw.inspect}"
+                    # raise
+                # end
+                # args = @stack.pop(2)
+                # ref[self, *args]
+            # when :unary_operator
+                # ref = @@unary_operators[raw]
+                # arg = @stack.pop
+                # if ref.nil?
+                    # STDERR.puts "Invalid unary operator #{raw.inspect}"
+                    # raise
+                # end
+                # ref[self, arg]
+            # when *$DATA
+                # # p @stack
+                # get_value(tok)
+            # when :normal
+                # raw
+            # else
+                # STDERR.puts "Unknown type #{type.inspect}"
+                # raise
+        # end
+    # end
+    
+    # def step
+        # tok = @tokens[@i]
+        # exec_op tok
+        # @i += 1
+    # end
+    
+    # def run
+        # step while @i < @tokens.size
+    # end
 end

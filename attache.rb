@@ -47,6 +47,13 @@ class AttacheParser
             end
             
             opts.on(
+                "-a", "--ast",
+                "Use ast!"
+            ) do |v|
+                options[:ast] = v
+            end
+            
+            opts.on(
                 "-e", "--execute CODE",
                 String,
                 "Execute the following string as code",
@@ -78,6 +85,10 @@ program = options[:program] || File.read(ARGV[0])
 if options[:show_program]
     puts "[program]"
     puts program
+end
+
+if options[:ast]
+    ast(program).each { |node| puts node.to_s }
 end
 
 if options[:tokenize] || options[:shunt]
