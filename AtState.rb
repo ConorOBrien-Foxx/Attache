@@ -4,8 +4,8 @@ $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_\d*/
 $NUMBER = /[0-9]+/
 $REFERENCE = /\$#$WORD/
-$BRACKET_OPEN = /\[/
-$BRACKET_CLOSE = /\]/
+$BRACKET_OPEN = /\[|do/
+$BRACKET_CLOSE = /\]|end/
 $PAREN_OPEN = /\(/
 $PAREN_CLOSE = /\)/
 $COMMA = /,/
@@ -48,6 +48,8 @@ $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
 $OP_QUOTE = /`#$OPERATOR/
 $TYPES = {
+    $BRACKET_OPEN       => :bracket_open,
+    $BRACKET_CLOSE      => :bracket_close,
     $OPERATOR           => :operator,
     $WORD               => :word,
     $COMMA              => :comma,
@@ -61,8 +63,6 @@ $TYPES = {
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
     $PAREN_CLOSE        => :paren_close,
-    $BRACKET_OPEN       => :bracket_open,
-    $BRACKET_CLOSE      => :bracket_close,
     $UNKNOWN            => :unknown,
 }
 $DATA = [
@@ -527,11 +527,12 @@ class AtState
             end
         },
         "If" => lambda { |inst, cond, t, f, **opts|
-            if AtState.truthy? cond
+            res = if AtState.truthy? cond
                 t
             else
                 f
             end
+            inst.evaluate_node res
         },
         
         
@@ -848,23 +849,30 @@ class AtState
         @variables[name] = value
     end
     
+    @@held_arguments = {
+        "->" => [true, false],
+        "If" => [false, true, true]
+    }
     def evaluate_node(node, blank_args = [])
         return nil unless node.is_a? Node
         head, children = node
         args = []
         # special cases
-        if "->" == head[0]
-            args << children.shift
-        end
-        children.map! { |child|
+        held = @@held_arguments[head[0]] || []
+        
+        children.map!.with_index { |child, i|
             raw, type = child
-            if child.is_a? Node
-                evaluate_node child, blank_args
-            elsif type == :abstract
-                n = get_abstract_number(raw)
-                blank_args[n]
+            if held[i]
+                child
             else
-                get_value child
+                if child.is_a? Node
+                    evaluate_node child, blank_args
+                elsif type == :abstract
+                    n = get_abstract_number(raw)
+                    blank_args[n]
+                else
+                    get_value child
+                end
             end
         }
         args.concat children
@@ -874,9 +882,8 @@ class AtState
         config = split[true].to_h
         args = split[false]
         
-        
         func = get_value head
-        # todo: fix
+        #todo: check if necessary
         if func.arity < 0
             func[self, *args, **config]
         else
