@@ -117,6 +117,10 @@ end
 
 ## GENERIC HELPER FUNCTIONS ##
 
+def cls
+    system Gem.win_platform? ? "cls" : "clear"
+end
+
 def print_table(table)
     max_sizes = table.transpose.map { |column|
         column.map(&:size).max
