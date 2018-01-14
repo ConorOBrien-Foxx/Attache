@@ -30,7 +30,11 @@ def eval_test(text)
     result
 end
 
-# exit
+# allows for {a:NaN} == {a:NaN}
+# todo: make more "safe"?
+def same_rough(a, b)
+    a == b || Marshal.dump(a) == Marshal.dump(b)
+end
 
 options = {
     mode: [],
@@ -217,7 +221,7 @@ if options[:generate_seen]
         $config[method] = data
         
         # only write if necessary
-        unless $old_config == $config
+        unless same_rough $old_config, $config
             begin
                 File.write "tests.json", JSON::generate($config, allow_nan: true)
             rescue
@@ -256,7 +260,7 @@ options[:mode].uniq.each { |mode|
             p result
             exit -2
         end
-        if result != output
+        unless same_rough result, output
             puts "Failed test in #{mode.inspect}: Test #{i}:"
             puts "Input:"
             pind input

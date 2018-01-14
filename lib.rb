@@ -92,6 +92,9 @@ class Array
     end
 
     def median
+        if empty?
+            raise ArgumentError.new "Median of an empty array is undefined"
+        end
         sorted = sort
         (sorted[(size - 1) / 2] + sorted[size / 2]) / 2.0
     end
@@ -158,7 +161,7 @@ def gonal(n, s)
 end
 
 def factorial(n)
-    prod 1..n
+    (1..n).to_a.prod
 end
 
 # 1-indexed
