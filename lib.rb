@@ -62,7 +62,8 @@ class Array
     def average
         sum.to_f / size
     end
-
+    
+    # sample variance
     def variance
         m = average
         s = inject(0) { |a, i| a + (i - m) ** 2 }
@@ -73,7 +74,7 @@ class Array
         Math.sqrt variance
     end
 
-    def prefixes(list)
+    def prefixes
         (1..size).map { |i| self[0...i] }
     end
 
@@ -406,4 +407,36 @@ def sample(list, n)
     else
         force_list(list).sample(n)
     end
+end
+
+# reads a character without waiting for ENTER
+def getchar(safe=true)
+    require 'io/console'
+    res = STDIN.getch
+    exit -42 if res == "\x03" if safe
+    res
+end
+
+def prompt_input(prompt=nil)
+    puts prompt if prompt
+    STDIN.gets.chomp
+end
+
+$YES_NO = {
+              "y" => "yes",
+              "n" => "no"
+          }
+def read_option(prompt, opts, clear=false)
+    res = nil
+    cls if clear
+    puts prompt
+    opts.each { |char, val|
+        puts "  #{char}> #{val}"
+    }
+    loop {
+        res = getchar
+        break if opts.has_key? res
+        puts "#{res.inspect} is not a valid option."
+    }
+    res
 end

@@ -343,7 +343,7 @@ class AtState
         },
         "Print" => lambda { |inst, *args, **opts|
             print args.map(&:to_s).join(" ")
-            print opts[:end] || "\n"
+            print opts[:after] || "\n"
         },
         "Stdin" => lambda { |inst, **opts|
             STDIN.read
@@ -896,65 +896,4 @@ class AtState
             evaluate_node tree
         }
     end
-    
-    # # modifies stack
-    # def exec_op(tok)
-        # raw, type = tok
-        # # puts "tok = #{tok}"
-        # @stack << case type
-            # when :call_func
-                # args = stack.pop(raw)
-                # func = @stack.pop
-                # func[self, *args]
-                
-            # when :make_lambda
-                # lambda { |inst, *args|
-                    # raw.each { |arg|
-                        # arg_raw, arg_type = arg
-                        # if arg_type == :abstract
-                            # number = get_abstract_number(arg_raw)
-                            # inst.exec_op [args[number], :normal]
-                        # else
-                            # # p inst, arg
-                            # inst.exec_op arg
-                        # end
-                    # }
-                    # inst.stack.pop
-                # }
-            # when :operator
-                # ref = @@operators[raw]
-                # if ref.nil?
-                    # STDERR.puts "Invalid operator #{raw.inspect}"
-                    # raise
-                # end
-                # args = @stack.pop(2)
-                # ref[self, *args]
-            # when :unary_operator
-                # ref = @@unary_operators[raw]
-                # arg = @stack.pop
-                # if ref.nil?
-                    # STDERR.puts "Invalid unary operator #{raw.inspect}"
-                    # raise
-                # end
-                # ref[self, arg]
-            # when *$DATA
-                # # p @stack
-                # get_value(tok)
-            # when :normal
-                # raw
-            # else
-                # STDERR.puts "Unknown type #{type.inspect}"
-                # raise
-        # end
-    # end
-    
-    # def step
-        # tok = @tokens[@i]
-        # exec_op tok
-        # @i += 1
-    # end
-    
-    # def run
-        # step while @i < @tokens.size
-    # end
 end
