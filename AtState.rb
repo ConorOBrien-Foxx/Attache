@@ -403,6 +403,7 @@ class AtState
         "Double" => vectorize_monad { |inst, n, **opts|
             @@operators["*"][inst, n, 2]
         },
+        "Digits" => vectorize_monad { |list, n| n.digits.reverse },
         "Even" => vectorize_monad { |inst, n, **opts|
             n.even?
         },
