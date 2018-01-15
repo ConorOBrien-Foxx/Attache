@@ -246,7 +246,7 @@ def lcm(arr)
 end
 
 def gcd(arr)
-    arr.reduce(1, :gcd)
+    arr.reduce(0, :gcd)
 end
 
 def from_numlike(n)
