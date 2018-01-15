@@ -195,24 +195,25 @@ def vectorize_dyad(lr = LEFT | RIGHT, &fn)
     right = lr & RIGHT != 0
     res = lambda { |inst, *args|
         x, y = args
+        rest = args[2..-1]
         use_left = x.is_a?(Array) && left
         use_right = y.is_a?(Array) && right
         if args.size == 1
             if use_left
-                x.map { |e| res[inst, e] }
+                x.map { |e| res[inst, e, *rest] }
             else
-                fn[inst, x]
+                fn[inst, x, *rest]
             end
         elsif use_left
             if use_right
-                x.map.with_index { |e, i| res[inst, e, y[i]] }
+                x.map.with_index { |e, i| res[inst, e, y[i], *rest] }
             else
-                x.map { |e| res[inst, e, y] }
+                x.map { |e| res[inst, e, y, *rest] }
             end
         elsif use_right
-            y.map { |e| res[inst, x, e] }
+            y.map { |e| res[inst, x, e, *rest] }
         else
-            fn[inst, x, y]
+            fn[inst, *args]
         end
     }
 end
@@ -571,6 +572,9 @@ class AtState
         "Iota" => vectorize_monad { |inst, min, **opts|
             ((0...min) rescue (0...min.size)).to_a
         },
+        "Larger" => vectorize_dyad { |inst, *args, **opts|
+            args.max
+        },
         "Last" => lambda { |inst, list, **opts|
             list.last
         },
@@ -616,6 +620,9 @@ class AtState
         },
         "Slices" => vectorize_dyad(RIGHT) { |inst, list, skew, **opts|
             slices list, skew
+        },
+        "Smaller" => vectorize_dyad { |inst, *args, **opts|
+            args.min
         },
         "Sort" => lambda { |inst, list, **opts|
             list.sort
