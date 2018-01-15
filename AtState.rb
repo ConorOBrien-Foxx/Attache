@@ -349,6 +349,7 @@ class AtState
         "Print" => lambda { |inst, *args, **opts|
             print args.map(&:to_s).join(" ")
             print opts[:after] || "\n"
+            args
         },
         "Stdin" => lambda { |inst|
             STDIN.read
