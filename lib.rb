@@ -262,10 +262,10 @@ def simplify_number(n)
 end
 
 def to_number(s)
-    if /\./ === s
-        return s.to_f
-    else
+    if /^\d+$/ === s
         return s.to_i
+    else
+        return s.to_f
     end
 end
 
@@ -283,9 +283,9 @@ def force_number(n)
 end
 
 def force_list(list)
-    return list         if list.is_a? Array
-    return list.chars   if list.is_a? String
-    return list.digits  if list.is_a? Numeric
+    return list                 if list.is_a? Array
+    return list.chars           if list.is_a? String
+    return list.digits.reverse  if list.is_a? Numeric
 end
 
 def pythagorean2(m, n)
@@ -404,7 +404,7 @@ def replace(str, search, replace)
     }
 end
 
-def sample(list, n)
+def sample(list, n=nil)
     if n.nil?
         force_list(list).sample
     else
