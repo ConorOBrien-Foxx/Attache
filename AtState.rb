@@ -329,6 +329,10 @@ class AtState
         !AtState.truthy? ent
     end
     
+    def AtState.execute(code)
+        AtState.new(code).run
+    end
+    
     # All builtins
     @@functions = {
         ###########################
