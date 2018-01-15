@@ -908,7 +908,7 @@ class AtState
     end
     
     def run
-        @trees.each { |tree|
+        @trees.map { |tree|
             evaluate_node tree
         }
     end
