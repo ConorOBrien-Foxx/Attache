@@ -141,10 +141,10 @@ def parse(code)
                 collect.unshift out.pop
             end
             
-            stack.pop
+            next_start = stack.pop.start
             out.pop
             
-            out.push [collect, :make_lambda]
+            out.push Token.new collect, :make_lambda, next_start
         
         elsif type == :operator
             if last_token.nil? || !($DATA + [:bracket_close, :paren_close, :func_end]).include?(last_token.type)
@@ -172,7 +172,7 @@ def parse(code)
             arities.push 1
         elsif type == :comma
             arities[-1] += 1
-            out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last[1])
+            out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
         elsif type == :bracket_close
             if last_token.type == :bracket_open
                 arities[-1] = 0
@@ -182,7 +182,7 @@ def parse(code)
                 out.push stack.pop
             end
             
-            out.push [arities.pop, :call_func]
+            out.push Token.new arities.pop, :call_func, nil
             
             stack.pop
         
@@ -191,7 +191,7 @@ def parse(code)
         elsif type == :paren_close
             # puts type
             # puts "  STACK: #{stack}\n  OUT: #{out}"
-            out.push stack.pop while stack.last[1] != :paren_open
+            out.push stack.pop while stack.last.type != :paren_open
             stack.pop
             # puts "  STACK: #{stack}\n  OUT: #{out}"
         elsif type == :whitespace
@@ -338,7 +338,12 @@ class ConfigureValue
 end
 
 def ast(program)
-    shunted = parse program rescue program
+    shunted = if program.is_a? Array
+        program
+    else
+        parse program
+    end
+    
     roots = []
     stack = []
     build = nil
@@ -922,7 +927,7 @@ class AtState
         head, children = node
         # special cases
         args = []
-        held = @@held_arguments[head[0]] || []
+        held = @@held_arguments[head.raw] || []
         
         children.map!.with_index { |child, i|
             raw, type = child
@@ -949,7 +954,7 @@ class AtState
         func = get_value head
         #todo: check if necessary
         # p func, func.arity
-        if @@configurable.include? head[0]
+        if @@configurable.include? head.raw
             func[self, *args, **config]
         else
             func[self, *args]

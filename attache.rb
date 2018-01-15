@@ -99,8 +99,8 @@ if options[:tokenize] || options[:shunt]
     iter.each { |display, option|
         puts "[#{display}]"
         tokens = send option, program
-        table = tokens.map.with_index { |(raw, type), i|
-            [i.to_s, type.to_s, raw.inspect]
+        table = tokens.map.with_index { |(raw, type, index), i|
+            [i.to_s, index.to_s, type.to_s, raw.inspect]
         }
         print_table table
     }
