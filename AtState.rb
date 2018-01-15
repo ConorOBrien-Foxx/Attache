@@ -78,12 +78,35 @@ $DATA = [
 ]
 $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 
+class Token
+    def initialize(raw, type, start)
+        @raw = raw
+        @type = type
+        @start = start
+    end
+    
+    attr_accessor :raw, :type, :start
+    @@words = %w(raw type start)
+    def [](n)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
+    end
+    def []=(n, v)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
+    end
+    
+    def to_ary
+        [@raw, @type, @start]
+    end
+end
+
 def tokenize(code)
     Enumerator.new { |enum|
+        i = 0
         code.scan($TOKENIZER) { |part|
             $TYPES.each { |k, v|
                 if /^#{k}$/ === part
-                    enum.yield [part, v]
+                    enum.yield Token.new part, v, i
+                    i += part.size
                     break
                 end
             }
@@ -99,7 +122,7 @@ def parse(code)
     last_token = nil
     tokenize(code).each { |ent|
         # puts "#{out.map{|e|e[0]}} | #{stack.map{|e|e[0]}}"
-        raw, type = ent
+        raw, type, start = ent
         # puts "RAW = #{raw.inspect}; TYPE = #{type.}"
         if $DATA.include? type
             out.push ent
@@ -109,16 +132,23 @@ def parse(code)
             out.push ent
         
         elsif type == :func_end
-            out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last[1])
+            while stack.last && [:operator, :unary_operator].include?(stack.last.type)
+                out.push stack.pop
+            end
+            
             collect = []
-            collect.unshift out.pop until out.empty? || out.last[1] == :func_start
+            until out.empty? || out.last.type == :func_start
+                collect.unshift out.pop
+            end
+            
             stack.pop
             out.pop
+            
             out.push [collect, :make_lambda]
         
         elsif type == :operator
-            if last_token.nil? || !($DATA + [:bracket_close, :paren_close, :func_end]).include?(last_token[1])
-                ent[1] = :unary_operator
+            if last_token.nil? || !($DATA + [:bracket_close, :paren_close, :func_end]).include?(last_token.type)
+                ent.type = :unary_operator
             else
                 cur_prec, cur_assoc = $PRECEDENCE[raw]
                 # NOTE: precedence determining
@@ -144,9 +174,16 @@ def parse(code)
             arities[-1] += 1
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last[1])
         elsif type == :bracket_close
-            arities[-1] = 0 if last_token[1] == :bracket_open
-            out.push stack.pop while stack.last[1] != :bracket_open
+            if last_token.type == :bracket_open
+                arities[-1] = 0
+            end
+            
+            while stack.last.type != :bracket_open
+                out.push stack.pop
+            end
+            
             out.push [arities.pop, :call_func]
+            
             stack.pop
         
         elsif type == :paren_open
@@ -166,7 +203,14 @@ def parse(code)
         last_token = ent if type != :whitespace
     }
     out.push stack.pop until stack.empty?
-    out
+    
+    offender = out.find { |raw, type| type == :bracket_open }
+    if offender
+        STDERR.puts "Syntax Error: unmatched \"[\" (at token #{offender})"
+        nil
+    else
+        out
+    end
 end
 
 $ALPHA_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

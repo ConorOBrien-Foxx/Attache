@@ -13,7 +13,7 @@ def pind(*a)
 end
 
 def tokenize_test(text)
-    tokenize(text).to_a.map { |e| e.map(&:to_s) }
+    tokenize(text).to_a.map { |e| e.to_ary.map(&:to_s) }
 end
 
 def show_tokens(toks)
