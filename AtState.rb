@@ -348,7 +348,7 @@ def ast(program)
     stack = []
     build = nil
     shunted.each { |ent|
-        raw, type = ent
+        raw, type, start = ent
         if type == :call_func
             args = stack.pop(raw)
             func = stack.pop
@@ -358,11 +358,17 @@ def ast(program)
             args = stack.pop(2)
             cur = Node.new ent, args
             stack.push cur
-            
+        
+        elsif type == :unary_operator
+            arg = stack.pop
+            cur = Node.new ent, [arg]
+            stack.push cur
+        
         elsif $DATA.include? type
             stack.push ent
+        
         else
-            p ent
+            STDERR.puts "Unhandled shunt type #{type}"
             raise
         end
     }
@@ -888,7 +894,10 @@ class AtState
             @@functions[raw]
         
         elsif type == :operator
-            @@operators[raw] || @@unary_operators[raw]
+            @@operators[raw]
+        
+        elsif type == :unary_operator
+            @@unary_operators[raw]
         
         elsif type == :op_quote
             ref = raw[1..-1]
