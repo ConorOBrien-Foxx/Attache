@@ -105,19 +105,25 @@ class Array
 end
 
 # extend TrueClass and FalseClass
-
-[TrueClass, FalseClass].each { |klass|
-    klass.define_method(:to_i) {
-        # p "arg = #{self}"
+module TruthExtension
+    def to_i
         self ? 1 : 0
-    }
-    klass.define_method(:coerce) { |other|
+    end
+    
+    def coerce(other)
         [other, self.to_i]
-    }
+    end
+    
     [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :-@, :~@].each { |prop|
-        klass.define_method(prop) { |*args| to_i.send(prop, *args) }
+        define_method(prop) { |*args| to_i.send(prop, *args) }
     }
-}
+end
+class TrueClass
+    include TruthExtension
+end
+class FalseClass
+    include TruthExtension
+end
 
 ## GENERIC HELPER FUNCTIONS ##
 
