@@ -766,7 +766,7 @@ class AtState
         "Date" => lambda { |inst, *args|
             Time.new *args
         },
-        "DateFormat" => lambda { |inst, fmt, date=Time.now|
+        "DateFormat" => lambda { |inst, fmt="%B %-d, %Y", date=Time.now|
             date.strftime fmt
         }
         
