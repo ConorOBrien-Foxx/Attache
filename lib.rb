@@ -1,4 +1,5 @@
 require 'prime'
+require 'date'
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -123,6 +124,126 @@ class TrueClass
 end
 class FalseClass
     include TruthExtension
+end
+
+module TimeChangeExtension
+    def years
+        365 * days
+    end
+    def weeks
+        7 * days
+    end
+    def days
+        24 * hours
+    end
+    def hours
+        60 * minutes
+    end
+    def minutes
+        60 * seconds
+    end
+    def seconds
+        self
+    end
+    alias :year     :years
+    alias :week     :years
+    alias :day      :days
+    alias :hour     :hours
+    alias :minute   :minutes
+    alias :second   :seconds
+end
+
+class Numeric
+    include TimeChangeExtension
+end
+
+def yearlike(n)
+    case n
+        when Numeric
+            Time.new n
+        when Time
+            n
+        else
+            Time.new *n rescue Time.new n
+    end
+
+end
+
+module TimeExtension
+    ## CLASS METHODS ##
+    def self.included(base)
+        base.extend(ClassMethods)
+    end
+    
+    def self.from_h(hash)
+        args = %w(year month day hour minute second).map { |s|
+            hash[s] || hash[s.to_sym] || 0
+        }
+        Time.new *args
+    end
+    
+    module ClassMethods
+        def from_h(*args)
+            TimeExtension.from_h *args
+        end
+        
+        def iterate(start_time, end_time, step, &block)
+            begin
+                yield start_time
+            end while (start_time += step) <= end_time
+        end
+    end
+    
+    ## INSTANCE METHODS ##
+    @@WEEKDAYS = %w(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)
+    def to_h
+        {
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: min,
+            second: sec,
+            microsecond: usec
+        }
+    end
+    
+    def change(**opts)
+        mod = to_h
+        opts.each { |opt, by|
+            mod[opt] += by
+        }
+        TimeExtension.from_h mod
+    end
+    def update(**opts)
+        mod = to_h
+        opts.each { |opt, to|
+            mod[opt] = to
+        }
+        TimeExtension.from_h mod
+    end
+    def day_of_year(n=1)
+        base = update day: 1, month: 1, hour: 0, minute: 0, second: 0
+        base + (n - 1).days
+    end
+    def year_size
+        base = day_of_year(1)
+        amount = 365
+        while base.year == (base + amount.days).year
+            amount += 1
+        end
+        amount
+    end
+    def year_days
+        base = day_of_year(1)
+        (0...year_size).map { |e| base + e.days }
+    end
+    def week_day
+        @@WEEKDAYS[wday]
+    end
+end
+class Time
+    include TimeExtension
 end
 
 ## GENERIC HELPER FUNCTIONS ##
@@ -449,3 +570,4 @@ def read_option(prompt, opts, clear=false)
     }
     res
 end
+

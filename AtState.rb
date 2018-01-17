@@ -227,11 +227,12 @@ def get_abstract_number(abstract)
 end
 
 def vectorize_monad(&fn)
-    res = lambda { |inst, x|
+    res = lambda { |inst, *args|
+        x , * = args
         if x.is_a? Array
             x.map { |e| res[inst, e] }
         else
-            fn[inst, x]
+            fn[inst, *args]
         end
     }
 end
@@ -613,7 +614,7 @@ class AtState
             list.average
         },
         "Count" => lambda { |inst, list, f|
-            if f.is_a? Proc
+            if f.is_a?(Proc) || f.is_a?(AtLambda)
                 list.count { |e| f[inst, e] }
             else
                 list.count f
@@ -768,6 +769,29 @@ class AtState
         },
         "DateFormat" => lambda { |inst, fmt="%B %-d, %Y", date=Time.now|
             date.strftime fmt
+        },
+        "DayOfYear" => vectorize_dyad { |inst, n, date=Time.now|
+            if date.is_a? Numeric
+                date = Time.new date
+            end
+            date.day_of_year n
+        },
+        "YearDays" => lambda { |inst, date=Time.now|
+            res = []
+            dates = [*date]
+            dates.each { |date|
+                res.concat yearlike(date).year_days
+            }
+            res
+        },
+        "DayOfWeek" => vectorize_monad { |inst, date|
+            date.week_day
+        },
+        "Weekday" => vectorize_monad { |inst, date|
+            date.wday
+        },
+        "Day" => vectorize_monad { |inst, date=Time.now|
+            date.day
         }
         
         ##################
@@ -835,6 +859,7 @@ class AtState
         },
         "=>" => @@functions["Map"],
         "\\" => @@functions["Select"],
+        "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
             ConfigureValue.new key[0], value
         }
