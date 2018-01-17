@@ -778,7 +778,7 @@ class AtState
         },
         "YearDays" => lambda { |inst, date=Time.now|
             res = []
-            dates = [*date]
+            dates = date.is_a?(Array) ? date : [date]
             dates.each { |date|
                 res.concat yearlike(date).year_days
             }
