@@ -29,6 +29,7 @@ $PRECEDENCE = {
     "!"     => [15, :left],
     "*"     => [13, :left],
     "/"     => [13, :left],
+    "%"     => [13, :left],
     "|"     => [12, :left],
     "+"     => [11, :left],
     "-"     => [11, :left],
@@ -96,6 +97,10 @@ class Token
     
     def to_ary
         [@raw, @type, @start]
+    end
+    
+    def to_s
+        "#{@type} #{@raw.inspect} @ #{@start}"
     end
 end
 
@@ -755,6 +760,16 @@ class AtState
             str.downcase == str
         },
         
+        ########################
+        #### DATE FUNCTIONS ####
+        ########################
+        "Date" => lambda { |inst, *args|
+            Time.new *args
+        },
+        "DateFormat" => lambda { |inst, fmt, date|
+            
+        }
+        
         ##################
         #### UNSORTED ####
         ##################
@@ -768,6 +783,7 @@ class AtState
         "-" => vectorize_dyad { |inst, a, b| a - b },
         "+" => vectorize_dyad { |inst, a, b| a + b },
         "^" => vectorize_dyad { |inst, a, b| a ** b },
+        "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b| b % a == 0 },
         "=" => vectorize_dyad { |inst, x, y| x == y },
         ">" => vectorize_dyad { |inst, x, y| x > y },
@@ -961,6 +977,10 @@ class AtState
         args = split[false]
         
         func = get_value head
+        if func.nil?
+            STDERR.puts "Error in retrieving value for #{head}"
+            exit -3
+        end
         #todo: check if necessary
         # p func, func.arity
         if @@configurable.include? head.raw
