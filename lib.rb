@@ -269,7 +269,8 @@ end
 
 def debug_obj(title,**obj)
     puts "[#{title}]"
-    obj.each{|v,k|puts"  #{v} -> #{k}"}
+    obj.each{|v,k|puts"  #{v} -> #{k.inspect}"}
+    puts "[/#{title}]"
 end
 
 def rotN(str, n)

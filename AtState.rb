@@ -79,31 +79,6 @@ $DATA = [
 ]
 $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 
-class Token
-    def initialize(raw, type, start)
-        @raw = raw
-        @type = type
-        @start = start
-    end
-    
-    attr_accessor :raw, :type, :start
-    @@words = %w(raw type start)
-    def [](n)
-        raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
-    end
-    def []=(n, v)
-        raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
-    end
-    
-    def to_ary
-        [@raw, @type, @start]
-    end
-    
-    def to_s
-        "#{@type} #{@raw.inspect} @ #{@start}"
-    end
-end
-
 def tokenize(code)
     Enumerator.new { |enum|
         i = 0
@@ -280,6 +255,37 @@ def vectorize(&fn)
     }
 end
 
+class Token
+    def initialize(raw, type, start)
+        @raw = raw
+        @type = type
+        @start = start
+    end
+    
+    attr_accessor :raw, :type, :start
+    @@words = %w(raw type start)
+    
+    def [](n)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
+    end
+    
+    def []=(n, v)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
+    end
+    
+    def to_ary
+        [@raw, @type, @start]
+    end
+    
+    def to_s
+        "#{@type} #{@raw.inspect} @ #{@start}"
+    end
+    
+    def inspect
+        "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
+    end
+end
+
 class Node
     DISP_WIDTH = 4
     NODE_PREFIX = "\\- "
@@ -290,6 +296,8 @@ class Node
     end
     
     attr_reader :head, :children
+    
+    # def raw;@head;end
     
     def add_child(children)
         @children.concat children
@@ -305,7 +313,7 @@ class Node
         res += NODE_PREFIX + @head.inspect
         res += "\n"
         depth += 1
-        @children.each { |child|
+        @children.each_with_index { |child, i|
             if child.is_a? Node
                 res += child.to_s(depth)
             else
@@ -314,7 +322,11 @@ class Node
             res += "\n"
         }
         depth -= 1
-        depth == 0 ? res.chomp : res
+        res.chomp
+    end
+    
+    def inspect
+        "#Node<#{@head}>{#{@children.inspect}}"
     end
 end
 
@@ -360,6 +372,7 @@ def ast(program)
             func = stack.pop
             cur = Node.new func, args
             stack.push cur
+        
         elsif type == :operator
             args = stack.pop(2)
             cur = Node.new ent, args
@@ -405,6 +418,7 @@ class AtState
         ## - i/o
         ## - functions that are necessary
         "Define" => lambda { |inst, *args|
+            # p args
             inst.define *args
         },
         "Print" => lambda { |inst, *args, **opts|
@@ -573,6 +587,7 @@ class AtState
             }
         },
         "Periodic" => lambda { |inst, f|
+            # p "PERIODOC #{f}"
             lambda { |inst, x|
                 periodicloop(f.bind(inst), x).last
             }
@@ -918,8 +933,11 @@ class AtState
     end
     
     def get_value(obj)
-        # p obj
+        return obj unless obj.is_a? Token
+        # p "get_value: #{obj.inspect}"
         raw, type = obj
+        # p "raw=",raw
+        # p "type=",type
         if type == :reference
             raw[1..-1]
             
@@ -974,16 +992,27 @@ class AtState
     }
     def evaluate_node(node, blank_args = [])
         return nil unless node.is_a? Node
+        
         head, children = node
+        
         # special cases
         args = []
-        held = @@held_arguments[head.raw] || []
+
+        if head.is_a? Token
+            held = @@held_arguments[head.raw] || []
+        else
+            held = []
+        end
         
         children.map!.with_index { |child, i|
             raw, type = child
+            # puts "\x1b[33m#{child.class}\x1b[0m"
+            # puts "\x1b[34m#{child.inspect}\x1b[0m"
             if held[i]
                 child
             else
+                # p raw
+                # p child
                 if child.is_a? Node
                     evaluate_node child, blank_args
                 elsif type == :abstract
@@ -1002,15 +1031,20 @@ class AtState
         args = split[false]
         
         func = get_value head
+
+        if func.is_a? Node
+            func = evaluate_node func, blank_args
+        end
         if func.nil?
             STDERR.puts "Error in retrieving value for #{head}"
             exit -3
         end
         #todo: check if necessary
         # p func, func.arity
-        if @@configurable.include? head.raw
+        if head.is_a?(Token) && @@configurable.include?(head.raw)
             func[self, *args, **config]
         else
+            # p func
             func[self, *args]
         end
     end
