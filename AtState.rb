@@ -475,6 +475,13 @@ class AtState
         "Add" => lambda { |inst, *args|
             args.sum
         },
+        "Char" => lambda { |inst, arg|
+            if arg.is_a? Array
+                arg.map(&:chr).join
+            else
+                arg.chr
+            end
+        },
         "Collatz" => vectorize_monad { |inst, n|
             collatz n
         },
@@ -511,6 +518,9 @@ class AtState
         },
         "Pythagorean" => vectorize_monad { |inst, n|
             pythagorean n
+        },
+        "Random" => vectorize_monad { |inst, n=nil, m=0|
+            m + rand(n - m + 1) rescue rand
         },
         "Sign" => vectorize_monad { |inst, n|
             sign n
@@ -1036,7 +1046,7 @@ class AtState
             func = evaluate_node func, blank_args
         end
         if func.nil?
-            STDERR.puts "Error in retrieving value for #{head}"
+            STDERR.puts "Error in retrieving value for #{head.inspect}"
             exit -3
         end
         #todo: check if necessary
