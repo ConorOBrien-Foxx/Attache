@@ -15,7 +15,6 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $PRECEDENCE = {
-    
     "&"     => [26, :left],
     "&:"    => [26, :left],
     "~"     => [25, :left],#temporary precedence
@@ -25,6 +24,7 @@ $PRECEDENCE = {
     "\\"    => [20, :right],
     "#"     => [20, :left],
     
+    ":"     => [19, :left],
     "^"     => [15, :right],
     "!"     => [15, :left],
     "*"     => [13, :left],
@@ -43,7 +43,6 @@ $PRECEDENCE = {
     "..."   => [5, :left],
     "and"   => [4, :left],
     "or"    => [3, :left],
-    ":"     => [2, :left],
     "->"    => [1, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
@@ -870,8 +869,7 @@ class AtState
                     b[inst, a, *args]
                 }
             else
-                STDERR.puts "idk"
-                raise
+                resize([*b], a)
             end
         },
         "&:" => lambda { |inst, a, b|
@@ -889,7 +887,7 @@ class AtState
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
             ConfigureValue.new key[0], value
-        }
+        },
     }
     
     @@unary_operators = {
