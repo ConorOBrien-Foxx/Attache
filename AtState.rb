@@ -43,6 +43,7 @@ $PRECEDENCE = {
     "..."   => [5, :left],
     "and"   => [4, :left],
     "or"    => [3, :left],
+    ":"     => [2, :left],
     "->"    => [1, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
@@ -839,6 +840,7 @@ class AtState
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
         "<=" => vectorize_dyad { |inst, x, y| x <= y },
+        ":" => lambda { |inst, x, y| (x..y).to_a },
         ".." => lambda { |inst, x, y| (x..y).to_a },
         "..." => lambda { |inst, x, y| (x...y).to_a },
         "or" => lambda { |inst, a, b|
