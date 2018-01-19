@@ -672,7 +672,7 @@ class AtState
         #### LIST FUNCTIONS ####
         ########################
         "Accumulate" => lambda { |inst, list|
-            prefixes(list)[1..-1].map { |e| sum e }
+            list.prefixes[1..-1].map { |e| sum e }
         },
         "Average" => lambda { |inst, list|
             list.average
@@ -721,7 +721,8 @@ class AtState
             arr[0...n] + arr[-n..-1]
         },
         "Prefixes" => lambda { |inst, list|
-            prefixes list
+            # p list
+            force_list(list).prefixes
         },
         "Powerset" => lambda { |inst, list|
             list.powerset
@@ -999,10 +1000,11 @@ class AtState
             "cr" => "\r",
             "nul" => "\0",
             "es" => "",
+            "sp" => " ",
             "inf" => Infinity,
             # perhaps temporary
-            "alpha" => $ALPHA_lower,
-            "ALPHA" => $ALPHA_upper,
+            "alpha" => $ALPHA_LOWER,
+            "ALPHA" => $ALPHA_UPPER,
         }
         @saved = []
     end
