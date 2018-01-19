@@ -765,8 +765,12 @@ class AtState
         "Sum" => lambda { |inst, list|
             list.sum
         },
-        "Unique" => lambda { |inst, a|
-            a.uniq
+        "Unique" => lambda { |inst, a, arg=nil|
+            if arg.nil?
+                a.uniq
+            else
+                a.uniq { |e| arg[inst, e] }
+            end
         },
         "Variance" => lambda { |inst, list|
             list.variance
