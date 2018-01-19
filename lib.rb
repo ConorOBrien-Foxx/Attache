@@ -1,9 +1,14 @@
 require 'prime'
 require 'date'
-Infinity = Float::INFINITY
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
+
+## CONSTANTS ETC. ##
+
+Infinity = Float::INFINITY
+$ALPHA_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+$ALPHA_LOWER = "abcdefghijklmnopqrstuvwxyz"
 
 ## CLASS EXTENSIONS AND DEFINITIONS ##
 

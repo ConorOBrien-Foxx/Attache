@@ -17,7 +17,7 @@ $UNKNOWN = /./
 $PRECEDENCE = {
     "&"     => [26, :left],
     "&:"    => [26, :left],
-    "~"     => [25, :left],#temporary precedence
+    "~"     => [25, :left],
     "@"     => [24, :left],
     "@@"    => [24, :left],
     "=>"    => [20, :right],
@@ -102,9 +102,8 @@ def parse(code)
     arities = []
     last_token = nil
     tokenize(code).each { |ent|
-        # puts "#{out.map{|e|e[0]}} | #{stack.map{|e|e[0]}}"
         raw, type, start = ent
-        # puts "RAW = #{raw.inspect}; TYPE = #{type.}"
+        
         if $DATA.include? type
             out.push ent
         
@@ -144,12 +143,8 @@ def parse(code)
             end
             stack.push ent
             
-            # puts "  STACK: #{stack}\n  OUT: #{out}"
         elsif type == :bracket_open
-            # top = out.pop
-            # top[1] = :function
             stack.push ent
-            # stack.push top
             arities.push 1
         elsif type == :comma
             arities[-1] += 1
@@ -170,13 +165,12 @@ def parse(code)
         elsif type == :paren_open
             stack.push ent
         elsif type == :paren_close
-            # puts type
-            # puts "  STACK: #{stack}\n  OUT: #{out}"
             out.push stack.pop while stack.last.type != :paren_open
             stack.pop
-            # puts "  STACK: #{stack}\n  OUT: #{out}"
+            
         elsif type == :whitespace
             # do nothing
+            
         else
             STDERR.puts "Unknown type #{type.inspect} (#{raw.inspect}) during shunting"
             raise
@@ -193,9 +187,6 @@ def parse(code)
         out
     end
 end
-
-$ALPHA_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-$ALPHA_LOWER = "abcdefghijklmnopqrstuvwxyz"
 
 def get_abstract_number(abstract)
     /\d+/ === abstract
@@ -419,7 +410,6 @@ class AtState
         ## - i/o
         ## - functions that are necessary
         "Define" => lambda { |inst, *args|
-            # p args
             inst.define *args
         },
         "Print" => lambda { |inst, *args, **opts|
@@ -1009,6 +999,10 @@ class AtState
             "cr" => "\r",
             "nul" => "\0",
             "es" => "",
+            "inf" => Infinity,
+            # perhaps temporary
+            "alpha" => $ALPHA_lower,
+            "ALPHA" => $ALPHA_upper,
         }
         @saved = []
     end
@@ -1022,14 +1016,11 @@ class AtState
     
     def get_value(obj)
         return obj unless obj.is_a? Token
-        # p "get_value: #{obj.inspect}"
+        
         raw, type = obj
-        # p "raw=",raw
-        # p "type=",type
+        
         if type == :reference
             raw[1..-1]
-            
-        # elsif type == :abstract
         
         elsif type == :string
             raw[1..-2].gsub(/""/, '"')
@@ -1089,6 +1080,7 @@ class AtState
     def evaluate_node(node, blank_args = [])
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
+            
             res = if node.type == :abstract
                 get_blank node.raw, blank_args
             else
@@ -1110,13 +1102,10 @@ class AtState
         
         children.map!.with_index { |child, i|
             raw, type = child
-            # puts "\x1b[33m#{child.class}\x1b[0m"
-            # puts "\x1b[34m#{child.inspect}\x1b[0m"
+            
             if held[i]
                 child
             else
-                # p raw
-                # p child
                 if child.is_a? Node
                     evaluate_node child, blank_args
                 elsif type == :abstract
@@ -1142,12 +1131,11 @@ class AtState
             STDERR.puts "Error in retrieving value for #{head.inspect}"
             exit -3
         end
-        #todo: check if necessary
-        # p func, func.arity
+        
+        
         if head.is_a?(Token) && @@configurable.include?(head.raw)
             func[self, *args, **config]
         else
-            # p func
             func[self, *args]
         end
     end
