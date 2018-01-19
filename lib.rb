@@ -247,6 +247,20 @@ class Time
     include TimeExtension
 end
 
+module FloatExtension
+    def times(&fn)
+        if self.infinite?
+            loop &fn if self.positive?
+        else
+            to_i.times { fn[] }
+        end
+    end
+end
+
+class Float
+    include FloatExtension
+end
+
 ## GENERIC HELPER FUNCTIONS ##
 
 def cls

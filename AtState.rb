@@ -436,6 +436,9 @@ class AtState
         "ReadInt" => lambda { |inst|
             STDIN.gets.chomp.to_i
         },
+        "Save" => lambda { |inst, *args|
+            inst.saved = args
+        },
         "Stdin" => lambda { |inst|
             STDIN.read
         },
@@ -998,8 +1001,10 @@ class AtState
             "nul" => "\0",
             "es" => "",
         }
+        @saved = []
     end
     attr_reader :stack
+    attr_accessor :saved
     
     def error(message)
         STDERR.puts message
@@ -1060,6 +1065,11 @@ class AtState
         @variables[name] = value
     end
     
+    def get_blank(blank, blank_args)
+        n = get_abstract_number(blank)
+        n < blank_args.size ? blank_args[n] : @saved[n]
+    end
+    
     @@configurable = ["Print"]
     @@held_arguments = {
         "->" => [true, false],
@@ -1070,16 +1080,11 @@ class AtState
         unless node.is_a? Node
             # begin
             res = if node.type == :abstract
-                # todo: abstract into function
-                n = get_abstract_number(node.raw)
-                blank_args[n]
+                get_blank node.raw, blank_args
             else
                 get_value node
             end
             return res
-            # rescue
-                # return nil
-            # end
         end
         
         head, children = node
@@ -1105,8 +1110,7 @@ class AtState
                 if child.is_a? Node
                     evaluate_node child, blank_args
                 elsif type == :abstract
-                    n = get_abstract_number(raw)
-                    blank_args[n]
+                    get_blank raw, blank_args
                 else
                     get_value child
                 end
