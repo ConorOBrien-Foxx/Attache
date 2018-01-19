@@ -2,7 +2,7 @@ require_relative 'lib.rb'
 
 $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_\d*/
-$NUMBER = /[0-9]+/
+$NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
 $REFERENCE = /\$#$WORD/
 $BRACKET_OPEN = /\[|do/
 $BRACKET_CLOSE = /\]|end/
@@ -976,7 +976,8 @@ class AtState
             }
         
         elsif type == :number
-            eval raw
+            # todo: fix this hack
+            eval raw.gsub(/^\./, "0.")
         
         elsif type == :make_lambda
             AtLambda.new(ast raw)
