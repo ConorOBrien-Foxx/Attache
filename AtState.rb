@@ -673,7 +673,7 @@ class AtState
         #### LIST FUNCTIONS ####
         ########################
         "Accumulate" => lambda { |inst, list|
-            list.prefixes[1..-1].map { |e| sum e }
+            list.prefixes.map { |e| e.sum }
         },
         "Average" => lambda { |inst, list|
             list.average
