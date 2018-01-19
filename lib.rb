@@ -1,5 +1,6 @@
 require 'prime'
 require 'date'
+Infinity = Float::INFINITY
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -385,6 +386,7 @@ end
 
 def simplify_number(n)
     n = from_numlike n
+    return n if n.abs == Infinity
     return n.to_i if n == n.to_i
     return n
 end
