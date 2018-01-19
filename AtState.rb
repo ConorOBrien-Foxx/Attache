@@ -42,6 +42,7 @@ $PRECEDENCE = {
     ".."    => [5, :left],
     "..."   => [5, :left],
     "and"   => [4, :left],
+    "not"   => [4, :left],
     "or"    => [3, :left],
     "->"    => [1, :left],
 }
@@ -426,6 +427,15 @@ class AtState
             print opts[:after] || "\n"
             args
         },
+        "ReadLine" => lambda { |inst|
+            STDIN.gets
+        },
+        "ReadChar" => lambda { |inst|
+            STDIN.getc
+        },
+        "ReadInt" => lambda { |inst|
+            STDIN.gets.chomp.to_i
+        },
         "Stdin" => lambda { |inst|
             STDIN.read
         },
@@ -564,6 +574,14 @@ class AtState
                 flist[ind][inst, *args]
             }
         },
+        "Apply" => lambda { |inst, func, arg_arr|
+            func[inst, *arg_arr]
+        },
+        "Applier" => lambda { |inst, func|
+            lambda { |inst, args|
+                func[inst, *args]
+            }
+        },
         "Bond" => lambda { |inst, func, larg|
             lambda { |inst, *args|
                 func[inst, larg, *args]
@@ -619,6 +637,9 @@ class AtState
                 list.all? { |e| AtState.truthy?(f[inst, e]) }
             end
         },
+        "Falsey" => lambda { |inst, arg|
+            AtState.falsey? arg
+        },
         "If" => lambda { |inst, cond, t, f|
             res = if AtState.truthy? cond
                 t
@@ -626,6 +647,9 @@ class AtState
                 f
             end
             inst.evaluate_node res
+        },
+        "Truthy" => lambda { |inst, arg|
+            AtState.truthy? arg
         },
         "While" => lambda { |inst, cond, body|
             res = nil
@@ -744,6 +768,21 @@ class AtState
             list.variance
         },
         
+        ##------------------------##
+        ## Combinatoric Functions ##
+        ##------------------------##
+        "Combinations" => lambda { |inst, list, count=nil|
+            if count.nil?
+                count = (0..list.size).to_a
+            end
+            if count.is_a? Array
+                count.map { |e| list.combination(e).to_a }.flatten(1)
+            end
+        },
+        "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
+            list.permutation(count).to_a
+        },
+        
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
@@ -774,17 +813,24 @@ class AtState
         "Format" => lambda { |inst, str, *args|
             str % args
         },
-        "Rot" => lambda { |inst, str, amount=13|
-            rotN(str, amount)
-        },
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
             list.join joiner
+        },
+        "Ord" => vectorize_monad { |inst, ent|
+            if ent.is_a? String
+                ent.chars.map(&:ord)
+            else
+                ent.ord
+            end
         },
         "Split" => vectorize_dyad { |inst, str, sep|
             str.split sep
         },
         "Replace" => lambda { |inst, str, search, replace|
             replace str, search, replace
+        },
+        "Rot" => lambda { |inst, str, amount=13|
+            rotN(str, amount)
         },
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
@@ -861,6 +907,10 @@ class AtState
         "and" => lambda { |inst, a, b|
             AtState.falsey?(b) ? b : a
         },
+        "not" => lambda { |inst, a, b|
+            # A && !B
+            AtState.truthy?(b) ? b : a
+        },
         
         ## -- functional -- #
         "@" => lambda { |inst, f, g|
@@ -935,6 +985,7 @@ class AtState
             end
         },
         "!" => vectorize_monad { |inst, n| factorial n },
+        "not" => lambda { |inst, arg| AtState.falsey? arg },
     }
     
     def initialize(program)
