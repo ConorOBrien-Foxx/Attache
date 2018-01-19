@@ -627,6 +627,19 @@ class AtState
             end
             inst.evaluate_node res
         },
+        "While" => lambda { |inst, cond, body|
+            res = nil
+            loop {
+                c = inst.evaluate_node cond
+                # p [cond, c]
+                # p body
+                unless AtState.truthy? c
+                    break
+                end
+                res = inst.evaluate_node body
+            }
+            res
+        },
         
         
         ########################
@@ -999,7 +1012,8 @@ class AtState
     @@configurable = ["Print"]
     @@held_arguments = {
         "->" => [true, false],
-        "If" => [false, true, true]
+        "If" => [false, true, true],
+        "While" => [true, true],
     }
     def evaluate_node(node, blank_args = [])
         unless node.is_a? Node
