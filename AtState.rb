@@ -836,6 +836,8 @@ class AtState
             end
             if count.is_a? Array
                 count.map { |e| list.combination(e).to_a }.flatten(1)
+            else
+                list.combination(count).to_a
             end
         },
         "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
