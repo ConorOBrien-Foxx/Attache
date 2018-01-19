@@ -649,7 +649,7 @@ class AtState
             list.delta
         },
         "First" => lambda { |inst, list|
-            list.first
+            list[0]
         },
         "Flat" => lambda { |inst, list, n=nil|
             list.flatten(n)
@@ -667,7 +667,7 @@ class AtState
             args.max
         },
         "Last" => lambda { |inst, list|
-            list.last
+            list[-1]
         },
         "Max" => lambda { |inst, *args|
             args.flatten.max
