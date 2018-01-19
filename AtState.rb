@@ -560,6 +560,31 @@ class AtState
             gonal n, 3
         },
         
+        ##-------------------------##
+        ## Trigonometric Functions ##
+        ##-------------------------##
+        "Sin" => vectorize_monad { |inst, n|
+            Math::sin n
+        },
+        "Cos" => vectorize_monad { |inst, n|
+            Math::cos n
+        },
+        "Tan" => vectorize_monad { |inst, n|
+            Math::tan n
+        },
+        "ArcSin" => vectorize_monad { |inst, n|
+            Math::asin n
+        },
+        "ArcCos" => vectorize_monad { |inst, n|
+            Math::acos n
+        },
+        "ArcTan" => vectorize_monad { |inst, n|
+            Math::atan n
+        },
+        "ArcTan2" => vectorize_dyad { |inst, n, m|
+            Math::atan2 n, m
+        },
+        
         ##-----------------##
         ## Prime Functions ##
         ##-----------------##
