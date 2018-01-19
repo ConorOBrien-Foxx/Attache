@@ -519,8 +519,8 @@ class AtState
         "Pythagorean" => vectorize_monad { |inst, n|
             pythagorean n
         },
-        "Random" => vectorize_monad { |inst, n=nil, m=0|
-            m + rand(n - m + 1) rescue rand
+        "Random" => vectorize_monad { |inst, n=nil, m=nil|
+            random(n, m)
         },
         "Sign" => vectorize_monad { |inst, n|
             sign n

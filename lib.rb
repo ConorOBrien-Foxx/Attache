@@ -378,6 +378,16 @@ def gcd(arr)
     arr.reduce(0, :gcd)
 end
 
+def random(min=nil, max=nil)
+    if min.nil?
+        rand
+    elsif max.nil?
+        rand(min)
+    else
+        min + rand(max - min)
+    end
+end
+
 def from_numlike(n)
     return 0 if n == false
     return 1 if n == true
