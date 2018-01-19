@@ -1003,7 +1003,14 @@ class AtState
     def evaluate_node(node, blank_args = [])
         unless node.is_a? Node
             # begin
-            return get_value node
+            res = if node.type == :abstract
+                # todo: abstract into function
+                n = get_abstract_number(node.raw)
+                blank_args[n]
+            else
+                get_value node
+            end
+            return res
             # rescue
                 # return nil
             # end
