@@ -688,6 +688,11 @@ class AtState
             end
             inst.evaluate_node res
         },
+        "Mask" => lambda { |inst, mask, res|
+            res.select.with_index { |e, i|
+                AtState.truthy? mask[i]
+            }
+        },
         "Truthy" => lambda { |inst, arg|
             AtState.truthy? arg
         },
