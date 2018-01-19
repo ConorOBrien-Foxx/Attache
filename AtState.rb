@@ -479,6 +479,13 @@ class AtState
         "Add" => lambda { |inst, *args|
             args.sum
         },
+        "Ceiling" => vectorize_dyad { |inst, n, r=nil|
+            if r.nil?
+                n.ceil
+            else
+                n.ceil(r)
+            end
+        },
         "Char" => lambda { |inst, arg|
             if arg.is_a? Array
                 arg.map(&:chr).join
@@ -501,6 +508,13 @@ class AtState
         },
         "Fibonacci" => lambda { |inst, n|
             nth_fibonacci(n)
+        },
+        "Floor" => vectorize_dyad { |inst, n, r=nil|
+            if r.nil?
+                n.floor
+            else
+                n.floor(r)
+            end
         },
         "GCD" => lambda { |inst, *args|
             gcd args.flatten
@@ -525,6 +539,13 @@ class AtState
         },
         "Random" => vectorize_monad { |inst, n=nil, m=nil|
             random(n, m)
+        },
+        "Round" => vectorize_dyad { |inst, n, r=nil|
+            if r.nil?
+                n.round
+            else
+                n.round(r)
+            end
         },
         "Sign" => vectorize_monad { |inst, n|
             sign n
