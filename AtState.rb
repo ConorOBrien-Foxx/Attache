@@ -1001,7 +1001,13 @@ class AtState
         "If" => [false, true, true]
     }
     def evaluate_node(node, blank_args = [])
-        return nil unless node.is_a? Node
+        unless node.is_a? Node
+            # begin
+            return get_value node
+            # rescue
+                # return nil
+            # end
+        end
         
         head, children = node
         
