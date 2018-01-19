@@ -15,6 +15,8 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $PRECEDENCE = {
+    ":"     => [30, :left],
+    
     "&"     => [26, :left],
     "&:"    => [26, :left],
     "~"     => [25, :left],
@@ -24,7 +26,6 @@ $PRECEDENCE = {
     "\\"    => [20, :right],
     "#"     => [20, :left],
     
-    ":"     => [19, :left],
     "^"     => [15, :right],
     "!"     => [15, :left],
     "*"     => [13, :left],
