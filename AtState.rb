@@ -658,12 +658,21 @@ class AtState
             res = nil
             loop {
                 c = inst.evaluate_node cond
-                # p [cond, c]
-                # p body
                 unless AtState.truthy? c
                     break
                 end
                 res = inst.evaluate_node body
+            }
+            res
+        },
+        "DoWhile" => lambda { |inst, cond, body|
+            res = nil
+            loop {
+                res = inst.evaluate_node body
+                c = inst.evaluate_node cond
+                unless AtState.truthy? c
+                    break
+                end
             }
             res
         },
@@ -1075,10 +1084,11 @@ class AtState
         "->" => [true, false],
         "If" => [false, true, true],
         "While" => [true, true],
+        "DoWhile" => [true, true],
     }
     def evaluate_node(node, blank_args = [])
         unless node.is_a? Node
-            # begin
+            raise "#{node.inspect} is not a token" unless node.is_a? Token
             res = if node.type == :abstract
                 get_blank node.raw, blank_args
             else
