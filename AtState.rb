@@ -414,6 +414,9 @@ class AtState
         ## - memory manipulation
         ## - i/o
         ## - functions that are necessary
+        "Arg" => lambda { |inst, n=0|
+            ARGV[n + 1]
+        },
         "Define" => lambda { |inst, *args|
             inst.define *args
         },
@@ -481,7 +484,7 @@ class AtState
             n.abs
         },
         "Add" => lambda { |inst, *args|
-            args.sum
+            @@functions["Sum"][inst, args]
         },
         "Ceiling" => vectorize_dyad { |inst, n, r=nil|
             if r.nil?
@@ -826,7 +829,18 @@ class AtState
             list.stddev
         },
         "Sum" => lambda { |inst, list|
-            list.sum
+            list.inject(0) { |a, e|
+                @@operators["+"][inst, a, e]
+            }
+        },
+        "Transpose" => lambda { |inst, list|
+            list.transpose
+        },
+        "MatrixRotate" => vectorize_dyad(RIGHT) { |inst, mat, n=1|
+            n.times {
+                mat = mat.transpose.map(&:reverse)
+            }
+            mat
         },
         "Unique" => lambda { |inst, a, arg=nil|
             if arg.nil?
@@ -853,7 +867,11 @@ class AtState
             end
         },
         "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
-            list.permutation(count).to_a
+            if list.is_a? String
+                force_list(list).permutation(count).map(&:join).to_a
+            else
+                list.permutation(count).to_a
+            end
         },
         "Zip" => lambda { |inst, a, *b|
             a.zip(*b)
