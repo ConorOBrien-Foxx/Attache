@@ -79,6 +79,11 @@ $DATA = [
     :abstract,
     :make_lambda
 ]
+$DATA_SIGNIFIER = $DATA + [
+    :bracket_close,
+    :paren_close,
+    :func_end
+]
 $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 
 def tokenize(code)
@@ -128,7 +133,7 @@ def parse(code)
             out.push Token.new collect, :make_lambda, next_start
         
         elsif type == :operator
-            if last_token.nil? || !($DATA + [:bracket_close, :paren_close, :func_end]).include?(last_token.type)
+            if last_token.nil? || !$DATA_SIGNIFIER.include?(last_token.type)
                 ent.type = :unary_operator
             else
                 cur_prec, cur_assoc = $PRECEDENCE[raw]
@@ -145,11 +150,18 @@ def parse(code)
             stack.push ent
             
         elsif type == :bracket_open
+            # determine if a function
+            unless $DATA_SIGNIFIER.include? last_token.type
+                
+                out.push Token.new "V", :word, nil
+            end
             stack.push ent
             arities.push 1
+        
         elsif type == :comma
             arities[-1] += 1
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
+        
         elsif type == :bracket_close
             if last_token.type == :bracket_open
                 arities[-1] = 0
