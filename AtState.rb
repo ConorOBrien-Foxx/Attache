@@ -733,6 +733,9 @@ class AtState
         "Average" => lambda { |inst, list|
             list.average
         },
+        "Concat" => lambda { |inst, *args|
+            args.flatten(1)
+        },
         "Count" => lambda { |inst, list, f|
             if f.is_a?(Proc) || f.is_a?(AtLambda)
                 list.count { |e| f[inst, e] }
@@ -879,6 +882,19 @@ class AtState
                 }
             else
                 list.map { |e| f[inst, e] }
+            end
+        },
+        "MapArgs" => lambda { |inst, f, list, *args|
+            if AtState.func_like? list
+                g = list
+                n = args[0] || 1
+                lambda { |inst, list, *args|
+                    g[inst, list].map { |e|
+                        f[inst, e, *resize(args + [list, e], n)]
+                    }
+                }
+            else
+                list.map { |e| f[inst, e, *args] }
             end
         },
         "MaxBy" => lambda { |inst, f, list|
