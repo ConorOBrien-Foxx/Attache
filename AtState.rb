@@ -855,6 +855,16 @@ class AtState
         "Zip" => lambda { |inst, a, *b|
             a.zip(*b)
         },
+        "ZipWith" => lambda { |inst, fn, a=nil, b=nil|
+            l = lambda { |inst, a, b|
+                zipwith(a, b) { |x, y| fn[inst, x, y] }
+            }
+            if a.nil?
+                l
+            else
+                l[inst, a, b]
+            end
+        },
         
         ##---------------------------##
         ## List Functional Functions ##
