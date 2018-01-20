@@ -396,6 +396,10 @@ class AtState
         !AtState.truthy? ent
     end
     
+    def AtState.func_like?(ent)
+        AtLambda === ent || Proc === ent || Train === ent
+    end
+    
     def AtState.execute(code)
         AtState.new(code).run
     end
@@ -748,6 +752,9 @@ class AtState
         "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
             list[inds]
         },
+        "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
+            list.indices ind
+        },
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
         },
@@ -773,8 +780,10 @@ class AtState
             arr[0...n] + arr[-n..-1]
         },
         "Prefixes" => lambda { |inst, list|
-            # p list
             force_list(list).prefixes
+        },
+        "Positions" => lambda { |inst, arr, els=arr|
+            positions(arr, els)
         },
         "Powerset" => lambda { |inst, list|
             list.powerset
@@ -843,12 +852,24 @@ class AtState
         "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
             list.permutation(count).to_a
         },
+        "Zip" => lambda { |inst, a, *b|
+            a.zip(*b)
+        },
         
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
         "Map" => lambda { |inst, f, list|
-            list.map { |e| f[inst, e] }
+            if AtState.func_like? list
+                g = list
+                lambda { |inst, list|
+                    g[inst, list].map { |e|
+                        f[inst, e]
+                    }
+                }
+            else
+                list.map { |e| f[inst, e] }
+            end
         },
         "MaxBy" => lambda { |inst, f, list|
             list.max { |e| f[inst, e] }
@@ -984,11 +1005,11 @@ class AtState
             Train.new *x, *y
         },
         "&" => lambda { |inst, a, b|
-            if a.is_a? Proc
+            if AtState.func_like? a
                 lambda { |inst, *args|
                     a[inst, *args, b]
                 }
-            elsif b.is_a? Proc
+            elsif AtState.func_like? b
                 lambda { |inst, *args|
                     b[inst, a, *args]
                 }
@@ -997,9 +1018,9 @@ class AtState
             end
         },
         "&:" => lambda { |inst, a, b|
-            if a.is_a? Proc
+            if AtState.func_like? a
                 lambda { |inst, *args| a[inst, b, *args] }
-            elsif b.is_a? Proc
+            elsif AtState.func_like? b
                 lambda { |inst, *args| b[inst, *args, a] }
             else
                 STDERR.puts "idk#2"
@@ -1010,13 +1031,19 @@ class AtState
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
-            ConfigureValue.new key[0], value
+            ConfigureValue.new key.raw, value
         },
     }
     
     @@unary_operators = {
         "-" => vectorize_monad { |inst, n| -n },
-        "#" => lambda { |inst, n| n.size },
+        "#" => lambda { |inst, n|
+            if n.is_a? Train
+                n.freeze
+            else
+                n.size
+            end
+        },
         "/" => lambda { |inst, r| make_regex r },
         "@" => lambda { |inst, f|
             if f.is_a? Proc

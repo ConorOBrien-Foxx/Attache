@@ -21,10 +21,16 @@ end
 class Train
     def initialize(*a)
         @train = a
+        @frozen = false
     end
     
     def append(*args)
         Train.new *@tran, *args
+    end
+    
+    def freeze
+        @frozen = true
+        self
     end
     
     def <<(arg)
@@ -54,6 +60,14 @@ class Train
     
     def to_a
         @train
+    end
+    
+    def to_ary
+        if @frozen
+            yield [@train]
+        else
+            @train.each { |e| yield e }
+        end
     end
 end
 
@@ -108,6 +122,14 @@ class Array
 
     def delta
         each_cons(2).map { |(x, y)| y - x }
+    end
+    
+    def indices(ent=nil, &fn)
+        if fn.nil?
+            each_index.select { |i| self[i] == ent }
+        else
+            each_index.select { |i| fn[i] }
+        end
     end
 end
 
@@ -603,3 +625,14 @@ def read_option(prompt, opts, clear=false)
     res
 end
 
+def zipwith(a, b, &fn)
+    a.zip(b).map { |x, y|
+        fn[x, y]
+    }
+end
+
+def positions(arr, els)
+    els.uniq.map { |k|
+        [k, arr.indices(k)]
+    }
+end
