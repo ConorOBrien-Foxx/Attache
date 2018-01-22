@@ -795,7 +795,7 @@ class AtState
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
         },
-        "Iota" => vectorize_monad { |inst, min|
+        "Iota" => lambda { |inst, min|
             ((0...min) rescue (0...min.size)).to_a
         },
         "Larger" => vectorize_dyad { |inst, *args|
