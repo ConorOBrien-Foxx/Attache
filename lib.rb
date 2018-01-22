@@ -1,5 +1,6 @@
 require 'prime'
 require 'date'
+require 'matrix'
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -287,6 +288,35 @@ end
 class Float
     include FloatExtension
 end
+
+module ReadableArrays
+    def readable(factor: 1, method: :rjust)
+        repr = to_a.map { |row|
+            row.map(&:inspect)
+        }
+        
+        column_widths = repr.transpose.map { |col|
+            col.map(&:size).max + factor
+        }
+        
+        res = ""
+        repr.each { |row|
+            row.each_with_index { |el, j|
+                res += el.send method, column_widths[j]
+            }
+            res += "\n"
+        }
+        res.chomp
+    end
+end
+
+class Matrix
+    include ReadableArrays
+end
+class Array
+    include ReadableArrays
+end
+
 
 ## GENERIC HELPER FUNCTIONS ##
 

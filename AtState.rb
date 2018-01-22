@@ -1,7 +1,7 @@
 require_relative 'lib.rb'
 
 $WORD = /[A-Za-z]\w*/
-$ABSTRACT = /_\d*/
+$ABSTRACT = /_+\d*/
 $NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
 $REFERENCE = /\$#$WORD/
 $BRACKET_OPEN = /\[|do/
@@ -152,7 +152,7 @@ def parse(code)
         elsif type == :bracket_open
             # determine if a function
             unless $DATA_SIGNIFIER.include? last_token.type
-                
+                # the "V" function creates an array
                 out.push Token.new "V", :word, nil
             end
             stack.push ent
@@ -201,9 +201,9 @@ def parse(code)
     end
 end
 
-def get_abstract_number(abstract)
+def get_abstract_number(abstract, default=0)
     /\d+/ === abstract
-    $& ? $&.to_i - 1 : 0
+    $& ? $&.to_i - 1 : default
 end
 
 def vectorize_monad(&fn)
@@ -399,6 +399,22 @@ def ast(program)
     stack
 end
 
+def display(entity)
+    case entity
+        when Matrix
+            puts matrix.readable
+        when Array
+            begin
+                mat = Matrix[*entity]
+                puts mat.readable
+            rescue
+                p entity
+            end
+        else
+            p entity
+    end
+end
+
 class AtState
     def AtState.truthy?(ent)
         ent && ent != 0 && (ent.size != 0 rescue true)
@@ -431,6 +447,9 @@ class AtState
         },
         "Define" => lambda { |inst, *args|
             inst.define *args
+        },
+        "Display" => lambda { |inst, ent|
+            display ent
         },
         "Print" => lambda { |inst, *args, **opts|
             print args.map(&:to_s).join(" ")
@@ -967,8 +986,15 @@ class AtState
         "Replace" => lambda { |inst, str, search, replace|
             replace str, search, replace
         },
+        "Repr" => lambda { |inst, ent|
+            ent.inspect
+        },
         "Rot" => lambda { |inst, str, amount=13|
             rotN(str, amount)
+        },
+        "String" => lambda { |inst, ent|
+            #todo:standardize
+            ent.to_s
         },
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
@@ -1209,8 +1235,17 @@ class AtState
     end
     
     def get_blank(blank, blank_args)
+        type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        n < blank_args.size ? blank_args[n] : @saved[n]
+        # p "abstract type #{type}"
+        case type
+            when 1
+                n < blank_args.size ? blank_args[n] : @saved[n]
+            when 2
+                blank_args[n..-1]
+            else
+                STDERR.puts "Blank too long: #{type} of #{blank}"
+        end
     end
     
     @@configurable = ["Print"]
