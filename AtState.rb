@@ -84,6 +84,7 @@ $DATA_SIGNIFIER = $DATA + [
     :paren_close,
     :func_end
 ]
+$SEPARATOR = $DATA_SIGNIFIER
 $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 
 def tokenize(code)
@@ -150,9 +151,12 @@ def parse(code)
             stack.push ent
             
         elsif type == :bracket_open
-            # determine if a function
-            unless $DATA_SIGNIFIER.include? last_token.type
+            # determine if a function call
+            # p last_token
+            # p last_token.type
+            unless $SEPARATOR.include? last_token.type
                 # the "V" function creates an array
+                # p "making array"
                 out.push Token.new "V", :word, nil
             end
             stack.push ent
