@@ -102,16 +102,24 @@ def tokenize(code)
     }
 end
 
+def flush(out, stack, fin=[])
+    out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
+end
+
 def parse(code)
     # group expression
     stack = []
     out = []
     arities = []
-    last_token = nil
+    last_token = Token.new nil, nil, nil
     tokenize(code).each { |ent|
         raw, type, start = ent
         
         if $DATA.include? type
+            if $DATA.include? last_token.type
+                # flush
+                flush(out, stack, [:func_start])
+            end
             out.push ent
         
         elsif type == :func_start
@@ -194,7 +202,8 @@ def parse(code)
         end
         last_token = ent if type != :whitespace
     }
-    out.push stack.pop until stack.empty?
+    
+    flush out, stack
     
     offender = out.find { |raw, type| type == :bracket_open }
     if offender
@@ -342,11 +351,13 @@ end
 #idk
 class AtLambda
     def initialize(inner_ast)
-        @tokens = inner_ast[0]
+        @tokens = inner_ast
     end
     
     def [](inst, *args)
-        inst.evaluate_node(@tokens, args)
+        @tokens.map { |token|
+            inst.evaluate_node(token, args)
+        }.last
     end
 end
 
