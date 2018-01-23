@@ -1081,8 +1081,14 @@ class AtState
         "Size" => lambda { |inst, list|
             list.size
         },
-        "Slices" => vectorize_dyad(RIGHT) { |inst, list, skew|
-            slices list, skew
+        "Slices" => lambda { |inst, list, skew=(1..list.size).to_a|
+            if skew.is_a? Array
+                skew.flat_map { |e|
+                    slices list, e
+                }
+            else
+                slices list, skew
+            end
         },
         "Smaller" => vectorize_dyad { |inst, *args|
             args.min
@@ -1092,6 +1098,16 @@ class AtState
         },
         "StdDev" => lambda { |inst, list|
             list.stddev
+        },
+        "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
+            # p list, n, exclude
+            if n < 0
+                n = (list.size + n) % list.size
+            end
+            res = [[]]
+            exclude = [*exclude]
+            res.concat @@functions["Slices"][inst, list, (1..n).to_a]
+            res.delete_if { |e| exclude.include? e.size }
         },
         "Sum" => lambda { |inst, list|
             list.inject(0) { |a, e|
