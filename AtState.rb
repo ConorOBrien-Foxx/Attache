@@ -14,6 +14,7 @@ $FUNC_START = /\{/
 $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
+$COMMENT = /;.*(?:\n|$)/
 $PRECEDENCE = {
     ":"     => [30, :left],
     
@@ -66,6 +67,7 @@ $TYPES = {
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
     $PAREN_CLOSE        => :paren_close,
+    $COMMENT            => :comment,
     $UNKNOWN            => :unknown,
 }
 $DATA = [
@@ -114,6 +116,8 @@ def parse(code)
     last_token = Token.new nil, nil, nil
     tokenize(code).each { |ent|
         raw, type, start = ent
+        
+        next if type == :comment
         
         if $DATA.include? type
             if $DATA.include? last_token.type
