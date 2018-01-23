@@ -741,6 +741,9 @@ class AtState
             @@operators["*"][inst, n, 2]
         },
         "Digits" => vectorize_monad { |list, n| n.digits.reverse },
+        "Divide" => lambda { |inst, *args|
+            args.inject(1.0, :/)
+        },
         "Even" => vectorize_monad { |inst, n|
             n.even?
         },
@@ -768,6 +771,9 @@ class AtState
         },
         "LCM" => lambda { |inst, *args|
             lcm args.flatten
+        },
+        "Multiply" => lambda { |inst, *args|
+            @@functions["Prod"][inst, args]
         },
         "N" => lambda { |inst, n|
             force_number n
@@ -802,6 +808,9 @@ class AtState
         },
         "Square" => vectorize_monad { |inst, n|
             n * n
+        },
+        "Subtract" => lambda { |inst, *args|
+            args.inject(0, :-)
         },
         "ToBase" => vectorize_dyad { |inst, num, base|
             to_base num, base
