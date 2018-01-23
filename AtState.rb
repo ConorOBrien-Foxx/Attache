@@ -532,6 +532,9 @@ class AtState
         "Add" => lambda { |inst, *args|
             @@functions["Sum"][inst, args]
         },
+        "Bin" => lambda { |inst, n|
+            @@functions["ToBase"][inst, n, 2]
+        },
         "Ceiling" => vectorize_dyad { |inst, n, r=nil|
             if r.nil?
                 n.ceil
@@ -569,8 +572,14 @@ class AtState
                 n.floor(r)
             end
         },
+        "FromBase" => vectorize_dyad(RIGHT) { |inst, num, base|
+            from_base num, base
+        },
         "GCD" => lambda { |inst, *args|
             gcd args.flatten
+        },
+        "Hex" => lambda { |inst, n|
+            @@functions["ToBase"][inst, n, 16]
         },
         "Halve" => vectorize_monad { |inst, n|
             @@operators["/"][inst, n, 2]
@@ -580,6 +589,9 @@ class AtState
         },
         "N" => lambda { |inst, n|
             force_number n
+        },
+        "Oct" => lambda { |inst, n|
+            @@functions["ToBase"][inst, n, 8]
         },
         "Odd" => vectorize_monad { |inst, n|
             n.odd?
@@ -609,33 +621,45 @@ class AtState
         "Square" => vectorize_monad { |inst, n|
             n * n
         },
+        "ToBase" => vectorize_dyad { |inst, num, base|
+            to_base num, base
+        },
         "Triangular" => lambda { |inst, n|
             gonal n, 3
+        },
+        "UnBin" => lambda { |inst, n|
+            @@functions["FromBase"][inst, n, 2]
+        },
+        "UnHex" => lambda { |inst, n|
+            @@functions["FromBase"][inst, n, 16]
+        },
+        "UnOct" => lambda { |inst, n|
+            @@functions["FromBase"][inst, n, 8]
         },
         
         ##-------------------------##
         ## Trigonometric Functions ##
         ##-------------------------##
-        "Sin" => vectorize_monad { |inst, n|
-            Math::sin n
-        },
-        "Cos" => vectorize_monad { |inst, n|
-            Math::cos n
-        },
-        "Tan" => vectorize_monad { |inst, n|
-            Math::tan n
+        "ArcCos" => vectorize_monad { |inst, n|
+            Math::acos n
         },
         "ArcSin" => vectorize_monad { |inst, n|
             Math::asin n
-        },
-        "ArcCos" => vectorize_monad { |inst, n|
-            Math::acos n
         },
         "ArcTan" => vectorize_monad { |inst, n|
             Math::atan n
         },
         "ArcTan2" => vectorize_dyad { |inst, n, m|
             Math::atan2 n, m
+        },
+        "Cos" => vectorize_monad { |inst, n|
+            Math::cos n
+        },
+        "Sin" => vectorize_monad { |inst, n|
+            Math::sin n
+        },
+        "Tan" => vectorize_monad { |inst, n|
+            Math::tan n
         },
         
         ##-----------------##
