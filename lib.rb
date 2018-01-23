@@ -673,6 +673,7 @@ def to_base(n, base)
         n, e = n.divmod base
         res.unshift e
     end
+    res.push 0 if res.empty?
     res
 end
 
