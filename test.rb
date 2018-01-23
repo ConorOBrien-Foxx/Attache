@@ -20,14 +20,22 @@ def show_tokens(toks)
     toks.map(&:inspect).join("\n")
 end
 
-def eval_test(text)
+def safe_run(*args, &fn)
     result = {"error"=>"","output"=>""}
     begin
-        result["output"] = eval text
+        result["output"] = fn[*args]
     rescue Exception => e
         result["error"] = e.to_s
     end
     result
+end
+
+def eval_test(text)
+    safe_run(text) { |e| eval e }
+end
+
+def environment_test(program)
+    safe_run(program) { |e| AtState.execute(e).last }
 end
 
 # allows for {a:NaN} == {a:NaN}
@@ -49,7 +57,7 @@ parser = OptionParser.new { |opts|
     opts.separator "[options]"
     opts.separator "  test methods:"
     opts.on("-a", "--all", "Test all functions") { |v|
-        options[:mode].push :library, :tokenizer, :state
+        options[:mode].push :library, :tokenizer, :environment
     }
     opts.on("-l", "--lib", "Test the library functions") { |v|
         options[:mode] << :library
@@ -57,8 +65,8 @@ parser = OptionParser.new { |opts|
     opts.on("-t", "--tokenize", "Test the tokenizer") { |v|
         options[:mode] << :tokenizer
     }
-    opts.on("-s", "--state", "Test the state") { |v|
-        options[:mode] << :state
+    opts.on("-e", "--environment", "Test the environment") { |v|
+        options[:mode] << :environment
     }
     opts.separator "  meta:"
     opts.on("-g", "--generate [case]", "Generate test cases") { |v|

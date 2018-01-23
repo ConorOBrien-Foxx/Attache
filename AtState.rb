@@ -152,6 +152,12 @@ def parse(code)
                     top_raw, top_type = stack.last
                     break if top_type != :operator && top_type != :unary_operator
                     top_prec, top_assoc = $PRECEDENCE[top_raw]
+                    # fix unary operator precedence, temporary
+                    # todo: unary operator precedence
+                    if top_type == :unary_operator
+                        top_prec = Infinity
+                    end
+                    
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
                     out.push stack.pop
                 }
@@ -443,9 +449,182 @@ class AtState
         AtLambda === ent || Proc === ent || Train === ent
     end
     
-    def AtState.execute(code)
-        AtState.new(code).run
+    def AtState.execute(*args)
+        AtState.new(*args).run
     end
+    
+    def initialize(program, input=STDIN, output=STDOUT)
+        @trees = ast(program)
+        @variables = {
+            "true" => true,
+            "false" => false,
+            "lf" => "\n",
+            "cr" => "\r",
+            "nul" => "\0",
+            "es" => "",
+            "sp" => " ",
+            "inf" => Infinity,
+            # perhaps temporary
+            "alpha" => $ALPHA_LOWER,
+            "ALPHA" => $ALPHA_UPPER,
+        }
+        @saved = []
+        @in = input
+        @out = output
+    end
+    
+    attr_reader :stack
+    attr_accessor :saved, :in, :out
+    
+    def error(message)
+        STDERR.puts message
+        exit
+    end
+    
+    def get_value(obj)
+        return obj unless obj.is_a? Token
+        
+        raw, type = obj
+        
+        if type == :reference
+            raw[1..-1]
+        
+        elsif type == :string
+            raw[1..-2].gsub(/""/, '"')
+        
+        elsif @variables.has_key? raw
+            @variables[raw]
+        
+        elsif @@functions.has_key? raw
+            @@functions[raw]
+        
+        elsif type == :operator
+            @@operators[raw]
+        
+        elsif type == :unary_operator
+            @@unary_operators[raw]
+        
+        elsif type == :op_quote
+            ref = raw[1..-1]
+            lambda { |inst, *args|
+                source = args.size == 1 ? @@unary_operators : @@operators
+                source[ref][inst, *args]
+            }
+        
+        elsif type == :number
+            # todo: fix this hack
+            eval raw.gsub(/^\./, "0.")
+        
+        elsif type == :make_lambda
+            AtLambda.new(ast raw)
+        
+        elsif type == :word
+            error "Reference Error: Undefined variable #{raw.inspect}"
+        
+        else
+            puts "Unidentified get_value thing #{type.inspect}"
+            p obj
+            raise
+        end
+    end
+    
+    def define(name, value)
+        @variables[name] = value
+    end
+    
+    def get_blank(blank, blank_args)
+        type = blank.match(/_+/)[0].size
+        n = get_abstract_number(blank)
+        # p "abstract type #{type}"
+        case type
+            when 1
+                n < blank_args.size ? blank_args[n] : @saved[n]
+            when 2
+                blank_args[n..-1]
+            else
+                STDERR.puts "Blank too long: #{type} of #{blank}"
+        end
+    end
+    
+    def evaluate_node(node, blank_args = [])
+        unless node.is_a? Node
+            raise "#{node.inspect} is not a token" unless node.is_a? Token
+            
+            res = if node.type == :abstract
+                get_blank node.raw, blank_args
+            else
+                get_value node
+            end
+            return res
+        end
+        
+        head, children = node
+        
+        # special cases
+        args = []
+
+        if head.is_a? Token
+            held = @@held_arguments[head.raw] || []
+        else
+            held = []
+        end
+        
+        children.map!.with_index { |child, i|
+            raw, type = child
+            
+            if held[i]
+                child
+            else
+                if child.is_a? Node
+                    evaluate_node child, blank_args
+                elsif type == :abstract
+                    get_blank raw, blank_args
+                else
+                    get_value child
+                end
+            end
+        }
+        args.concat children
+
+        # filter ConfigureValue
+        split = args.group_by { |e| e.is_a? ConfigureValue }
+        config = split[true].to_h
+        args = split[false]
+        
+        func = get_value head
+
+        if func.is_a? Node
+            func = evaluate_node func, blank_args
+        end
+        if func.nil?
+            STDERR.puts "Error in retrieving value for #{head.inspect}"
+            exit -3
+        end
+        
+        
+        if head.is_a?(Token) && @@configurable.include?(head.raw)
+            func[self, *args, **config]
+        else
+            func[self, *args]
+        end
+    end
+    
+    def run
+        @trees.map { |tree|
+            evaluate_node tree
+        }
+    end
+    
+    # functions which can receive key things
+    @@configurable = ["Print"]
+    # functions whose arguments are not evaluated at once
+    # (true = not evaluated, false = evaluated (normal))
+    @@held_arguments = {
+        "->" => [true, false],
+        "If" => [false, true, true],
+        "While" => [true, true],
+        "DoWhile" => [true, true],
+    }
     
     # All builtins
     @@functions = {
@@ -457,6 +636,9 @@ class AtState
         ## - memory manipulation
         ## - i/o
         ## - functions that are necessary
+        "AllInput" => lambda { |inst|
+            inst.in.read
+        },
         "Arg" => lambda { |inst, n=0|
             ARGV[n + 1]
         },
@@ -467,18 +649,18 @@ class AtState
             display ent
         },
         "Print" => lambda { |inst, *args, **opts|
-            print args.map(&:to_s).join(" ")
-            print opts[:after] || "\n"
+            inst.out.print args.map(&:to_s).join(" ")
+            inst.out.print opts[:after] || "\n"
             args
         },
         "ReadLine" => lambda { |inst|
-            STDIN.gets
+            inst.in.gets
         },
         "ReadChar" => lambda { |inst|
-            STDIN.getc
+            inst.in.getc
         },
         "ReadInt" => lambda { |inst|
-            STDIN.gets.chomp.to_i
+            inst.in.gets.chomp.to_i
         },
         "Save" => lambda { |inst, *args|
             inst.saved = args
@@ -1196,170 +1378,4 @@ class AtState
         "!" => vectorize_monad { |inst, n| factorial n },
         "not" => lambda { |inst, arg| AtState.falsey? arg },
     }
-    
-    def initialize(program)
-        @trees = ast(program)
-        @variables = {
-            "true" => true,
-            "false" => false,
-            "lf" => "\n",
-            "cr" => "\r",
-            "nul" => "\0",
-            "es" => "",
-            "sp" => " ",
-            "inf" => Infinity,
-            # perhaps temporary
-            "alpha" => $ALPHA_LOWER,
-            "ALPHA" => $ALPHA_UPPER,
-        }
-        @saved = []
-    end
-    attr_reader :stack
-    attr_accessor :saved
-    
-    def error(message)
-        STDERR.puts message
-        exit
-    end
-    
-    def get_value(obj)
-        return obj unless obj.is_a? Token
-        
-        raw, type = obj
-        
-        if type == :reference
-            raw[1..-1]
-        
-        elsif type == :string
-            raw[1..-2].gsub(/""/, '"')
-        
-        elsif @variables.has_key? raw
-            @variables[raw]
-        
-        elsif @@functions.has_key? raw
-            @@functions[raw]
-        
-        elsif type == :operator
-            @@operators[raw]
-        
-        elsif type == :unary_operator
-            @@unary_operators[raw]
-        
-        elsif type == :op_quote
-            ref = raw[1..-1]
-            lambda { |inst, *args|
-                source = args.size == 1 ? @@unary_operators : @@operators
-                source[ref][inst, *args]
-            }
-        
-        elsif type == :number
-            # todo: fix this hack
-            eval raw.gsub(/^\./, "0.")
-        
-        elsif type == :make_lambda
-            AtLambda.new(ast raw)
-        
-        elsif type == :word
-            error "Reference Error: Undefined variable #{raw.inspect}"
-        
-        else
-            puts "Unidentified get_value thing #{type.inspect}"
-            p obj
-            raise
-        end
-    end
-    
-    def define(name, value)
-        @variables[name] = value
-    end
-    
-    def get_blank(blank, blank_args)
-        type = blank.match(/_+/)[0].size
-        n = get_abstract_number(blank)
-        # p "abstract type #{type}"
-        case type
-            when 1
-                n < blank_args.size ? blank_args[n] : @saved[n]
-            when 2
-                blank_args[n..-1]
-            else
-                STDERR.puts "Blank too long: #{type} of #{blank}"
-        end
-    end
-    
-    @@configurable = ["Print"]
-    @@held_arguments = {
-        "->" => [true, false],
-        "If" => [false, true, true],
-        "While" => [true, true],
-        "DoWhile" => [true, true],
-    }
-    def evaluate_node(node, blank_args = [])
-        unless node.is_a? Node
-            raise "#{node.inspect} is not a token" unless node.is_a? Token
-            
-            res = if node.type == :abstract
-                get_blank node.raw, blank_args
-            else
-                get_value node
-            end
-            return res
-        end
-        
-        head, children = node
-        
-        # special cases
-        args = []
-
-        if head.is_a? Token
-            held = @@held_arguments[head.raw] || []
-        else
-            held = []
-        end
-        
-        children.map!.with_index { |child, i|
-            raw, type = child
-            
-            if held[i]
-                child
-            else
-                if child.is_a? Node
-                    evaluate_node child, blank_args
-                elsif type == :abstract
-                    get_blank raw, blank_args
-                else
-                    get_value child
-                end
-            end
-        }
-        args.concat children
-
-        # filter ConfigureValue
-        split = args.group_by { |e| e.is_a? ConfigureValue }
-        config = split[true].to_h
-        args = split[false]
-        
-        func = get_value head
-
-        if func.is_a? Node
-            func = evaluate_node func, blank_args
-        end
-        if func.nil?
-            STDERR.puts "Error in retrieving value for #{head.inspect}"
-            exit -3
-        end
-        
-        
-        if head.is_a?(Token) && @@configurable.include?(head.raw)
-            func[self, *args, **config]
-        else
-            func[self, *args]
-        end
-    end
-    
-    def run
-        @trees.map { |tree|
-            evaluate_node tree
-        }
-    end
 end
