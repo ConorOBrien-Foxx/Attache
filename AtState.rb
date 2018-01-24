@@ -365,9 +365,11 @@ class AtLambda
     end
     
     def [](inst, *args)
+        inst.local_descend
         @tokens.map { |token|
             inst.evaluate_node(token, args)
         }.last
+        inst.local_ascend
     end
 end
 
@@ -472,6 +474,7 @@ class AtState
             "alpha" => $ALPHA_LOWER,
             "ALPHA" => $ALPHA_UPPER,
         }
+        @locals = [{}]
         @saved = []
         @in = input
         @out = output
@@ -495,6 +498,9 @@ class AtState
         
         elsif type == :string
             raw[1..-2].gsub(/""/, '"')
+        
+        elsif @locals.last.has_key? raw
+            @locals.last[raw]
         
         elsif @variables.has_key? raw
             @variables[raw]
@@ -534,6 +540,26 @@ class AtState
     
     def define(name, value)
         @variables[name] = value
+    end
+    
+    def clear(name)
+        @variables.delete(name)
+    end
+    
+    def define_local(name, value)
+        @locals.last[name] = value
+    end
+    
+    def clear_local(name)
+        @locals.last.delete(name)
+    end
+    
+    def local_descend
+        @locals.push deep_copy @locals.last
+    end
+    
+    def local_ascend
+        @locals.pop
     end
     
     def get_blank(blank, blank_args)
@@ -646,11 +672,20 @@ class AtState
         "Arg" => lambda { |inst, n=0|
             ARGV[n + 1]
         },
+        "Clear" => lambda { |inst, *args|
+            inst.clear *args
+        },
+        "ClearLocal" => lambda { |inst, *args|
+            inst.clear_local *args
+        },
         "Define" => lambda { |inst, *args|
             inst.define *args
         },
         "Display" => lambda { |inst, ent|
             display ent
+        },
+        "Local" => lambda { |inst, *args|
+            inst.define_local *args
         },
         "Print" => lambda { |inst, *args, **opts|
             inst.out.print args.map(&:to_s).join(" ")
@@ -1093,8 +1128,17 @@ class AtState
         "Smaller" => vectorize_dyad { |inst, *args|
             args.min
         },
-        "Sort" => lambda { |inst, list|
-            list.sort
+        "Sort" => lambda { |inst, list, func=nil|
+            if func.nil?
+                list.sort
+            else
+                list.sort { |x, y|
+                    func[inst, x, y]
+                }
+            end
+        },
+        "SortBy" => lambda { |inst, list, func|
+            list.sort_by { |e| func[inst, e] }
         },
         "StdDev" => lambda { |inst, list|
             list.stddev
