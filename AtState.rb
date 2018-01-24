@@ -366,10 +366,11 @@ class AtLambda
     
     def [](inst, *args)
         inst.local_descend
-        @tokens.map { |token|
+        res = @tokens.map { |token|
             inst.evaluate_node(token, args)
         }.last
         inst.local_ascend
+        res
     end
 end
 
