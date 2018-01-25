@@ -1159,15 +1159,6 @@ class AtState
                 @@operators["+"][inst, a, e]
             }
         },
-        "Transpose" => lambda { |inst, list|
-            list.transpose
-        },
-        "MatrixRotate" => vectorize_dyad(RIGHT) { |inst, mat, n=1|
-            n.times {
-                mat = mat.transpose.map(&:reverse)
-            }
-            mat
-        },
         "Unique" => lambda { |inst, a, arg=nil|
             if arg.nil?
                 a.uniq
@@ -1177,6 +1168,25 @@ class AtState
         },
         "Variance" => lambda { |inst, list|
             list.variance
+        },
+        
+        ##------------------##
+        ## Matrix Functions ##
+        ##------------------##
+        "LowerTriangle" => lambda { |inst, mat, strict=false|
+            upperTriangle mat, AtState.truthy?(strict)
+        },
+        "MatrixRotate" => vectorize_dyad(RIGHT) { |inst, mat, n=1|
+            n.times {
+                mat = mat.transpose.map(&:reverse)
+            }
+            mat
+        },
+        "Transpose" => lambda { |inst, list|
+            list.transpose
+        },
+        "UpperTriangle" => lambda { |inst, mat, strict=false|
+            upperTriangle mat, AtState.truthy?(strict)
         },
         
         ##------------------------##
@@ -1357,9 +1367,9 @@ class AtState
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
         "<=" => vectorize_dyad { |inst, x, y| x <= y },
-        ":" => lambda { |inst, x, y| (x..y).to_a },
-        ".." => lambda { |inst, x, y| (x..y).to_a },
-        "..." => lambda { |inst, x, y| (x...y).to_a },
+        ":" => vectorize_dyad { |inst, x, y| (x..y).to_a },
+        ".." => vectorize_dyad { |inst, x, y| (x..y).to_a },
+        "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
         "or" => lambda { |inst, a, b|
             AtState.truthy?(a) ? a : b
         },

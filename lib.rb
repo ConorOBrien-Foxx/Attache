@@ -692,3 +692,37 @@ def from_base(n, base)
     end
     res
 end
+
+def diagonal(mat, n=0)
+    res = []
+    i = 0
+    
+    while i < 0 || n < 0
+        i += 1
+        n += 1
+    end
+    
+    while i < mat.size && n < mat[i].size
+        res << mat[i][n]
+        i += 1
+        n += 1
+    end
+    
+    res
+end
+
+def lowerTriangle(mat, strict=false)
+    mat.map.with_index { |row, i|
+        row.map.with_index { |e, j|
+            (strict ? i <= j : i < j) ? 0 : e
+        }
+    }
+end
+
+def upperTriangle(mat, strict=false)
+    mat.map.with_index { |row, i|
+        row.map.with_index { |e, j|
+            (strict ? i >= j : i > j) ? 0 : e
+        }
+    }
+end
