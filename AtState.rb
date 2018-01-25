@@ -847,7 +847,7 @@ class AtState
             Math.sqrt n
         },
         "Square" => vectorize_monad { |inst, n|
-            n * n
+            @@operators["*"][inst, n, n]
         },
         "Subtract" => lambda { |inst, *args|
             args.inject(0, :-)
