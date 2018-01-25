@@ -1173,6 +1173,9 @@ class AtState
         ##------------------##
         ## Matrix Functions ##
         ##------------------##
+        "Diagonal" => vectorize_dyad(RIGHT) { |inst, mat, diag=0|
+            diagonal mat, diag
+        },
         "LowerTriangle" => lambda { |inst, mat, strict=false|
             upperTriangle mat, AtState.truthy?(strict)
         },
@@ -1448,7 +1451,26 @@ class AtState
                 n.size
             end
         },
-        "/" => lambda { |inst, r| make_regex r },
+        "/" => lambda { |inst, r|
+            if r.is_a? String
+                make_regex r
+            elsif AtState.func_like? r
+                lambda { |inst, *args, last|
+                    r[inst, last]
+                }
+            else
+                raise "unimplemented"
+            end
+        },
+        "\\" => lambda { |inst, f|
+            if AtState.func_like? r
+                lambda { |inst, first, *args|
+                    r[inst, last]
+                }
+            else
+                raise "unimplemented"
+            end
+        },
         "@" => lambda { |inst, f|
             if f.is_a? Proc
                 vectorize { |inst, *args|
