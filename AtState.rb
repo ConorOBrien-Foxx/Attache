@@ -1463,9 +1463,9 @@ class AtState
             end
         },
         "\\" => lambda { |inst, f|
-            if AtState.func_like? r
+            if AtState.func_like? f
                 lambda { |inst, first, *args|
-                    r[inst, last]
+                    f[inst, last]
                 }
             else
                 raise "unimplemented"
