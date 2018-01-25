@@ -432,10 +432,9 @@ def display(entity)
         when Matrix
             puts matrix.readable
         when Array
-            begin
-                mat = Matrix[*entity]
+            if matrix_like? entity
                 puts mat.readable
-            rescue
+            else
                 p entity
             end
         else
@@ -1108,6 +1107,13 @@ class AtState
         "Resize" => lambda { |inst, list, size|
             resize [*list], size
         },
+        "Rotate" => lambda { |inst, list, amount=1|
+            if list.is_a? String
+                @@functions["Rotate"][inst, force_list(list), amount].join
+            else
+                rotate list, amount
+            end
+        },
         "Same" => lambda { |inst, *args|
             list = args.flatten
             list.all? { |e| e == list[0] }
@@ -1140,6 +1146,9 @@ class AtState
         },
         "SortBy" => lambda { |inst, list, func|
             list.sort_by { |e| func[inst, e] }
+        },
+        "SplitAt" => vectorize_dyad { |inst, str, inds=[1]|
+            split_at force_list(str), inds
         },
         "StdDev" => lambda { |inst, list|
             list.stddev
@@ -1246,13 +1255,17 @@ class AtState
                 list.inject { |a, c| f[inst, a, c] }
             end
         },
-        "Map" => lambda { |inst, f, list|
+        "Map" => lambda { |inst, f, list=nil|
             if AtState.func_like? list
                 g = list
                 lambda { |inst, list|
                     g[inst, list].map { |e|
                         f[inst, e]
                     }
+                }
+            elsif list.nil?
+                lambda { |inst, list|
+                    list.map { |e| f[inst, e] }
                 }
             else
                 list.map { |e| f[inst, e] }

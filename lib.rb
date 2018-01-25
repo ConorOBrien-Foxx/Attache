@@ -726,3 +726,38 @@ def upperTriangle(mat, strict=false)
         }
     }
 end
+
+def matrix_like?(array)
+    begin
+        Matrix[*array]
+        true
+    rescue
+        false
+    end
+end
+
+def split_at(array, indices)
+    indices = [*indices]
+    indices << array.size
+    sections = []
+    build = []
+    array.each_with_index { |e, i|
+        build << e
+        if indices.index(i + 1)
+            sections << build
+            build = []
+        end
+    }
+    sections
+end
+
+def rotate(arr, inds)
+    if inds.is_a? Array
+        inds = resize(inds, arr.size)
+        arr.map.with_index { |e, i|
+            rotate(e, inds[i])
+        }
+    else
+        arr.rotate(inds)
+    end
+end
