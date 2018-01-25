@@ -26,6 +26,8 @@ $PRECEDENCE = {
     "=>"    => [20, :right],
     "\\"    => [20, :right],
     "#"     => [20, :left],
+    "'"     => [20, :left],
+    "##"    => [19, :left],
     
     "^"     => [15, :right],
     "!"     => [15, :left],
@@ -1427,6 +1429,9 @@ class AtState
         },
         "@@" => lambda { |inst, f, g|
             lambda { |inst, *args| f[inst, *g[inst, *args]] }
+        },
+        "##" => lambda { |inst, f, g|
+            @@operators["@"][inst, f, g]
         },
         "#" => lambda { |inst, x, y|
             Train.new *x, *y

@@ -78,7 +78,9 @@ class Tie
     end
     
     def [](inst, *args)
-        raise "unimplemented"
+        args.map.with_index { |e, i|
+            
+        }
     end
     
     def get(i)
