@@ -1258,7 +1258,7 @@ class AtState
                 list.inject { |a, c| f[inst, a, c] }
             end
         },
-        "Map" => lambda { |inst, f, list=nil|
+        "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
             if AtState.func_like? list
                 g = list
                 lambda { |inst, list|
