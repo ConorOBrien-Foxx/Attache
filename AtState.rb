@@ -1194,6 +1194,9 @@ class AtState
             }
             mat
         },
+        "Tr" => lambda { |inst, list|
+            list.transpose
+        },
         "Transpose" => lambda { |inst, list|
             list.transpose
         },
