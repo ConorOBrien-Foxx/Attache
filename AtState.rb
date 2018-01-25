@@ -1226,6 +1226,23 @@ class AtState
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
+        "Fold" => lambda { |inst, f, list=nil, start=nil|
+            if list.nil?
+                lambda { |inst, list, start=nil|
+                    @@functions["Fold"][inst, f, list, start]
+                }
+            elsif AtState.func_like? list
+                g = list
+                lambda { |inst, list, start=nil|
+                    @@functions["Fold"][inst, f, g[inst, list], start]
+                }
+            else
+                if start.nil?
+                    start = list[0]
+                end
+                list.inject { |a, c| f[inst, a, c] }
+            end
+        },
         "Map" => lambda { |inst, f, list|
             if AtState.func_like? list
                 g = list
