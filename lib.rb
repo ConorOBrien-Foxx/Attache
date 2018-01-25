@@ -72,6 +72,28 @@ class Train
     end
 end
 
+class Tie
+    def initialize(funcs)
+        @funcs = funcs
+    end
+    
+    def [](inst, *args)
+        raise "unimplemented"
+    end
+    
+    def get(i)
+        @funcs[i % @funcs.size]
+    end
+    
+    def fold(inst, list, start=nil)
+        i = 0
+        list.inject(start) { |acc, e|
+            get(i)[inst, acc, e]
+            i += 1
+        }
+    end
+end
+
 class Array
     def sum
         inject(0, :+)

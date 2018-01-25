@@ -950,6 +950,9 @@ class AtState
                 g[inst, f[inst, *args], h[inst, *args]]
             }
         },
+        "Tie" => lambda { |inst, *funcs|
+            Tie.new funcs
+        },
         "Nest" => lambda { |inst, f, e, n|
             from_numlike(n).times {
                 e = f[inst, e]
@@ -1255,7 +1258,8 @@ class AtState
                 if start.nil?
                     start = list[0]
                 end
-                list.inject { |a, c| f[inst, a, c] }
+                
+                fold(inst, func, list, start)
             end
         },
         "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
