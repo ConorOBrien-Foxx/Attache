@@ -433,7 +433,7 @@ def display(entity)
             puts matrix.readable
         when Array
             if matrix_like? entity
-                puts mat.readable
+                puts entity.readable
             else
                 p entity
             end
