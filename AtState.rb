@@ -26,6 +26,7 @@ $PRECEDENCE = {
     "=>"    => [20, :right],
     "\\"    => [20, :right],
     "#"     => [20, :left],
+    "''"    => [20, :left],
     "'"     => [20, :left],
     "##"    => [19, :left],
     
@@ -454,7 +455,7 @@ class AtState
     end
     
     def AtState.func_like?(ent)
-        AtLambda === ent || Proc === ent || Train === ent
+        AtLambda === ent || Proc === ent || Train === ent || Tie === ent
     end
     
     def AtState.execute(*args)
@@ -955,6 +956,9 @@ class AtState
         "Tie" => lambda { |inst, *funcs|
             Tie.new funcs
         },
+        "TieArray" => lambda { |inst, *funcs|
+            Tie.new funcs, true
+        },
         "Nest" => lambda { |inst, f, e, n|
             from_numlike(n).times {
                 e = f[inst, e]
@@ -1436,6 +1440,8 @@ class AtState
         "#" => lambda { |inst, x, y|
             Train.new *x, *y
         },
+        "'" => @@functions["Tie"],
+        "''" => @@functions["TieArray"],
         "&" => lambda { |inst, a, b|
             if AtState.func_like? a
                 lambda { |inst, *args|
@@ -1496,8 +1502,9 @@ class AtState
                 raise "unimplemented"
             end
         },
+        # vectorize
         "@" => lambda { |inst, f|
-            if f.is_a? Proc
+            if AtState.func_like? f
                 vectorize { |inst, *args|
                     f[inst, *args]
                 }
@@ -1505,8 +1512,9 @@ class AtState
                 inst.get_value f
             end
         },
+        # equiv. f[*x]
         "&" => lambda { |inst, f|
-            if f.is_a? Proc
+            if AtState.func_like? f
                 lambda { |inst, *args|
                     f[inst, *args.flatten]
                 }
@@ -1514,6 +1522,7 @@ class AtState
                 f.to_s
             end
         },
+        # reverses arguments
         "~" => lambda { |inst, f|
             if f.is_a? Proc
                 lambda { |inst, *args|

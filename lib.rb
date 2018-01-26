@@ -73,13 +73,21 @@ class Train
 end
 
 class Tie
-    def initialize(funcs)
-        @funcs = funcs
+    def initialize(funcs, array=false)
+        @funcs = []
+        @array = array
+        funcs.each { |f|
+            @funcs.concat [*f]
+            @array ||= f.array if Tie === f
+        }
     end
     
+    attr_reader :array
+    
     def [](inst, *args)
+        args = args.first if @array
         args.map.with_index { |e, i|
-            
+            get(i)[inst, e]
         }
     end
     
@@ -93,6 +101,18 @@ class Tie
             get(i)[inst, acc, e]
             i += 1
         }
+    end
+    
+    def to_a
+        @funcs.dup
+    end
+    
+    def to_ary
+        to_a
+    end
+    
+    def to_s
+        "Tie(#{@array ? "" : "no "}array)[#{@funcs * "'"}]"
     end
 end
 
