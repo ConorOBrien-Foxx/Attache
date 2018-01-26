@@ -1197,6 +1197,9 @@ class AtState
             }
             mat
         },
+        "MatrixIota" => lambda { |inst, mat|
+            matrix_iota mat
+        },
         "Tr" => lambda { |inst, list|
             list.transpose
         },
