@@ -436,7 +436,7 @@ def display(entity)
             puts matrix.readable
         when Array
             if matrix_like? entity
-                puts mat.readable
+                puts entity.readable
             else
                 p entity
             end
@@ -1202,6 +1202,9 @@ class AtState
                 mat = mat.transpose.map(&:reverse)
             }
             mat
+        },
+        "MatrixIota" => lambda { |inst, mat|
+            matrix_iota mat
         },
         "Tr" => lambda { |inst, list|
             list.transpose

@@ -805,3 +805,12 @@ def rotate(arr, inds)
         arr.rotate(inds)
     end
 end
+
+def matrix_iota(mat)
+    res = []
+    Matrix[*mat].each_with_index { |e, row, col|
+        res[row] ||= []
+        res[row][col] = [row, col]
+    }
+    res
+end
