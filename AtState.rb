@@ -14,7 +14,7 @@ $FUNC_START = /\{/
 $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
-$COMMENT = /;.*(?:\n|$)/
+$COMMENT = /\?.*(?:\n|$)/
 $PRECEDENCE = {
     ":"     => [30, :left],
     
@@ -50,6 +50,8 @@ $PRECEDENCE = {
     "not"   => [4, :left],
     "or"    => [3, :left],
     "->"    => [1, :left],
+    
+    ";"     => [0, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
@@ -484,7 +486,7 @@ class AtState
     end
     
     attr_reader :stack
-    attr_accessor :saved, :in, :out
+    attr_accessor :variables, :locals, :saved, :in, :out
     
     def error(message)
         STDERR.puts message
@@ -686,6 +688,9 @@ class AtState
         },
         "Display" => lambda { |inst, ent|
             display ent
+        },
+        "Eval" => lambda { |inst, str|
+            AtState.new(str).run.last
         },
         "Local" => lambda { |inst, *args|
             inst.define_local *args
@@ -1067,6 +1072,12 @@ class AtState
         "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
             list[inds]
         },
+        "FlatGet" => lambda { |inst, list, inds|
+            [*inds].each { |i|
+                list = list[i]
+            }
+            list
+        },
         "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.indices ind
         },
@@ -1128,7 +1139,13 @@ class AtState
             list.all? { |e| e == list[0] }
         },
         "Sample" => vectorize_dyad(RIGHT) { |inst, list, n=nil|
-            sample list, n },
+            sample list, n
+        },
+        "Set" => lambda { |inst, ent, key, val|
+            scope = inst.locals.last
+            scope = inst.variables unless scope.has_key? ent
+            scope[ent][key] = val
+        },
         "Size" => lambda { |inst, list|
             list.size
         },
@@ -1156,7 +1173,7 @@ class AtState
         "SortBy" => lambda { |inst, list, func|
             list.sort_by { |e| func[inst, e] }
         },
-        "SplitAt" => vectorize_dyad { |inst, str, inds=[1]|
+        "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
             split_at force_list(str), inds
         },
         "StdDev" => lambda { |inst, list|
@@ -1474,6 +1491,7 @@ class AtState
         "->" => lambda { |inst, key, value|
             ConfigureValue.new key.raw, value
         },
+        ";" => lambda { |inst, x, y| y },
     }
     
     @@unary_operators = {
@@ -1484,6 +1502,10 @@ class AtState
             else
                 n.size
             end
+        },
+        # matrix size
+        "##" => lambda { |inst, n|
+            dim n
         },
         "/" => lambda { |inst, r|
             if r.is_a? String

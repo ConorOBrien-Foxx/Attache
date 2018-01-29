@@ -780,6 +780,10 @@ def matrix_like?(array)
     end
 end
 
+def simp_array(array)
+    matrix_like?(array) ? Matrix[*array] : array
+end
+
 def split_at(array, indices)
     indices = [*indices]
     indices << array.size
@@ -813,4 +817,13 @@ def matrix_iota(mat)
         res[row][col] = [row, col]
     }
     res
+end
+
+def dim(mat)
+    begin
+        mat = Matrix[*mat]
+        [mat.row_count, mat.column_count]
+    rescue
+        mat.size
+    end
 end
