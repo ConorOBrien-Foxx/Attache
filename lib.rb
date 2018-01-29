@@ -728,6 +728,9 @@ end
 
 def from_base(n, base)
     n = n.clone
+    if n.is_a? String
+        n = n.chars.map(&:to_i)
+    end
     pow = 1
     res = 0
     until n.empty?

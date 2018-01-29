@@ -1084,6 +1084,14 @@ class AtState
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
         },
+        "Intersperse" => lambda { |inst, lists, joiner|
+            res = []
+            lists.each_with_index { |e, i|
+                res << e
+                res << joiner if i != lists.size - 1
+            }
+            res
+        },
         "Iota" => lambda { |inst, min|
             ((0...min) rescue (0...min.size)).to_a
         },
