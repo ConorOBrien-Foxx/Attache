@@ -4,6 +4,7 @@ $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
 $REFERENCE = /\$#$WORD/
+$ABSTRACT_REFERENCE = /\$+/
 $BRACKET_OPEN = /\[|do/
 $BRACKET_CLOSE = /\]|end/
 $PAREN_OPEN = /\(/
@@ -40,6 +41,7 @@ $PRECEDENCE = {
     "-"     => [11, :left],
     
     "="     => [7, :left],
+    "=="    => [7, :left],
     "<"     => [7, :left],
     ">"     => [7, :left],
     "<="    => [7, :left],
@@ -68,6 +70,7 @@ $TYPES = {
     $OP_QUOTE           => :op_quote,
     $FUNC_END           => :func_end,
     $REFERENCE          => :reference,
+    $ABSTRACT_REFERENCE => :abstract_reference,
     $FUNC_START         => :func_start,
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
@@ -79,6 +82,7 @@ $DATA = [
     :word,
     :number,
     :reference,
+    :abstract_reference,
     :string,
     :op_quote,
     :call_func,
@@ -125,6 +129,7 @@ def parse(code)
         next if type == :comment
         
         if $DATA.include? type
+            # two adjacent datatypes mark a statement
             if $DATA.include? last_token.type
                 # flush
                 flush(out, stack, [:func_start])
@@ -374,12 +379,14 @@ class AtLambda
     
     def [](inst, *args)
         inst.local_descend
+        inst.abstract_references << self
         @params.each_with_index { |name, i|
             inst.define_local name, args[i]
         }
         res = @tokens.map { |token|
             inst.evaluate_node(token, args)
         }.last
+        inst.abstract_references.pop
         inst.local_ascend
         res
     end
@@ -485,6 +492,7 @@ class AtState
             "alpha" => $ALPHA_LOWER,
             "ALPHA" => $ALPHA_UPPER,
         }
+        @abstract_references = []
         @locals = [{}]
         @saved = []
         @in = input
@@ -492,7 +500,7 @@ class AtState
     end
     
     attr_reader :stack
-    attr_accessor :variables, :locals, :saved, :in, :out
+    attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references
     
     def error(message)
         STDERR.puts message
@@ -542,6 +550,9 @@ class AtState
         elsif type == :word
             error "Reference Error: Undefined variable #{raw.inspect}"
         
+        elsif type == :abstract_reference
+            @abstract_references[-raw.size]
+        
         else
             puts "Unidentified get_value thing #{type.inspect}"
             p obj
@@ -576,7 +587,7 @@ class AtState
     def get_blank(blank, blank_args)
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        # p "abstract type #{type}"
+        p "abstract type #{type}, #{blank}, #{blank_args}"
         case type
             when 1
                 n < blank_args.size ? blank_args[n] : @saved[n]
@@ -637,17 +648,19 @@ class AtState
         if func.is_a? Node
             func = evaluate_node func, blank_args
         end
+        
         if func.nil?
             STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
         end
         
-        
-        if head.is_a?(Token) && @@configurable.include?(head.raw)
+        res = if head.is_a?(Token) && @@configurable.include?(head.raw)
             func[self, *args, **config]
         else
             func[self, *args]
         end
+        
+        res
     end
     
     def run
@@ -1443,6 +1456,7 @@ class AtState
         "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b| b % a == 0 },
         "=" => vectorize_dyad { |inst, x, y| x == y },
+        "==" => lambda { |inst, x, y| x == y },
         ">" => vectorize_dyad { |inst, x, y| x > y },
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
