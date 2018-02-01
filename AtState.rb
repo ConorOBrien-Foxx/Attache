@@ -365,12 +365,18 @@ end
 
 #idk
 class AtLambda
-    def initialize(inner_ast)
+    def initialize(inner_ast, params=[])
         @tokens = inner_ast
+        @params = params
     end
+    
+    attr_accessor :params
     
     def [](inst, *args)
         inst.local_descend
+        @params.each_with_index { |name, i|
+            inst.define_local name, args[i]
+        }
         res = @tokens.map { |token|
             inst.evaluate_node(token, args)
         }.last
@@ -632,7 +638,7 @@ class AtState
             func = evaluate_node func, blank_args
         end
         if func.nil?
-            STDERR.puts "Error in retrieving value for #{head.inspect}"
+            STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
         end
         
@@ -1497,7 +1503,13 @@ class AtState
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
-            ConfigureValue.new key.raw, value
+            if key.is_a? Node
+                params = key.children.map(&:raw)
+                value.params = params
+                value
+            else
+                ConfigureValue.new key.raw, value
+            end
         },
         ";" => lambda { |inst, x, y| y },
     }
