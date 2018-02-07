@@ -1314,8 +1314,14 @@ class AtState
             a.product(b).map { |e| f[inst, *e] }
         },
         "Select" => lambda { |inst, f, list|
-            # p [f,list]
-            list.select { |e| f[inst, e] }
+            if AtState.func_like? list
+                g = list
+                lambda { |inst, list|
+                    @@functions["Select"][inst, f, g[inst, list]]
+                }
+            else
+                list.select { |e| f[inst, e] }
+            end
         },
         
         
