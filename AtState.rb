@@ -15,6 +15,7 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $COMMENT = /;.*(?:\n|$)/
+
 $PRECEDENCE = {
     ":"     => [30, :left],
     
@@ -47,8 +48,11 @@ $PRECEDENCE = {
     ".."    => [5, :left],
     "..."   => [5, :left],
     "and"   => [4, :left],
+    "nor"   => [4, :left],
     "not"   => [4, :left],
+    "xor"   => [3, :left],
     "or"    => [3, :left],
+    "nand"  => [3, :left],
     "->"    => [1, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
@@ -1422,8 +1426,17 @@ class AtState
         "or" => lambda { |inst, a, b|
             AtState.truthy?(a) ? a : b
         },
+        "xor" => lambda { |inst, a, b|
+            AtState.truthy?(a) ^ AtState.truthy?(b)
+        },
+        "nand" => lambda { |inst, a, b|
+            AtState.falsey?(a) || AtState.falsey?(b) ? true : false
+        },
         "and" => lambda { |inst, a, b|
             AtState.falsey?(b) ? b : a
+        },
+        "nor" => lambda { |inst, a, b|
+            AtState.truthy?(a) || AtState.truthy?(b) ? false : true
         },
         "not" => lambda { |inst, a, b|
             # A && !B
