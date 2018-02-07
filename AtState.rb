@@ -4,6 +4,7 @@ $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
 $REFERENCE = /\$#$WORD/
+$ABSTRACT_REFERENCE = /\$+/
 $BRACKET_OPEN = /\[|do/
 $BRACKET_CLOSE = /\]|end/
 $PAREN_OPEN = /\(/
@@ -14,7 +15,7 @@ $FUNC_START = /\{/
 $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
-$COMMENT = /;.*(?:\n|$)/
+$COMMENT = /\?.*(?:\n|$)/
 
 $PRECEDENCE = {
     ":"     => [30, :left],
@@ -41,6 +42,7 @@ $PRECEDENCE = {
     "-"     => [11, :left],
     
     "="     => [7, :left],
+    "=="    => [7, :left],
     "<"     => [7, :left],
     ">"     => [7, :left],
     "<="    => [7, :left],
@@ -54,6 +56,8 @@ $PRECEDENCE = {
     "or"    => [3, :left],
     "nand"  => [3, :left],
     "->"    => [1, :left],
+    
+    ";"     => [0, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
@@ -70,6 +74,7 @@ $TYPES = {
     $OP_QUOTE           => :op_quote,
     $FUNC_END           => :func_end,
     $REFERENCE          => :reference,
+    $ABSTRACT_REFERENCE => :abstract_reference,
     $FUNC_START         => :func_start,
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
@@ -81,6 +86,7 @@ $DATA = [
     :word,
     :number,
     :reference,
+    :abstract_reference,
     :string,
     :op_quote,
     :call_func,
@@ -127,6 +133,7 @@ def parse(code)
         next if type == :comment
         
         if $DATA.include? type
+            # two adjacent datatypes mark a statement
             if $DATA.include? last_token.type
                 # flush
                 flush(out, stack, [:func_start])
@@ -367,15 +374,23 @@ end
 
 #idk
 class AtLambda
-    def initialize(inner_ast)
+    def initialize(inner_ast, params=[])
         @tokens = inner_ast
+        @params = params
     end
+    
+    attr_accessor :params
     
     def [](inst, *args)
         inst.local_descend
+        inst.abstract_references << self
+        @params.each_with_index { |name, i|
+            inst.define_local name, args[i]
+        }
         res = @tokens.map { |token|
             inst.evaluate_node(token, args)
         }.last
+        inst.abstract_references.pop
         inst.local_ascend
         res
     end
@@ -481,6 +496,7 @@ class AtState
             "alpha" => $ALPHA_LOWER,
             "ALPHA" => $ALPHA_UPPER,
         }
+        @abstract_references = []
         @locals = [{}]
         @saved = []
         @in = input
@@ -488,7 +504,7 @@ class AtState
     end
     
     attr_reader :stack
-    attr_accessor :saved, :in, :out
+    attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references
     
     def error(message)
         STDERR.puts message
@@ -538,6 +554,9 @@ class AtState
         elsif type == :word
             error "Reference Error: Undefined variable #{raw.inspect}"
         
+        elsif type == :abstract_reference
+            @abstract_references[-raw.size]
+        
         else
             puts "Unidentified get_value thing #{type.inspect}"
             p obj
@@ -572,7 +591,7 @@ class AtState
     def get_blank(blank, blank_args)
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        # p "abstract type #{type}"
+        p "abstract type #{type}, #{blank}, #{blank_args}"
         case type
             when 1
                 n < blank_args.size ? blank_args[n] : @saved[n]
@@ -633,17 +652,19 @@ class AtState
         if func.is_a? Node
             func = evaluate_node func, blank_args
         end
+        
         if func.nil?
-            STDERR.puts "Error in retrieving value for #{head.inspect}"
+            STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
         end
         
-        
-        if head.is_a?(Token) && @@configurable.include?(head.raw)
+        res = if head.is_a?(Token) && @@configurable.include?(head.raw)
             func[self, *args, **config]
         else
             func[self, *args]
         end
+        
+        res
     end
     
     def run
@@ -690,6 +711,9 @@ class AtState
         },
         "Display" => lambda { |inst, ent|
             display ent
+        },
+        "Eval" => lambda { |inst, str|
+            AtState.new(str).run.last
         },
         "Local" => lambda { |inst, *args|
             inst.define_local *args
@@ -1071,11 +1095,25 @@ class AtState
         "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
             list[inds]
         },
+        "FlatGet" => lambda { |inst, list, inds|
+            [*inds].each { |i|
+                list = list[i]
+            }
+            list
+        },
         "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.indices ind
         },
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
+        },
+        "Intersperse" => lambda { |inst, lists, joiner|
+            res = []
+            lists.each_with_index { |e, i|
+                res << e
+                res << joiner if i != lists.size - 1
+            }
+            res
         },
         "Iota" => lambda { |inst, min|
             ((0...min) rescue (0...min.size)).to_a
@@ -1132,7 +1170,13 @@ class AtState
             list.all? { |e| e == list[0] }
         },
         "Sample" => vectorize_dyad(RIGHT) { |inst, list, n=nil|
-            sample list, n },
+            sample list, n
+        },
+        "Set" => lambda { |inst, ent, key, val|
+            scope = inst.locals.last
+            scope = inst.variables unless scope.has_key? ent
+            scope[ent][key] = val
+        },
         "Size" => lambda { |inst, list|
             list.size
         },
@@ -1160,7 +1204,7 @@ class AtState
         "SortBy" => lambda { |inst, list, func|
             list.sort_by { |e| func[inst, e] }
         },
-        "SplitAt" => vectorize_dyad { |inst, str, inds=[1]|
+        "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
             split_at force_list(str), inds
         },
         "StdDev" => lambda { |inst, list|
@@ -1422,6 +1466,7 @@ class AtState
         "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b| b % a == 0 },
         "=" => vectorize_dyad { |inst, x, y| x == y },
+        "==" => lambda { |inst, x, y| x == y },
         ">" => vectorize_dyad { |inst, x, y| x > y },
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
@@ -1491,8 +1536,15 @@ class AtState
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
-            ConfigureValue.new key.raw, value
+            if key.is_a? Node
+                params = key.children.map(&:raw)
+                value.params = params
+                value
+            else
+                ConfigureValue.new key.raw, value
+            end
         },
+        ";" => lambda { |inst, x, y| y },
     }
     
     @@unary_operators = {
@@ -1503,6 +1555,10 @@ class AtState
             else
                 n.size
             end
+        },
+        # matrix size
+        "##" => lambda { |inst, n|
+            dim n
         },
         "/" => lambda { |inst, r|
             if r.is_a? String
