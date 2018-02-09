@@ -374,6 +374,7 @@ end
 
 #idk
 class AtLambda
+    ARG_CONST = "ARGUMENTS"
     def initialize(inner_ast, params=[])
         @tokens = inner_ast
         @params = params
@@ -383,6 +384,8 @@ class AtLambda
     
     def [](inst, *args)
         inst.local_descend
+        # define locals
+        inst.define_local ARG_CONST, args
         inst.abstract_references << self
         @params.each_with_index { |name, i|
             inst.define_local name, args[i]
@@ -588,10 +591,16 @@ class AtState
         @locals.pop
     end
     
-    def get_blank(blank, blank_args)
+    def get_blank(blank, blank_args = nil)
+        if blank_args.nil?
+            blank_args = @locals.last[AtLambda::ARG_CONST]
+        end
+        
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        p "abstract type #{type}, #{blank}, #{blank_args}"
+        
+        # p "abstract type #{type}, #{blank}, #{blank_args}"
+        
         case type
             when 1
                 n < blank_args.size ? blank_args[n] : @saved[n]
@@ -602,15 +611,17 @@ class AtState
         end
     end
     
-    def evaluate_node(node, blank_args = [])
+    def evaluate_node(node, blank_args = nil)
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
             
-            res = if node.type == :abstract
-                get_blank node.raw, blank_args
+            res = nil
+            if node.type == :abstract
+                res = get_blank node.raw, blank_args
             else
-                get_value node
+                res = get_value node
             end
+            
             return res
         end
         
@@ -1024,13 +1035,13 @@ class AtState
         "Falsey" => lambda { |inst, arg|
             AtState.falsey? arg
         },
-        "If" => lambda { |inst, cond, t, f|
+        "If" => lambda { |inst, cond, t, f=nil|
             res = if AtState.truthy? cond
                 t
             else
                 f
             end
-            inst.evaluate_node res
+            inst.evaluate_node res unless res.nil?
         },
         "Mask" => lambda { |inst, mask, res|
             res.select.with_index { |e, i|
