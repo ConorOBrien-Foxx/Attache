@@ -584,6 +584,7 @@ class AtState
     end
     
     def local_descend
+        # p @locals
         @locals.push deep_copy @locals.last
     end
     
