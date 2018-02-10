@@ -514,6 +514,22 @@ class AtState
         exit
     end
     
+    def get_variable(name)
+        if @locals.last.has_key? name
+            @locals.last[name]
+        
+        elsif @variables.has_key? name
+            @variables[name]
+        
+        elsif @@functions.has_key? name
+            @@functions[name]
+        
+        else
+            raise "no such variable #{name}"
+        
+        end
+    end
+    
     def get_value(obj)
         return obj unless obj.is_a? Token
         
@@ -694,6 +710,8 @@ class AtState
         "If" => [false, true, true],
         "While" => [true, true],
         "DoWhile" => [true, true],
+        "ForEach" => [false, true],
+        "Modify" => [false, true],
     }
     
     # All builtins
@@ -720,6 +738,11 @@ class AtState
         },
         "Define" => lambda { |inst, *args|
             inst.define *args
+        },
+        "Modify" => lambda { |inst, head, body|
+            init = inst.get_variable head
+            result = inst.evaluate_node body, [init]
+            inst.define head, result
         },
         "Display" => lambda { |inst, ent|
             display ent
@@ -1073,6 +1096,15 @@ class AtState
                 end
             }
             res
+        },
+        "ForEach" => lambda { |inst, ent, body|
+            arr = force_list(ent)
+            
+            arr.each { |x|
+                inst.evaluate_node body, [x]
+            }
+            
+            nil
         },
         
         
