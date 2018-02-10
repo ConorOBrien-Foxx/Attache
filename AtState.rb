@@ -489,6 +489,7 @@ class AtState
         @variables = {
             "true" => true,
             "false" => false,
+            "nil" => nil,
             "lf" => "\n",
             "cr" => "\r",
             "nul" => "\0",
