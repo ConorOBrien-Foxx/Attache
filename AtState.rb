@@ -41,7 +41,9 @@ $PRECEDENCE = {
     "+"     => [11, :left],
     "-"     => [11, :left],
     
+    "/="    => [7, :left],
     "="     => [7, :left],
+    "=/="   => [7, :left],
     "=="    => [7, :left],
     "<"     => [7, :left],
     ">"     => [7, :left],
@@ -512,7 +514,8 @@ class AtState
     
     def error(message)
         STDERR.puts message
-        exit
+        # exit
+        raise
     end
     
     def get_variable(name)
@@ -1072,7 +1075,7 @@ class AtState
             else
                 f
             end
-            if Token === res
+            if res.is_a?(Token) || res.is_a?(Node)
                 inst.evaluate_node res
             else
                 res
@@ -1521,7 +1524,9 @@ class AtState
         "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b| b % a == 0 },
         "=" => vectorize_dyad { |inst, x, y| x == y },
+        "/=" => vectorize_dyad { |inst, x, y| x != y },
         "==" => lambda { |inst, x, y| x == y },
+        "=/=" => lambda { |inst, x, y| x != y },
         ">" => vectorize_dyad { |inst, x, y| x > y },
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
