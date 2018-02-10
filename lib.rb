@@ -681,8 +681,8 @@ def getchar(safe=true)
 end
 
 def prompt_input(prompt=nil)
-    puts prompt if prompt
-    STDIN.gets.chomp
+    print prompt unless prompt.nil? or not $stdin.tty?
+    STDIN.gets.chomp rescue nil
 end
 
 $YES_NO = {
@@ -693,6 +693,7 @@ def read_option(prompt, opts, clear=false)
     res = nil
     cls if clear
     puts prompt
+    opts = opts.map { |k, v| [k.to_s, v] }.to_h
     opts.each { |char, val|
         puts "  #{char}> #{val}"
     }

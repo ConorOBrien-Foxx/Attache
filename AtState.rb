@@ -702,7 +702,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print"]
+    @@configurable = ["Print", "Option"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     @@held_arguments = {
@@ -739,11 +739,6 @@ class AtState
         "Define" => lambda { |inst, *args|
             inst.define *args
         },
-        "Modify" => lambda { |inst, head, body|
-            init = inst.get_variable head
-            result = inst.evaluate_node body, [init]
-            inst.define head, result
-        },
         "Display" => lambda { |inst, ent|
             display ent
         },
@@ -753,10 +748,21 @@ class AtState
         "Local" => lambda { |inst, *args|
             inst.define_local *args
         },
+        "Modify" => lambda { |inst, head, body|
+            init = inst.get_variable head
+            result = inst.evaluate_node body, [init]
+            inst.define head, result
+        },
+        "Option" => lambda { |inst, prompt, **opts|
+            read_option prompt, opts
+        },
         "Print" => lambda { |inst, *args, **opts|
             inst.out.print args.map(&:to_s).join(" ")
             inst.out.print opts[:after] || "\n"
             args
+        },
+        "Prompt" => lambda { |inst, prompt=nil|
+            prompt_input prompt
         },
         "ReadLine" => lambda { |inst|
             inst.in.gets
