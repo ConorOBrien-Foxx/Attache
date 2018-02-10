@@ -1403,7 +1403,7 @@ class AtState
         "Split" => vectorize_dyad { |inst, str, sep|
             str.split sep
         },
-        "Replace" => lambda { |inst, str, search, replace|
+        "Replace" => lambda { |inst, str, search, replace=""|
             replace str, search, replace
         },
         "Repr" => lambda { |inst, ent|
