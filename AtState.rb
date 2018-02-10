@@ -1065,7 +1065,11 @@ class AtState
             else
                 f
             end
-            inst.evaluate_node res unless res.nil?
+            if Token === res
+                inst.evaluate_node res
+            else
+                res
+            end
         },
         "Mask" => lambda { |inst, mask, res|
             res.select.with_index { |e, i|
