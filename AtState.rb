@@ -1412,8 +1412,8 @@ class AtState
         "MinBy" => lambda { |inst, f, list|
             list.min { |e| f[inst, e] }
         },
-        "Outer" => lambda { |inst, f, a, b|
-            a.product(b).map { |e| f[inst, *e] }
+        "Outer" => lambda { |inst, f, a, *bs|
+            a.product(*bs).map { |e| f[inst, *e] }
         },
         "Select" => lambda { |inst, f, list|
             if AtState.func_like? list
