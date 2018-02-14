@@ -147,6 +147,8 @@ def parse(code)
     stack = []
     out = []
     arities = []
+    # keep track of curries promoted to calls
+    curry_mask = []
     last_token = Token.new nil, nil, nil
     depth = nil
     tokenize(code).each { |ent|
@@ -196,7 +198,7 @@ def parse(code)
             next_start = stack.pop.start
             out.pop
             
-            p collect
+            # p collect
             
             out.push Token.new collect, :make_lambda, next_start
         
@@ -233,14 +235,24 @@ def parse(code)
             arities.push 1
             
         elsif type == :curry_open
-            stack.push ent
+            # determine if a curry call
+            unless $SEPARATOR.include? last_token.type
+            
+                # the "Hash" function creates a hash
+                out.push Token.new "Hash", :word, nil
+                stack.push Token.new "[", :bracket_open, nil
+                curry_mask << true
+            else
+                stack.push ent
+                curry_mask << false
+            end
             arities.push 1
         
         elsif type == :comma
             arities[-1] += 1
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
         
-        elsif type == :bracket_close
+        elsif type == :bracket_close || (type == :curry_close && curry_mask.pop)
             if last_token.type == :bracket_open
                 arities[-1] = 0
             end
@@ -524,6 +536,8 @@ def display(entity)
             else
                 p entity
             end
+        when Hash
+            p entity
         else
             p entity
     end
@@ -780,7 +794,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option"]
+    @@configurable = ["Print", "Option", "Hash"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     @@held_arguments = {
@@ -830,6 +844,13 @@ class AtState
         },
         "Exit" => lambda { |inst, code=0|
             exit(code)
+        },
+        "Hash" => lambda { |inst, **opts|
+            res = {}
+            opts.each { |k, v|
+                res[k.to_s] = v
+            }
+            res
         },
         "Local" => lambda { |inst, *args|
             inst.define_local *args
