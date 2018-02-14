@@ -781,7 +781,13 @@ class AtState
         res = if head.is_a?(Token) && @@configurable.include?(head.raw)
             func[self, *args, **config]
         else
-            func[self, *args]
+            # special call function overloading
+            case func
+                when Array, Hash
+                    func[*args]
+                else
+                    func[self, *args]
+            end
         end
         
         res
