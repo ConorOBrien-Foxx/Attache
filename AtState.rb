@@ -749,6 +749,9 @@ class AtState
         "Eval" => lambda { |inst, str|
             AtState.new(str).run.last
         },
+        "Exit" => lambda { |inst, code=0|
+            exit(code)
+        },
         "Local" => lambda { |inst, *args|
             inst.define_local *args
         },
@@ -1522,7 +1525,19 @@ class AtState
         "+" => vectorize_dyad { |inst, a, b| a + b },
         "^" => vectorize_dyad { |inst, a, b| a ** b },
         "%" => vectorize_dyad { |inst, a, b| a % b },
-        "|" => vectorize_dyad { |inst, a, b| b % a == 0 },
+        "|" => vectorize_dyad { |inst, a, b|
+            if AtState.func_like? b
+                b[inst, a]
+            else
+                b % a == 0
+            end
+        },
+        "|>" => lambda { |inst, x, y|
+            y[inst, x]
+        },
+        "<|" => lambda { |inst, x, y|
+            x[inst, y]
+        },
         "=" => vectorize_dyad { |inst, x, y| x == y },
         "/=" => vectorize_dyad { |inst, x, y| x != y },
         "==" => lambda { |inst, x, y| x == y },
@@ -1605,6 +1620,13 @@ class AtState
             end
         },
         ";" => lambda { |inst, x, y| y },
+        "!" => lambda { |inst, a, b|
+            if AtState.func_like? a
+                a[inst, b]
+            else
+                raise "Unimplemented: ncr/npr, idk"
+            end
+        },
     }
     
     @@unary_operators = {
