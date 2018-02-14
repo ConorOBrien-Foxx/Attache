@@ -680,9 +680,9 @@ def getchar(safe=true)
     res
 end
 
-def prompt_input(prompt=nil)
+def prompt_input(prompt=nil, input=STDIN)
     print prompt unless prompt.nil? or not $stdin.tty?
-    STDIN.gets.chomp rescue nil
+    input.gets.chomp rescue nil
 end
 
 $YES_NO = {

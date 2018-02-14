@@ -48,7 +48,7 @@ class AttacheParser
             
             opts.on(
                 "-a", "--ast",
-                "Use ast!"
+                "Display the AST parsed from the program"
             ) do |v|
                 options[:ast] = v
             end
@@ -59,6 +59,12 @@ class AttacheParser
                 "Execute the following string as code",
             ) do |v|
                 options[:program] = v
+            end
+            
+            opts.on("-r", "--repl",
+                "Engages the Attache repl",
+            ) do |v|
+                options[:repl] = v
             end
             
             opts.on_tail(
@@ -80,7 +86,11 @@ end
 
 options = AttacheParser.parse(ARGV)
 
-program = options[:program] || File.read(ARGV[0])
+program = options[:program] || File.read(ARGV[0]) rescue ""
+
+if options[:repl]
+    program += 'Needs["repl"]; REPL[]'
+end
 
 if options[:show_program]
     puts "[program]"

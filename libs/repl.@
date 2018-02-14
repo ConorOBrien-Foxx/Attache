@@ -1,0 +1,5 @@
+? rudimentary repl program
+
+Define[$REPL, {
+    ReadLineLoop["A> ", Print@EvalHere]
+}]

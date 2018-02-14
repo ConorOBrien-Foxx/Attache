@@ -1,5 +1,7 @@
 require_relative 'lib.rb'
 
+FOLDER_LOCATION = File.dirname(__FILE__)
+
 $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
@@ -534,6 +536,17 @@ class AtState
         @out = output
     end
     
+    def load_lib(name)
+        loc = File.join(FOLDER_LOCATION, "libs", name + ".@")
+        if File.exists? loc
+            ast(File.read(loc)).each { |tree|
+                evaluate_node tree
+            }
+        else
+            STDERR.puts "No such library #{name}"
+        end
+    end
+    
     attr_reader :stack
     attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references
     
@@ -774,6 +787,11 @@ class AtState
         "Eval" => lambda { |inst, str|
             AtState.new(str).run.last
         },
+        "EvalHere" => lambda { |inst, str|
+            ast(str).map { |tree|
+                inst.evaluate_node tree
+            }.last
+        },
         "Exit" => lambda { |inst, code=0|
             exit(code)
         },
@@ -785,6 +803,11 @@ class AtState
             result = inst.evaluate_node body, [init]
             inst.define head, result
         },
+        "Needs" => lambda { |inst, *libs|
+            libs.each { |lib|
+                inst.load_lib lib
+            }
+        },
         "Option" => lambda { |inst, prompt, **opts|
             read_option prompt, opts
         },
@@ -794,10 +817,19 @@ class AtState
             args
         },
         "Prompt" => lambda { |inst, prompt=nil|
-            prompt_input prompt
+            prompt_input prompt, inst.in
         },
         "ReadLine" => lambda { |inst|
             inst.in.gets
+        },
+        "ReadLineLoop" => lambda { |inst, *args, func|
+            lines = []
+            loop {
+                line = @@functions["Prompt"][inst, *args]
+                break if line.nil?
+                lines << func[inst, line]
+            }
+            lines
         },
         "ReadChar" => lambda { |inst|
             inst.in.getc
