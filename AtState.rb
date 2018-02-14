@@ -18,8 +18,10 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $COMMENT = /\?.*(?:\n|$)/
-$COMMENT_START = /\(\*/
-$COMMENT_END = /\*\)/
+$COMMENT_OPEN = /\(\*/
+$COMMENT_CLOSE = /\*\)/
+$CURRY_OPEN = /<~/
+$CURRY_CLOSE = /~>/
 
 $PRECEDENCE = {
     ":"     => [30, :left],
@@ -73,8 +75,10 @@ $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
 $OP_QUOTE = /`#$OPERATOR/
 $TYPES = {
     $COMMENT            => :comment,
-    $COMMENT_START      => :comment_start,
-    $COMMENT_END        => :comment_end,
+    $COMMENT_OPEN       => :comment_open,
+    $COMMENT_CLOSE      => :comment_close,
+    $CURRY_OPEN         => :curry_open,
+    $CURRY_CLOSE        => :curry_close,
     $BRACKET_OPEN       => :bracket_open,
     $BRACKET_CLOSE      => :bracket_close,
     $OPERATOR           => :operator,
@@ -107,6 +111,7 @@ $DATA = [
 ]
 $DATA_SIGNIFIER = $DATA + [
     :bracket_close,
+    :curry_close,
     :paren_close,
     :func_end
 ]
@@ -132,6 +137,10 @@ def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
 end
 
+def get_starting(sym)
+    sym.to_s.sub("_close", "_open").to_sym
+end
+
 def parse(code)
     # group expression
     stack = []
@@ -146,8 +155,8 @@ def parse(code)
         
         unless depth.nil?
             
-            depth += 1 if type == :comment_start
-            depth -= 1 if type == :comment_end
+            depth += 1 if type == :comment_open
+            depth -= 1 if type == :comment_close
             
             if depth.zero?
                 depth = nil
@@ -156,7 +165,7 @@ def parse(code)
             next
         end
         
-        if type == :comment_start
+        if type == :comment_open
             depth = 1
             next
         end
@@ -186,6 +195,8 @@ def parse(code)
             next_start = stack.pop.start
             out.pop
             
+            p collect
+            
             out.push Token.new collect, :make_lambda, next_start
         
         elsif type == :operator
@@ -213,13 +224,14 @@ def parse(code)
             
         elsif type == :bracket_open
             # determine if a function call
-            # p last_token
-            # p last_token.type
             unless $SEPARATOR.include? last_token.type
                 # the "V" function creates an array
-                # p "making array"
                 out.push Token.new "V", :word, nil
             end
+            stack.push ent
+            arities.push 1
+            
+        elsif type == :curry_open
             stack.push ent
             arities.push 1
         
@@ -237,6 +249,19 @@ def parse(code)
             end
             
             out.push Token.new arities.pop, :call_func, nil
+            
+            stack.pop
+        
+        elsif type == :curry_close
+            if last_token.type == :curry_open
+                arities[-1] = 0
+            end
+            
+            while stack.last.type != :curry_open
+                out.push stack.pop
+            end
+            
+            out.push Token.new arities.pop, :curry_func, nil
             
             stack.pop
         
@@ -459,6 +484,16 @@ def ast(program)
             func = stack.pop
             cur = Node.new func, args
             stack.push cur
+        
+        elsif type == :curry_func
+            args = stack.pop(raw)
+            func = stack.pop
+            tok = Token.new [
+                func,
+                *args,
+                Token.new(raw, :call_func, nil)
+            ], :make_lambda, start
+            stack.push tok
         
         elsif type == :operator
             args = stack.pop(2)
