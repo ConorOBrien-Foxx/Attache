@@ -16,6 +16,8 @@ $FUNC_END = /\}/
 $WHITESPACE = /\s+/
 $UNKNOWN = /./
 $COMMENT = /\?.*(?:\n|$)/
+$COMMENT_START = /\(\*/
+$COMMENT_END = /\*\)/
 
 $PRECEDENCE = {
     ":"     => [30, :left],
@@ -31,6 +33,9 @@ $PRECEDENCE = {
     "''"    => [20, :left],
     "'"     => [20, :left],
     "##"    => [19, :left],
+    "|>"    => [15, :left],
+    "<|"    => [15, :left],
+    
     
     "^"     => [15, :right],
     "!"     => [15, :left],
@@ -41,9 +46,9 @@ $PRECEDENCE = {
     "+"     => [11, :left],
     "-"     => [11, :left],
     
-    "/="    => [7, :left],
     "="     => [7, :left],
     "=/="   => [7, :left],
+    "/="    => [7, :left],
     "=="    => [7, :left],
     "<"     => [7, :left],
     ">"     => [7, :left],
@@ -65,6 +70,9 @@ $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
 $OP_QUOTE = /`#$OPERATOR/
 $TYPES = {
+    $COMMENT            => :comment,
+    $COMMENT_START      => :comment_start,
+    $COMMENT_END        => :comment_end,
     $BRACKET_OPEN       => :bracket_open,
     $BRACKET_CLOSE      => :bracket_close,
     $OPERATOR           => :operator,
@@ -81,7 +89,6 @@ $TYPES = {
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
     $PAREN_CLOSE        => :paren_close,
-    $COMMENT            => :comment,
     $UNKNOWN            => :unknown,
 }
 $DATA = [
@@ -129,10 +136,28 @@ def parse(code)
     out = []
     arities = []
     last_token = Token.new nil, nil, nil
+    depth = nil
     tokenize(code).each { |ent|
         raw, type, start = ent
         
         next if type == :comment
+        
+        unless depth.nil?
+            
+            depth += 1 if type == :comment_start
+            depth -= 1 if type == :comment_end
+            
+            if depth.zero?
+                depth = nil
+            end
+            
+            next
+        end
+        
+        if type == :comment_start
+            depth = 1
+            next
+        end
         
         if $DATA.include? type
             # two adjacent datatypes mark a statement
