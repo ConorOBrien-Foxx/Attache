@@ -1193,6 +1193,9 @@ class AtState
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
         },
+        "Intersection" => lambda { |inst, *lists|
+            lists.inject(&:&)
+        },
         "Intersperse" => lambda { |inst, lists, joiner|
             res = []
             lists.each_with_index { |e, i|
@@ -1243,6 +1246,16 @@ class AtState
         },
         "Resize" => lambda { |inst, list, size|
             resize [*list], size
+        },
+        "Remove" => lambda { |inst, list, ent|
+            list = list.clone
+            list.delete ent
+            list
+        },
+        "RemoveFirst" => lambda { |inst, list, ent|
+            list = list.clone
+            list.delete_at list.index ent
+            list
         },
         "Rotate" => lambda { |inst, list, amount=1|
             if list.is_a? String
@@ -1310,6 +1323,9 @@ class AtState
             list.inject(0) { |a, e|
                 @@operators["+"][inst, a, e]
             }
+        },
+        "Union" => lambda { |inst, *lists|
+            lists.inject(&:|)
         },
         "Unique" => lambda { |inst, a, arg=nil|
             if arg.nil?
