@@ -105,6 +105,7 @@ $DATA = [
     :string,
     :op_quote,
     :call_func,
+    :curry_func,
     :function,
     :abstract,
     :make_lambda
@@ -488,12 +489,9 @@ def ast(program)
         elsif type == :curry_func
             args = stack.pop(raw)
             func = stack.pop
-            tok = Token.new [
-                func,
-                *args,
-                Token.new(raw, :call_func, nil)
-            ], :make_lambda, start
-            stack.push tok
+            stack.push Token.new lambda { |inst, *others|
+                inst.evaluate_node Node.new func, args + others
+            }, :function, start
         
         elsif type == :operator
             args = stack.pop(2)
@@ -614,6 +612,9 @@ class AtState
         
         if type == :reference
             raw[1..-1]
+            
+        elsif type == :function
+            raw
         
         elsif type == :string
             raw[1..-2].gsub(/""/, '"')
