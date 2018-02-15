@@ -1203,6 +1203,13 @@ class AtState
                 list.all? { |e| AtState.truthy?(f[inst, e]) }
             end
         },
+        "Any" => lambda { |inst, f, list=nil|
+            if list.nil?
+                f.any? { |e| AtState.truthy? e }
+            else
+                list.any? { |e| AtState.truthy?(f[inst, e]) }
+            end
+        },
         "Falsey" => lambda { |inst, arg|
             AtState.falsey? arg
         },
