@@ -1352,8 +1352,9 @@ class AtState
             list.delete_at list.index ent
             list
         },
-        "RemoveAll" => vectorize_dyad(RIGHT) { |inst, list, ents|
-            list.reject { |e| e == ents }
+        "RemoveAll" => lambda { |inst, list, ents|
+            ents = [*ents]
+            list.reject { |e| ents.include? e }
         },
         "Rotate" => lambda { |inst, list, amount=1|
             if list.is_a? String
