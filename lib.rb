@@ -831,3 +831,9 @@ def dim(mat)
         mat.size
     end
 end
+
+def overlap(source, inner)
+    return false if inner.size > source.size
+    
+    source.each_cons(inner.size).any? { |e| e == inner }
+end

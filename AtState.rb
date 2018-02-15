@@ -1337,6 +1337,9 @@ class AtState
         "Outers" => vectorize_dyad(RIGHT) { |inst, arr, n=1|
             arr[0...n] + arr[-n..-1]
         },
+        "Overlap" => lambda { |inst, list, arr|
+            overlap list, arr
+        },
         "Prefixes" => lambda { |inst, list|
             force_list(list).prefixes
         },
