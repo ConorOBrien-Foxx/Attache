@@ -58,6 +58,7 @@ $PRECEDENCE = {
     ">"     => [7, :left],
     "<="    => [7, :left],
     ">="    => [7, :left],
+    "in"    => [6, :left],
     ".."    => [5, :left],
     "..."   => [5, :left],
     "and"   => [4, :left],
@@ -942,6 +943,19 @@ class AtState
             }
             collect
         },
+        "SeriesIf" => lambda { |inst, f, cond, max, start=0|
+            i = start
+            collect = []
+            loop {
+                value = f[inst, i]
+                unless value.nil?
+                    break if value >= max
+                    collect.push value if cond[inst, value]
+                end
+                i += 1
+            }
+            collect
+        },
         
         ###########################
         #### NUMERIC FUNCTIONS ####
@@ -1275,6 +1289,9 @@ class AtState
         },
         "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
             list[inds]
+        },
+        "Has" => lambda { |inst, list, member|
+            list.include? member
         },
         "FlatGet" => lambda { |inst, list, inds|
             [*inds].each { |i|
@@ -1699,6 +1716,7 @@ class AtState
         ":" => vectorize_dyad { |inst, x, y| (x..y).to_a },
         ".." => vectorize_dyad { |inst, x, y| (x..y).to_a },
         "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
+        "in" => lambda { |inst, x, y| @@functions["Has"][inst, y, x] },
         "or" => lambda { |inst, a, b|
             AtState.truthy?(a) ? a : b
         },
