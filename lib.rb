@@ -188,7 +188,11 @@ module TruthExtension
         [other, self.to_i]
     end
     
-    [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :-@, :~@].each { |prop|
+    def ~@
+        not self
+    end
+    
+    [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :-@].each { |prop|
         define_method(prop) { |*args| to_i.send(prop, *args) }
     }
 end
