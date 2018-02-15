@@ -1352,6 +1352,9 @@ class AtState
             list.delete_at list.index ent
             list
         },
+        "RemoveAll" => vectorize_dyad(RIGHT) { |inst, list, ents|
+            list.reject { |e| e == ents }
+        },
         "Rotate" => lambda { |inst, list, amount=1|
             if list.is_a? String
                 @@functions["Rotate"][inst, force_list(list), amount].join
@@ -1561,7 +1564,17 @@ class AtState
                     @@functions["Select"][inst, f, g[inst, list]]
                 }
             else
-                list.select { |e| f[inst, e] }
+                list.select { |e| AtState.truthy? f[inst, e] }
+            end
+        },
+        "Reject" => lambda { |inst, f, list|
+            if AtState.func_like? list
+                g = list
+                lambda { |inst, list|
+                    @@functions["Reject"][inst, f, g[inst, list]]
+                }
+            else
+                list.reject { |e| AtState.truthy? f[inst, e] }
             end
         },
         
