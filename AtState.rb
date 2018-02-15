@@ -43,6 +43,7 @@ $PRECEDENCE = {
     
     "^"     => [15, :right],
     "!"     => [15, :right],
+    "?"     => [15, :left],
     "*"     => [13, :left],
     "/"     => [13, :left],
     "%"     => [13, :left],
@@ -1877,6 +1878,7 @@ class AtState
             end
         },
         "!" => vectorize_monad { |inst, n| factorial n },
+        "?" => vectorize_monad { |inst, n| AtState.truthy? n },
         "not" => lambda { |inst, arg| AtState.falsey? arg },
     }
 end
