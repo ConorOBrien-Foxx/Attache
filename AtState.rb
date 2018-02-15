@@ -1747,7 +1747,11 @@ class AtState
             lambda { |inst, *args| f[inst, g[inst, *args]] }
         },
         "@@" => lambda { |inst, f, g|
-            lambda { |inst, *args| f[inst, *g[inst, *args]] }
+            if AtState.func_like? g
+                lambda { |inst, *args| f[inst, *g[inst, *args]] }
+            else
+                f[inst, *g]
+            end
         },
         "##" => lambda { |inst, f, g|
             @@operators["@"][inst, f, g]
