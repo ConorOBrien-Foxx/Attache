@@ -366,7 +366,11 @@ end
 
 # from https://stackoverflow.com/a/4157635/4119004
 def deep_copy(o)
-    Marshal.load(Marshal.dump(o))
+    begin
+        Marshal.load(Marshal.dump(o))
+    rescue
+        o.clone rescue o
+    end
 end
 
 def cls
