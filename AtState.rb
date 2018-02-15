@@ -42,7 +42,7 @@ $PRECEDENCE = {
     
     
     "^"     => [15, :right],
-    "!"     => [15, :left],
+    "!"     => [15, :right],
     "*"     => [13, :left],
     "/"     => [13, :left],
     "%"     => [13, :left],
@@ -1582,7 +1582,9 @@ class AtState
                     @@functions["Select"][inst, f, g[inst, list]]
                 }
             else
-                list.select { |e| AtState.truthy? f[inst, e] }
+                list.select { |e|
+                    AtState.truthy? f[inst, e]
+                }
             end
         },
         "Reject" => lambda { |inst, f, list|
