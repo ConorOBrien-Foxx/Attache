@@ -704,14 +704,13 @@ class AtState
     
     def get_blank(blank, blank_args = nil)
         if blank_args.nil?
-            blank_args = @locals.last[AtLambda::ARG_CONST]
+            blank_args = @locals.last[AtLambda::ARG_CONST] || []
         end
         
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
         
         # p "abstract type #{type}, #{blank}, #{blank_args}"
-        
         case type
             when 1
                 n < blank_args.size ? blank_args[n] : @saved[n]
