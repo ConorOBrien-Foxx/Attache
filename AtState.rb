@@ -788,7 +788,12 @@ class AtState
                 when Array, Hash
                     func[*args]
                 else
-                    func[self, *args]
+                    begin
+                        func[self, *args]
+                    rescue ArgumentError => e
+                        STDERR.puts "Argument error: #{head}"
+                        raise e
+                    end
             end
         end
         
@@ -1551,8 +1556,8 @@ class AtState
         "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
             if AtState.func_like? list
                 g = list
-                lambda { |inst, list|
-                    g[inst, list].map { |e|
+                lambda { |inst, *args|
+                    g[inst, *args].map { |e|
                         f[inst, e]
                     }
                 }

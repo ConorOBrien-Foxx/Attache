@@ -1,3 +1,7 @@
-Define[$PrintTestCases, [func, tc] -> {
-    {Print!Format["%s -> %s", _, func[_]]} => tc
+?? functions commonly used in PPCG submissions
+
+Define[$TestCases, [func, tc] -> {
+    {Format["%s -> %s", _, func[_]]} => tc
 }]
+
+Define[$PrintTestCases, Print=>TestCases]
