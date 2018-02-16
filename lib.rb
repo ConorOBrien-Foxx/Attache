@@ -117,6 +117,10 @@ class Tie
 end
 
 class Array
+    def fold(inst, f, start)
+        inject(start) { |x, y| f[inst, x, y] }
+    end
+    
     def sum
         inject(0, :+)
     end

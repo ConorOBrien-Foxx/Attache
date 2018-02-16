@@ -1547,10 +1547,10 @@ class AtState
                 }
             else
                 if start.nil?
-                    start = list[0]
+                    start = list.shift
                 end
                 
-                fold(inst, func, list, start)
+                list.fold(inst, f, start)
             end
         },
         "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
