@@ -1001,9 +1001,6 @@ class AtState
         "Divide" => lambda { |inst, *args|
             args.inject(1.0, :/)
         },
-        "Even" => vectorize_monad { |inst, n|
-            n.even?
-        },
         "Fibonacci" => lambda { |inst, n|
             nth_fibonacci(n)
         },
@@ -1029,6 +1026,12 @@ class AtState
         "LCM" => lambda { |inst, *args|
             lcm args.flatten
         },
+        "Log" => lambda { |inst, n|
+            Math::log10 n
+        },
+        "Ln" => lambda { |inst, n|
+            Math::log n
+        },
         "Multiply" => lambda { |inst, *args|
             @@functions["Prod"][inst, args]
         },
@@ -1037,9 +1040,6 @@ class AtState
         },
         "Oct" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 8]
-        },
-        "Odd" => vectorize_monad { |inst, n|
-            n.odd?
         },
         "Polygonal" => lambda { |inst, n, order=3|
             gonal n, order
@@ -1129,6 +1129,16 @@ class AtState
             Prime.first n
         },
         
+        ##------------------------##
+        ## Number Logic Functions ##
+        ##------------------------##
+        "Even" => vectorize_monad { |inst, n|
+            n.even?
+        },
+        "Odd" => vectorize_monad { |inst, n|
+            n.odd?
+        },
+        
         
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
@@ -1179,6 +1189,13 @@ class AtState
                 e = f[inst, e]
             }
             e
+        },
+        "NestWhile" => lambda { |inst, f, init, cond|
+            iter = init
+            while cond[inst, iter]
+                iter = f[inst, iter]
+            end
+            iter
         },
         "PeriodicSteps" => lambda { |inst, f|
             lambda { |inst, x|
