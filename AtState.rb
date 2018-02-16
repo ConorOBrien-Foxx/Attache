@@ -1135,8 +1135,17 @@ class AtState
         "Even" => vectorize_monad { |inst, n|
             n.even?
         },
+        "Negative" => vectorize_monad { |inst, n|
+            n.negative?
+        },
         "Odd" => vectorize_monad { |inst, n|
             n.odd?
+        },
+        "Positive" => vectorize_monad { |inst, n|
+            n.positive?
+        },
+        "Zero" => vectorize_monad { |inst, n|
+            n.zero?
         },
         
         
