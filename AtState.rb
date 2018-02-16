@@ -633,7 +633,7 @@ class AtState
             raw
         
         elsif type == :string
-            raw[1..-2].gsub(/""/, '"')
+            raw[1..-2].gsub(/""/, '"').gsub(/\\./) { |e| eval '"' + e + '"' }
         
         elsif @locals.last.has_key? raw
             @locals.last[raw]

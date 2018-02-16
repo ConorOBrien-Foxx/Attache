@@ -5,3 +5,7 @@ Define[$TestCases, [func, tc] -> {
 }]
 
 Define[$PrintTestCases, Print=>TestCases]
+
+Define[$Submission, [code] -> {
+    Format["# Attache, %s bytes\n\n    %s\n", #code, code]
+}]
