@@ -670,6 +670,9 @@ class AtState
         elsif type == :abstract_reference
             @abstract_references[-raw.size]
         
+        elsif type == :abstract
+            get_blank(raw)
+        
         else
             puts "Unidentified get_value thing #{type.inspect}"
             p obj
