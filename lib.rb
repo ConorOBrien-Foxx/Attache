@@ -378,10 +378,12 @@ def deep_copy(o)
             o.map { |e| deep_copy e }
         when Hash
             o.map { |e| deep_copy e }.to_h
-        when o.respond_to? :dup
-            o.dup
         else
-            o
+            if o.respond_to? :dup
+                o.dup
+            else
+                o
+            end
     end
 end
 
