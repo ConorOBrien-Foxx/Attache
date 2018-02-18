@@ -372,12 +372,16 @@ end
 
 ## GENERIC HELPER FUNCTIONS ##
 
-# from https://stackoverflow.com/a/4157635/4119004
 def deep_copy(o)
-    begin
-        Marshal.load(Marshal.dump(o))
-    rescue
-        o.clone rescue o
+    case o
+        when Array
+            o.map { |e| deep_copy e }
+        when Hash
+            o.map { |e| deep_copy e }.to_h
+        when o.respond_to? :dup
+            o.dup
+        else
+            o
     end
 end
 
