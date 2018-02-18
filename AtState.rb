@@ -447,12 +447,13 @@ class AtLambda
     def initialize(inner_ast, params=[])
         @tokens = inner_ast
         @params = params
+        @scope = nil
     end
     
     attr_accessor :params
     
     def [](inst, *args)
-        inst.local_descend
+        @scope = inst.local_descend(@scope)
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
@@ -696,9 +697,13 @@ class AtState
         @locals.last.delete(name)
     end
     
-    def local_descend
+    def local_descend(adopt)
         # p @locals
-        @locals.push deep_copy @locals.last
+        res = deep_copy @locals.last
+        adopt ||= {}
+        adopt.merge! res
+        @locals.push adopt
+        adopt
     end
     
     def local_ascend
