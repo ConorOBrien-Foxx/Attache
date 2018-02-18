@@ -447,13 +447,13 @@ class AtLambda
     def initialize(inner_ast, params=[])
         @tokens = inner_ast
         @params = params
-        @scope = nil
+        @scope = {}
     end
     
-    attr_accessor :params
+    attr_accessor :params, :scope
     
     def [](inst, *args)
-        @scope = inst.local_descend(@scope)
+        inst.local_descend(@scope)
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
@@ -461,10 +461,15 @@ class AtLambda
             inst.define_local name, args[i]
         }
         res = @tokens.map { |token|
-            inst.evaluate_node(token, args)
+            inner = inst.evaluate_node(token, args)
+            if inner.kind_of? AtLambda
+                # p "inner=",inner
+                inner.scope.merge! @scope
+            end
+            inner
         }.last
         inst.abstract_references.pop
-        inst.local_ascend
+        @scope = inst.local_ascend
         res
     end
 end
@@ -796,6 +801,7 @@ class AtState
                     func[*args]
                 else
                     begin
+                        # p func
                         func[self, *args]
                     rescue ArgumentError => e
                         STDERR.puts "Argument error: #{head}"
