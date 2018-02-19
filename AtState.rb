@@ -579,6 +579,7 @@ class AtState
             "nul" => "\0",
             "es" => "",
             "sp" => " ",
+            "tab" => "\t",
             "inf" => Infinity,
             # perhaps temporary
             "alpha" => $ALPHA_LOWER,
@@ -783,7 +784,7 @@ class AtState
         }
         args.concat children
 
-        configurable = @@configurable.include?(head.raw)
+        configurable = @@configurable.include?(head.raw) rescue false
         # filter ConfigureValue
         if configurable
             split = args.group_by { |e| e.is_a? ConfigureValue }
