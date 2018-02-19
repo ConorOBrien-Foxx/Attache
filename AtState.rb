@@ -476,7 +476,7 @@ end
 
 class ConfigureValue
     def initialize(key, value)
-        @key = key.to_sym
+        @key = key
         @value = value
     end
     
@@ -783,10 +783,13 @@ class AtState
         }
         args.concat children
 
+        configurable = @@configurable.include?(head.raw)
         # filter ConfigureValue
-        split = args.group_by { |e| e.is_a? ConfigureValue }
-        config = split[true].to_h
-        args = split[false]
+        if configurable
+            split = args.group_by { |e| e.is_a? ConfigureValue }
+            config = split[true].to_h
+            args = split[false]
+        end
         
         func = get_value head
 
@@ -799,7 +802,7 @@ class AtState
             exit -3
         end
         
-        res = if head.is_a?(Token) && @@configurable.include?(head.raw)
+        res = if head.is_a?(Token) && configurable
             func[self, *args, **config]
         else
             # special call function overloading
@@ -842,7 +845,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option", "Hash"]
+    @@configurable = ["Print", "Option"]#, "Hash"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     @@held_arguments = {
@@ -893,10 +896,11 @@ class AtState
         "Exit" => lambda { |inst, code=0|
             exit(code)
         },
-        "Hash" => lambda { |inst, **opts|
+        "Hash" => lambda { |inst, *opts|
             res = {}
+            p opts
             opts.each { |k, v|
-                res[k.to_s] = v
+                res[k] = v
             }
             res
         },
