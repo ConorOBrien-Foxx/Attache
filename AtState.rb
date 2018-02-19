@@ -1862,12 +1862,19 @@ class AtState
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
-            if key.is_a? Node
+            if key.is_a?(Node) && key.head == "V"
+                p key
                 params = key.children.map(&:raw)
                 value.params = params
                 value
-            else
+            elsif key.is_a?(Token) && key.type == :word
                 ConfigureValue.new key.raw, value
+            elsif key.is_a?(Node)
+                keyval = inst.evaluate_node key
+                ConfigureValue.new keyval, value
+            else
+                keyval = inst.get_value key
+                ConfigureValue.new keyval, value
             end
         },
         ";" => lambda { |inst, x, y| y },
