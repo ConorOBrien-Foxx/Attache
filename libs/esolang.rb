@@ -2,19 +2,23 @@
 
 # class TapeBase; @@commands = {}; end
 
-def tapeFactory(commands, field, sup=Object)
+def tapeFactory(commands, init=lambda{|inst|}, sup=Object)
     klass = Class.new(sup) {
         def class_var(name)
             self.class.class_variable_get name
         end
         
         def initialize(program)
-            @program = program
+            @program = program.chars
             @i = 0
-            @field = class_var(:@@field).dup
+            instance_eval &class_var(:@@init)
         end
         
         attr_accessor :program, :i, :field
+        
+        def jump(location)
+            @i = location
+        end
         
         def step
             cmd = @program[@i]
@@ -40,24 +44,60 @@ def tapeFactory(commands, field, sup=Object)
     end
     old_cmds.merge! commands
     klass.class_variable_set(:@@commands, old_cmds)
-    klass.class_variable_set(:@@field, field)
+    klass.class_variable_set(:@@init, init)
     klass
 end
 
+# todo: wrapping
 BF = tapeFactory({
     ">" => lambda { |inst|
-        @field["ptr"] += 1
+        @tape[@ptr += 1] ||= 0
     },
     "<" => lambda { |inst|
-        @field["ptr"] -= 1
+        @tape[@ptr -= 1] ||= 0
+    },
+    "+" => lambda { |inst|
+        @tape[@ptr] += 1
+    },
+    "-" => lambda { |inst|
+        @tape[@ptr] -= 1
     },
     "." => lambda { |inst|
-        puts @field["ptr"]
+        putc @tape[@ptr]
+    },
+    "[" => lambda { |inst|
+        if @tape[@ptr].zero?
+            jump @loops[@i]
+        end
+    },
+    "]" => lambda { |inst|
+        unless @tape[@ptr].zero?
+            jump @loops[@i]
+        end
+    },
+}, lambda { |inst|
+    @ptr = 0
+    @tape = [0]
+    # process loops
+    positions = []
+    @loops = {}
+    @program.each_with_index { |chr, i|
+        if chr == "["
+            positions << i
+        elsif chr == "]"
+            pos = positions.pop
+            @loops[pos] = i
+            @loops[i] = pos
+        end
     }
-}, { "ptr" => 0 })
+})
 
 AtState.function("TapeFactory") { |inst, opts|
     p opts
+}
+
+AtState.function("BF") { |inst, opts|
+    BF.new(opts).run
 }
 
 # WTF = tapeFactory({"q" => lambda{}}, BF)
