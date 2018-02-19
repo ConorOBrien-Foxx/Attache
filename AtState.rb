@@ -592,11 +592,18 @@ class AtState
     end
     
     def load_lib(name)
-        loc = File.join(FOLDER_LOCATION, "libs", name + ".@")
-        if File.exists? loc
-            ast(File.read(loc)).each { |tree|
-                evaluate_node tree
-            }
+        loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
+        loc = loc.any? ? loc.first : nil
+        if loc
+            ext = File.extname loc
+            case ext
+                when ".@"
+                    ast(File.read(loc)).each { |tree|
+                        evaluate_node tree
+                    }
+                when ".rb"
+                    require loc
+            end
         else
             STDERR.puts "No such library #{name}"
         end
@@ -817,6 +824,21 @@ class AtState
         @trees.map { |tree|
             evaluate_node tree
         }
+    end
+    
+    def AtState.function(name, aliases: [], configurable: false, hold: nil, &body)
+        @@functions[name] = convert_to_lambda(&body)
+        if configurable
+            @@configurable << name
+        end
+        
+        aliases.each { |ali|
+            @@functions[ali] = ali
+        }
+        
+        unless hold.nil?
+            @@held_arguments[name] = hold
+        end
     end
     
     # functions which can receive key things

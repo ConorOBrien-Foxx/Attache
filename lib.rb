@@ -855,3 +855,10 @@ def overlap(source, inner)
     
     source.each_cons(inner.size).any? { |e| e == inner }
 end
+
+# https://stackoverflow.com/a/2946734/4119004
+def convert_to_lambda(&block)
+    obj = Object.new
+    obj.define_singleton_method(:_, &block)
+    return obj.method(:_).to_proc
+end
