@@ -809,7 +809,8 @@ class AtState
             # special call function overloading
             case func
                 when Array, Hash
-                    func[*args]
+                    # func[*args]
+                    @@functions["Get"][self, func, *args]
                 else
                     begin
                         # p func
@@ -1229,7 +1230,11 @@ class AtState
             }
         },
         "Tie" => lambda { |inst, *funcs|
-            Tie.new funcs
+            if funcs.any? { |e| !AtState.func_like? e }
+                funcs.inject([]) { |acc, e| [*acc, *e] }
+            else
+                Tie.new funcs
+            end
         },
         "TieArray" => lambda { |inst, *funcs|
             Tie.new funcs, true
