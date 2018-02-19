@@ -787,7 +787,8 @@ class AtState
         # filter ConfigureValue
         if configurable
             split = args.group_by { |e| e.is_a? ConfigureValue }
-            config = split[true].to_h
+            split[true] ||= []
+            config = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
         end
         
