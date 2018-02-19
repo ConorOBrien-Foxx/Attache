@@ -1532,6 +1532,7 @@ class AtState
             lists.inject(&:|)
         },
         "Unique" => lambda { |inst, a, arg=nil|
+            a = force_list a
             if arg.nil?
                 a.uniq
             else
