@@ -809,7 +809,7 @@ class AtState
         else
             # special call function overloading
             case func
-                when Array, Hash
+                when Array, Hash, String
                     # func[*args]
                     @@functions["Get"][self, func, *args]
                 else
