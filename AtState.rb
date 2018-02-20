@@ -1592,7 +1592,7 @@ class AtState
             end
         },
         "Zip" => lambda { |inst, a, *b|
-            a.zip(*b)
+            force_list(a).zip(*b.map { |e| force_list e })
         },
         "ZipWith" => lambda { |inst, fn, a=nil, b=nil|
             l = lambda { |inst, a, b|
