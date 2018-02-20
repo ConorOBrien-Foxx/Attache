@@ -1469,7 +1469,7 @@ class AtState
             end
         },
         "Same" => lambda { |inst, *args|
-            list = args.flatten
+            list = args.flatten(1)
             list.all? { |e| e == list[0] }
         },
         "Sample" => vectorize_dyad(RIGHT) { |inst, list, n=nil|
