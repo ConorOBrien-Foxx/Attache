@@ -178,6 +178,7 @@ def parse(code)
         
         if $DATA.include? type
             # two adjacent datatypes mark a statement
+            # p [ent, last_token]
             if $DATA_SIGNIFIER.include? last_token.type
                 # flush
                 flush(out, stack, [:func_start])
@@ -1910,7 +1911,7 @@ class AtState
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
-            if key.is_a?(Node) && key.head == "V"
+            if key.is_a?(Node) && key.head.raw == "V"
                 # p key
                 params = key.children.map(&:raw)
                 value.params = params
