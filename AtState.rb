@@ -68,8 +68,9 @@ $PRECEDENCE = {
     "xor"   => [3, :left],
     "or"    => [3, :left],
     "nand"  => [3, :left],
-    "->"    => [1, :left],
-    
+    "->"    => [2, :left],
+    ":="    => [1, :left],
+    ".="    => [1, :left],
     ";"     => [0, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
@@ -445,7 +446,7 @@ end
 class AtLambda
     ARG_CONST = "ARGUMENTS"
     def initialize(inner_ast, params=[])
-        @tokens = inner_ast
+        @tokens = [*inner_ast]
         @params = params
         @scope = {}
     end
@@ -867,6 +868,8 @@ class AtState
         "DoWhile" => [true, true],
         "ForEach" => [false, true],
         "Modify" => [false, true],
+        ":=" => [true, true],
+        ".=" => [true, true],
     }
     
     # All builtins
@@ -1793,6 +1796,22 @@ class AtState
     
     # operators with two arguments
     @@operators = {
+        ":=" => lambda { |inst, var, val|
+            if Node === var
+                #todo: pattern matching
+                args = var.children.map(&:raw)
+                res = AtLambda.new val, args
+                inst.define var.head.raw, res
+            else
+                name = var.raw
+                inst.define name, inst.evaluate_node(val)
+            end
+        },
+        ".=" => lambda { |inst, var, val|
+            #todo: expand like :=
+            name = var.raw
+            inst.define_local name, inst.evaluate_node(val)
+        },
         "*" => vectorize_dyad { |inst, a, b| a * b },
         "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
         "-" => vectorize_dyad { |inst, a, b| a - b },
