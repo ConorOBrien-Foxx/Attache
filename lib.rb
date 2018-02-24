@@ -862,3 +862,14 @@ def convert_to_lambda(&block)
     obj.define_singleton_method(:_, &block)
     return obj.method(:_).to_proc
 end
+
+def split_on(iter, func)
+    build = [[]]
+    iter.each { |el|
+        if func[el]
+            build << []
+        end
+        build.last << el
+    }
+    build
+end

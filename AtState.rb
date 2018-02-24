@@ -568,23 +568,25 @@ class AtState
         AtState.new(*args).run
     end
     
+    @@default_variables = {
+        "true" => true,
+        "false" => false,
+        "nil" => nil,
+        "lf" => "\n",
+        "cr" => "\r",
+        "nul" => "\0",
+        "es" => "",
+        "sp" => " ",
+        "tab" => "\t",
+        "inf" => Infinity,
+        # perhaps temporary
+        "alpha" => $ALPHA_LOWER,
+        "ALPHA" => $ALPHA_UPPER,
+    }
+    @@extended_variables = {}
     def initialize(program, input=STDIN, output=STDOUT)
         @trees = ast(program)
-        @variables = {
-            "true" => true,
-            "false" => false,
-            "nil" => nil,
-            "lf" => "\n",
-            "cr" => "\r",
-            "nul" => "\0",
-            "es" => "",
-            "sp" => " ",
-            "tab" => "\t",
-            "inf" => Infinity,
-            # perhaps temporary
-            "alpha" => $ALPHA_LOWER,
-            "ALPHA" => $ALPHA_UPPER,
-        }
+        @variables = @@default_variables.dup
         @abstract_references = []
         @locals = [{}]
         @saved = []
@@ -648,6 +650,9 @@ class AtState
         
         elsif type == :string
             raw[1..-2].gsub(/""/, '"').gsub(/\\./) { |e| eval '"' + e + '"' }
+        
+        elsif @@extended_variables.has_key? raw
+            @@extended_variables[raw]
         
         elsif @locals.last.has_key? raw
             @locals.last[raw]
@@ -847,6 +852,10 @@ class AtState
         end
     end
     
+    def AtState.variable(name, value)
+        @@extended_variables[name] = value
+    end
+    
     # functions which can receive key things
     @@configurable = ["Print", "Option"]#, "Hash"]
     # functions whose arguments are not evaluated at once
@@ -901,7 +910,7 @@ class AtState
         },
         "Hash" => lambda { |inst, *opts|
             res = {}
-            p opts
+            # p opts
             opts.each { |k, v|
                 res[k] = v
             }
@@ -1230,6 +1239,9 @@ class AtState
                 g[inst, f[inst, *args], h[inst, *args]]
             }
         },
+        # "Group" => lambda { |inst, arr|
+            
+        # },
         "Tie" => lambda { |inst, *funcs|
             if funcs.any? { |e| !AtState.func_like? e }
                 funcs.inject([]) { |acc, e| [*acc, *e] }
@@ -1476,9 +1488,13 @@ class AtState
             sample list, n
         },
         "Set" => lambda { |inst, ent, key, val|
-            scope = inst.locals.last
-            scope = inst.variables unless scope.has_key? ent
-            scope[ent][key] = val
+            if String === ent
+                scope = inst.locals.last
+                scope = inst.variables unless scope.has_key? ent
+                scope[ent][key] = val
+            else
+                ent[key] = val
+            end
         },
         "Size" => lambda { |inst, list|
             list.size
@@ -1875,7 +1891,7 @@ class AtState
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
             if key.is_a?(Node) && key.head == "V"
-                p key
+                # p key
                 params = key.children.map(&:raw)
                 value.params = params
                 value
