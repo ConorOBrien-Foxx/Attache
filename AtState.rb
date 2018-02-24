@@ -178,7 +178,7 @@ def parse(code)
         
         if $DATA.include? type
             # two adjacent datatypes mark a statement
-            if $DATA.include? last_token.type
+            if $DATA_SIGNIFIER.include? last_token.type
                 # flush
                 flush(out, stack, [:func_start])
             end
@@ -1798,9 +1798,10 @@ class AtState
     @@operators = {
         ":=" => lambda { |inst, var, val|
             if Node === var
-                #todo: pattern matching
+                # p var, val
+                # todo: pattern matching
                 args = var.children.map(&:raw)
-                res = AtLambda.new val, args
+                res = AtLambda.new [val], args
                 inst.define var.head.raw, res
             else
                 name = var.raw
