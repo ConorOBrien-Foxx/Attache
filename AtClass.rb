@@ -23,6 +23,7 @@ class AtClassInstance
     end
 end
 
+# todo: template
 class AtClass
     def initialize(inst, body, parent=nil)
         @body = body
