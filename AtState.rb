@@ -1,4 +1,5 @@
 require_relative 'lib.rb'
+require_relative 'AtClass.rb'
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
@@ -24,6 +25,8 @@ $CURRY_OPEN = /<~/
 $CURRY_CLOSE = /~>/
 
 $PRECEDENCE = {
+    "."     => [99, :left],
+    
     ":"     => [30, :left],
     
     "&"     => [26, :left],
@@ -51,27 +54,27 @@ $PRECEDENCE = {
     "+"     => [11, :left],
     "-"     => [11, :left],
     
-    "="     => [7, :left],
-    "=/="   => [7, :left],
-    "/="    => [7, :left],
-    "=="    => [7, :left],
-    "<"     => [7, :left],
-    ">"     => [7, :left],
-    "<="    => [7, :left],
-    ">="    => [7, :left],
-    "in"    => [6, :left],
-    ".."    => [5, :left],
-    "..."   => [5, :left],
-    "and"   => [4, :left],
-    "nor"   => [4, :left],
-    "not"   => [4, :left],
-    "xor"   => [3, :left],
-    "or"    => [3, :left],
-    "nand"  => [3, :left],
-    "->"    => [2, :left],
-    ":="    => [1, :left],
-    ".="    => [1, :left],
-    ";"     => [0, :left],
+    "="     => [9, :left],
+    "=/="   => [9, :left],
+    "/="    => [9, :left],
+    "=="    => [9, :left],
+    "<"     => [9, :left],
+    ">"     => [9, :left],
+    "<="    => [9, :left],
+    ">="    => [9, :left],
+    "in"    => [8, :left],
+    ".."    => [7, :left],
+    "..."   => [7, :left],
+    "and"   => [6, :left],
+    "nor"   => [6, :left],
+    "not"   => [6, :left],
+    "xor"   => [5, :left],
+    "or"    => [5, :left],
+    "nand"  => [5, :left],
+    "->"    => [4, :left],
+    ":="    => [3, :left],
+    ".="    => [3, :left],
+    ";"     => [2, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
@@ -178,10 +181,11 @@ def parse(code)
         
         if $DATA.include? type
             # two adjacent datatypes mark a statement
-            # p [ent, last_token]
             if $DATA_SIGNIFIER.include? last_token.type
+                # p out, stack
                 # flush
                 flush(out, stack, [:func_start])
+                # p out, stack
             end
             out.push ent
         
@@ -209,6 +213,7 @@ def parse(code)
         elsif type == :operator
             if last_token.nil? || !$DATA_SIGNIFIER.include?(last_token.type)
                 ent.type = :unary_operator
+            
             else
                 cur_prec, cur_assoc = $PRECEDENCE[raw]
                 # NOTE: precedence determining
@@ -230,6 +235,10 @@ def parse(code)
             stack.push ent
             
         elsif type == :bracket_open
+            if !stack.empty? && stack.last.raw == "."
+                out.push stack.pop
+            end
+            
             # determine if a function call
             unless $SEPARATOR.include? last_token.type
                 # the "V" function creates an array
@@ -239,9 +248,12 @@ def parse(code)
             arities.push 1
             
         elsif type == :curry_open
+            if !stack.empty? && stack.last.raw == "."
+                out.push stack.pop
+            end
+            
             # determine if a curry call
             unless $SEPARATOR.include? last_token.type
-            
                 # the "Hash" function creates a hash
                 out.push Token.new "Hash", :word, nil
                 stack.push Token.new "[", :bracket_open, nil
@@ -261,9 +273,14 @@ def parse(code)
                 arities[-1] = 0
             end
             
-            while stack.last.type != :bracket_open
+            loop {
+                if stack.empty?
+                    STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
+                    return nil
+                end
+                break if stack.last.type == :bracket_open
                 out.push stack.pop
-            end
+            }
             
             out.push Token.new arities.pop, :call_func, nil
             
@@ -450,12 +467,14 @@ class AtLambda
         @tokens = [*inner_ast]
         @params = params
         @scope = {}
+        @ascend = true
+        @descend = true
     end
     
-    attr_accessor :params, :scope
+    attr_accessor :params, :scope, :ascend, :descend
     
     def [](inst, *args)
-        inst.local_descend(@scope)
+        inst.local_descend(@scope) if @descend
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
@@ -471,7 +490,7 @@ class AtLambda
             inner
         }.last
         inst.abstract_references.pop
-        @scope = inst.local_ascend
+        @scope = inst.local_ascend if @ascend
         res
     end
 end
@@ -500,6 +519,7 @@ def ast(program)
     roots = []
     stack = []
     build = nil
+    return nil if shunted.nil?
     shunted.each { |ent|
         raw, type, start = ent
         if type == :call_func
@@ -588,6 +608,9 @@ class AtState
     @@extended_variables = {}
     def initialize(program, input=STDIN, output=STDOUT)
         @trees = ast(program)
+        if @trees.nil?
+            exit
+        end
         @variables = @@default_variables.dup
         @abstract_references = []
         @locals = [{}]
@@ -862,6 +885,7 @@ class AtState
     @@configurable = ["Print", "Option"]#, "Hash"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
+    HOLD_ALL = Hash.new(true)
     @@held_arguments = {
         "->" => [true, false],
         "If" => [false, true, true],
@@ -871,6 +895,7 @@ class AtState
         "Modify" => [false, true],
         ":=" => [true, true],
         ".=" => [true, true],
+        "." => [false, true],
     }
     
     # All builtins
@@ -973,6 +998,16 @@ class AtState
         },
         "V" => lambda { |inst, *args|
             args
+        },
+        
+        #################
+        #### CLASSES ####
+        #################
+        "Class" => lambda { |inst, body|
+            AtClass.new inst, body
+        },
+        "New" => lambda { |inst, ac, *args|
+            ac.create(*args)
         },
         
         #############################
@@ -1797,10 +1832,16 @@ class AtState
     
     # operators with two arguments
     @@operators = {
+        "." => lambda { |inst, obj, prop|
+            if AtClassInstance === obj || Hash === obj
+                obj[prop.raw]
+            else
+                raise 'idk'
+            end
+        },
         ":=" => lambda { |inst, var, val|
             if Node === var
-                # p var, val
-                # todo: pattern matching
+                #todo: pattern matching
                 args = var.children.map(&:raw)
                 res = AtLambda.new [val], args
                 inst.define var.head.raw, res
@@ -1811,8 +1852,15 @@ class AtState
         },
         ".=" => lambda { |inst, var, val|
             #todo: expand like :=
-            name = var.raw
-            inst.define_local name, inst.evaluate_node(val)
+            #todo: abstract `.=` and `:=` logic
+            if Node === var
+                args = var.children.map(&:raw)
+                res = AtLambda.new [val], args
+                inst.define_local var.head.raw, res
+            else
+                name = var.raw
+                inst.define_local name, inst.evaluate_node(val)
+            end
         },
         "*" => vectorize_dyad { |inst, a, b| a * b },
         "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
