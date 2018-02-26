@@ -72,8 +72,8 @@ $PRECEDENCE = {
     "or"    => [5, :left],
     "nand"  => [5, :left],
     "->"    => [4, :left],
-    ":="    => [3, :left],
-    ".="    => [3, :left],
+    ":="    => [3, :right],
+    ".="    => [3, :right],
     ";"     => [2, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
