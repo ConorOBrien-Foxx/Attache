@@ -265,9 +265,16 @@ def parse(code)
             arities.push 1
         
         elsif type == :comma
-            arities[-1] += 1
+            unless arities.last.nil?
+                arities[-1] += 1
+            end
+            
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
-        
+            
+            unless arities.last
+                out.push Token.new "discard", :discard, nil
+            end
+
         elsif type == :bracket_close || (type == :curry_close && curry_mask.pop)
             if last_token.type == :bracket_open
                 arities[-1] = 0
@@ -301,7 +308,10 @@ def parse(code)
         
         elsif type == :paren_open
             stack.push ent
+            arities.push nil
+            # out.push Token.new "pop", :pop, nil
         elsif type == :paren_close
+            arities.pop
             out.push stack.pop while stack.last.type != :paren_open
             stack.pop
             
@@ -547,6 +557,9 @@ def ast(program)
         
         elsif $DATA.include? type
             stack.push ent
+        
+        elsif type == :discard
+            stack.pop
         
         else
             STDERR.puts "Unhandled shunt type #{type}"
