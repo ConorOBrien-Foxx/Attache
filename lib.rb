@@ -522,7 +522,7 @@ def random(min=nil, max=nil)
     elsif max.nil?
         rand(min)
     else
-        min + rand(max - min)
+        min + rand(max - min + 1)
     end
 end
 

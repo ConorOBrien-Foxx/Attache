@@ -909,6 +909,7 @@ class AtState
         ":=" => [true, true],
         ".=" => [true, true],
         "." => [false, true],
+        "Safely" => [true],
     }
     
     # All builtins
@@ -1440,7 +1441,11 @@ class AtState
             list[inds]
         },
         "Has" => lambda { |inst, list, member|
-            list.include? member
+            if String === list
+                !!list.index(member)
+            else
+                list.include? member
+            end
         },
         "FlatGet" => lambda { |inst, list, inds|
             [*inds].each { |i|
@@ -1835,12 +1840,20 @@ class AtState
         },
         "Day" => vectorize_monad { |inst, date=Time.now|
             date.day
-        }
+        },
         
         ##################
         #### UNSORTED ####
         ##################
         #* none *#
+        "Safely" => lambda { |inst, body|
+            begin
+                inst.evaluate_node body
+                nil
+            rescue Exception => e
+                e
+            end
+        },
     }
     
     # operators with two arguments
