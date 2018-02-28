@@ -895,7 +895,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option"]#, "Hash"]
+    @@configurable = ["Print", "Option", "Safely"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -909,7 +909,7 @@ class AtState
         ":=" => [true, true],
         ".=" => [true, true],
         "." => [false, true],
-        "Safely" => [true],
+        "DoSafe" => [true],
     }
     
     # All builtins
@@ -949,7 +949,7 @@ class AtState
             }.last
         },
         "Exit" => lambda { |inst, code=0|
-            exit(code)
+            exit! code
         },
         "Hash" => lambda { |inst, *opts|
             res = {}
@@ -1846,13 +1846,29 @@ class AtState
         #### UNSORTED ####
         ##################
         #* none *#
-        "Safely" => lambda { |inst, body|
+        "DoSafe" => lambda { |inst, body|
             begin
                 inst.evaluate_node body
                 nil
             rescue Exception => e
                 e
             end
+        },
+        "Safely" => lambda { |inst, func, catch=nil, **opts|
+            rec = lambda { |inst, *args|
+                begin
+                    func[inst, *args]
+                rescue Exception => e
+                    if catch.nil?
+                        e
+                    else
+                        catch[inst, e]
+                    end
+                    if opts[:redo]
+                        rec[inst, *args]
+                    end
+                end
+            }
         },
     }
     
