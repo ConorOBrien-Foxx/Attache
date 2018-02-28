@@ -1877,6 +1877,8 @@ class AtState
         "." => lambda { |inst, obj, prop|
             if AtClassInstance === obj || Hash === obj
                 obj[prop.raw]
+            elsif obj.respond_to? prop.raw.to_sym
+                obj.send prop.raw.to_sym
             else
                 raise 'idk'
             end
