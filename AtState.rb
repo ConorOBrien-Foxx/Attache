@@ -1740,14 +1740,20 @@ class AtState
         "MinBy" => lambda { |inst, f, list|
             list.min { |e| f[inst, e] }
         },
-        "Outer" => lambda { |inst, f, a, *bs|
-            a.product(*bs).map { |e| f[inst, *e] }
+        "Outer" => lambda { |inst, f, a=nil, *bs|
+            if a.nil?
+                lambda { |inst, a, *bs|
+                    a.product(*bs).map { |e| f[inst, *e] }
+                }
+            else
+                a.product(*bs).map { |e| f[inst, *e] }
+            end
         },
         "Select" => lambda { |inst, f, list|
             if AtState.func_like? list
                 g = list
-                lambda { |inst, list|
-                    @@functions["Select"][inst, f, g[inst, list]]
+                lambda { |inst, *args|
+                    @@functions["Select"][inst, f, g[inst, *args]]
                 }
             else
                 list.select { |e|
@@ -1758,8 +1764,8 @@ class AtState
         "Reject" => lambda { |inst, f, list|
             if AtState.func_like? list
                 g = list
-                lambda { |inst, list|
-                    @@functions["Reject"][inst, f, g[inst, list]]
+                lambda { |inst, *args|
+                    @@functions["Reject"][inst, f, g[inst, *args]]
                 }
             else
                 list.reject { |e| AtState.truthy? f[inst, e] }
