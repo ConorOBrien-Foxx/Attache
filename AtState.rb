@@ -630,6 +630,7 @@ class AtState
         @saved = []
         @in = input
         @out = output
+        load_lib "std"
     end
     
     def load_lib(name)
