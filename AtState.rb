@@ -1428,6 +1428,9 @@ class AtState
                 list.count f
             end
         },
+        "Decreasing" => lambda { |inst, list|
+            list.delta.all?(&:negative?) rescue false
+        },
         "Delta" => lambda { |inst, list|
             list.delta
         },
@@ -1452,6 +1455,9 @@ class AtState
                 list = list[i]
             }
             list
+        },
+        "Increasing" => lambda { |inst, list|
+            list.delta.all?(&:positive?) rescue false
         },
         "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.indices ind
