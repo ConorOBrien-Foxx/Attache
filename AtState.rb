@@ -491,6 +491,12 @@ class AtLambda
         @descend = true
     end
     
+    def bind(inst)
+        lambda { |*args|
+            self[inst, *args]
+        }
+    end
+    
     attr_accessor :params, :scope, :ascend, :descend
     
     def [](inst, *args)
@@ -1117,6 +1123,7 @@ class AtState
         },
         "Digits" => vectorize_monad { |list, n| n.digits.reverse },
         "Divide" => lambda { |inst, *args|
+            args[0] = args[0].to_f
             args.inject(:/)
         },
         "Fibonacci" => lambda { |inst, n|
