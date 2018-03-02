@@ -196,7 +196,7 @@ module TruthExtension
         not self
     end
     
-    [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :-@].each { |prop|
+    [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :>, :<, :>=, :<=, :-@].each { |prop|
         define_method(prop) { |*args| to_i.send(prop, *args) }
     }
 end
