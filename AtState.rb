@@ -1185,7 +1185,7 @@ class AtState
             @@operators["*"][inst, n, n]
         },
         "Subtract" => lambda { |inst, *args|
-            args.inject(0, :-)
+            args.inject(:-)
         },
         "ToBase" => vectorize_dyad { |inst, num, base|
             to_base num, base
