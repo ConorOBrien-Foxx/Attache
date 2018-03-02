@@ -631,8 +631,10 @@ class AtState
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
+        "argv" => ARGV[1..-1],
     }
     @@extended_variables = {}
+    
     def initialize(program, input=STDIN, output=STDOUT)
         @trees = ast(program)
         if @trees.nil?
