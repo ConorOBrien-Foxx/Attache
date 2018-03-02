@@ -706,7 +706,9 @@ class AtState
             raw
         
         elsif type == :string
-            raw[1..-2].gsub(/""/, '"').gsub(/\\./) { |e| eval '"' + e + '"' }
+            raw[1..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
+                eval '"' + e + '"' rescue e
+            }
         
         elsif @@extended_variables.has_key? raw
             @@extended_variables[raw]
