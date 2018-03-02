@@ -134,13 +134,30 @@ $TOKENIZER = Regexp.new($TYPES.keys.join "|")
 def tokenize(code)
     Enumerator.new { |enum|
         i = 0
+        depth = nil
+        build = nil
         code.scan($TOKENIZER) { |part|
-            $TYPES.each { |k, v|
-                if /^#{k}$/ === part
-                    enum.yield Token.new part, v, i
+            $TYPES.each { |reg, type|
+                next unless /^#{reg}$/ === part
+                
+                if type == :comment_open
+                    depth = 1
+                    build = part
+                elsif depth.nil?
+                    enum.yield Token.new part, type, i
                     i += part.size
-                    break
+                else
+                    build += part
+                    depth += 1 if type == :comment_open
+                    depth -= 1 if type == :comment_close
+                    if depth.zero?
+                        depth = nil
+                        enum.yield Token.new build, :comment, i
+                    end
+                    i += part.size
                 end
+                
+                break
             }
         }
     }
@@ -148,10 +165,6 @@ end
 
 def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
-end
-
-def get_starting(sym)
-    sym.to_s.sub("_close", "_open").to_sym
 end
 
 def parse(code)
@@ -162,28 +175,11 @@ def parse(code)
     # keep track of curries promoted to calls
     curry_mask = []
     last_token = Token.new nil, nil, nil
-    depth = nil
+    
     tokenize(code).each { |ent|
         raw, type, start = ent
         
         next if type == :comment
-        
-        unless depth.nil?
-            
-            depth += 1 if type == :comment_open
-            depth -= 1 if type == :comment_close
-            
-            if depth.zero?
-                depth = nil
-            end
-            
-            next
-        end
-        
-        if type == :comment_open
-            depth = 1
-            next
-        end
         
         if $DATA.include? type
             # two adjacent datatypes mark a statement
@@ -1034,6 +1030,17 @@ class AtState
         "V" => lambda { |inst, *args|
             args
         },
+        
+        ##---------##
+        ## File IO ##
+        ##---------##
+        "FileRead" => lambda { |inst, name|
+            File.read(name) rescue nil
+        },
+        "FileWrite" => lambda { |inst, name, content|
+            File.write(name, content)
+        },
+        
         
         #################
         #### CLASSES ####
