@@ -1117,7 +1117,7 @@ class AtState
         },
         "Digits" => vectorize_monad { |list, n| n.digits.reverse },
         "Divide" => lambda { |inst, *args|
-            args.inject(1.0, :/)
+            args.inject(:/)
         },
         "Fibonacci" => lambda { |inst, n|
             nth_fibonacci(n)
