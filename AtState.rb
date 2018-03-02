@@ -1241,6 +1241,9 @@ class AtState
         "IsPrime" => vectorize_monad { |inst, n|
             Prime.prime? n
         },
+        "IsComposite" => vectorize_monad { |inst, n|
+            !Prime.prime? n
+        },
         "NextPrime" => vectorize_dyad { |inst, n, rep=1|
             rep.times {
                 n += 1 + n % 2
@@ -1632,7 +1635,13 @@ class AtState
             end
         },
         "SortBy" => lambda { |inst, list, func|
-            list.sort_by { |e| func[inst, e] }
+            list.sort_by { |e|
+                res = func[inst, e]
+                if res == !!res
+                    res = force_number res
+                end
+                res
+            }
         },
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
             split_at force_list(str), inds
