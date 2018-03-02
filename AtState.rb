@@ -77,7 +77,13 @@ $PRECEDENCE = {
     ";"     => [2, :left],
 }
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
-$OPERATOR = Regexp.new($operators.map { |e| Regexp.escape e }.join "|")
+$OPERATOR = Regexp.new($operators.map { |e|
+    if /^\w+$/ === e
+        "#{e}\\b"
+    else
+        Regexp.escape e
+    end
+}.join "|")
 $OP_QUOTE = /`#$OPERATOR/
 $TYPES = {
     $COMMENT            => :comment,
@@ -896,7 +902,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option", "Safely"]
+    @@configurable = ["Print", "Option", "Safely", "Series"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -1041,13 +1047,13 @@ class AtState
         ##########################
         #### HYBRID FUNCTIONS ####
         ##########################
-        "Series" => lambda { |inst, f, max, start=0|
+        "Series" => lambda { |inst, f, max, start=0, **config|
             i = start
             collect = []
             loop {
                 value = f[inst, i]
                 unless value.nil?
-                    break if value >= max
+                    break if config[:include] ? value > max : value >= max
                     collect.push value
                 end
                 i += 1
@@ -1222,6 +1228,25 @@ class AtState
         "IsPrime" => vectorize_monad { |inst, n|
             Prime.prime? n
         },
+        "NextPrime" => vectorize_dyad { |inst, n, rep=1|
+            rep.times {
+                n += 1 + n % 2
+                n += 2 until Prime.prime? n
+            }
+            n
+        },
+        "PreviousPrime" => vectorize_dyad { |inst, n, rep=1|
+            rep.times {
+                return nil if n <= 2
+                if n == 3
+                    n = 2
+                else
+                    n -= 1 + n % 2
+                    n -= 2 until Prime.prime? n
+                end
+            }
+            n
+        },
         "Prime" => vectorize_monad { |inst, n|
             nth_prime n
         },
@@ -1233,6 +1258,15 @@ class AtState
         },
         "Primes" => vectorize_monad { |inst, n|
             Prime.first n
+        },
+        # "PrimePi" => vectorize_monad { |inst, n|
+            
+        # },
+        "PrimeNu" => vectorize_monad { |inst, n|
+            prime_factors(n).uniq.size
+        },
+        "PrimeOmega" => vectorize_monad { |inst, n|
+            prime_factors(n).size
         },
         
         ##------------------------##

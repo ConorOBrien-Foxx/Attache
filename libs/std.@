@@ -2,3 +2,5 @@
 
 MapLeft[f] := [l, r] -> { f&r => l }
 MapRight[f] := [l, r] -> { f&:l => r }
+
+PrimePi[n] := #Series[Prime, n, include->true]
