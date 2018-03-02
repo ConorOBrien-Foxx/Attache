@@ -1159,7 +1159,7 @@ class AtState
         "Oct" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 8]
         },
-        "Polygonal" => lambda { |inst, n, order=3|
+        "Polygonal" => vectorize_dyad { |inst, n, order=3|
             gonal n, order
         },
         "Pythagorean" => vectorize_monad { |inst, n|
