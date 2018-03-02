@@ -624,6 +624,8 @@ class AtState
         "sp" => " ",
         "tab" => "\t",
         "inf" => Infinity,
+        "E" => Math::E,
+        "PI" => Math::PI,
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
