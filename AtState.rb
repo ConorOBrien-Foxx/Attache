@@ -282,7 +282,7 @@ def parse(code)
             end
 
         elsif type == :bracket_close || (type == :curry_close && curry_mask.pop)
-            if last_token.type == :bracket_open
+            if last_token.type == :bracket_open || last_token.type == :curry_open
                 arities[-1] = 0
             end
             
