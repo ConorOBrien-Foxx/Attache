@@ -1736,10 +1736,10 @@ class AtState
             end
         },
         "MaxBy" => lambda { |inst, f, list|
-            list.max { |e| f[inst, e] }
+            list.max_by { |e| f[inst, e] }
         },
         "MinBy" => lambda { |inst, f, list|
-            list.min { |e| f[inst, e] }
+            list.min_by { |e| f[inst, e] }
         },
         "Outer" => lambda { |inst, f, a=nil, *bs|
             if a.nil?
