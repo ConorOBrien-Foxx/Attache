@@ -1469,6 +1469,9 @@ class AtState
         "Average" => lambda { |inst, list|
             list.average
         },
+        "Chop" => lambda { |inst, list, size|
+            chop force_list(list), size
+        },
         "Concat" => lambda { |inst, *args|
             args.flatten(1)
         },
@@ -1685,8 +1688,11 @@ class AtState
         "Diagonal" => vectorize_dyad(RIGHT) { |inst, mat, diag=0|
             diagonal mat, diag
         },
+        "Identity" => vectorize_monad { |inst, size|
+            Matrix.identity size
+        },
         "LowerTriangle" => lambda { |inst, mat, strict=false|
-            upperTriangle mat, AtState.truthy?(strict)
+            lower_triangle mat, AtState.truthy?(strict)
         },
         "MatrixRotate" => vectorize_dyad(RIGHT) { |inst, mat, n=1|
             n.times {
@@ -1704,7 +1710,7 @@ class AtState
             list.transpose
         },
         "UpperTriangle" => lambda { |inst, mat, strict=false|
-            upperTriangle mat, AtState.truthy?(strict)
+            upper_triangle mat, AtState.truthy?(strict)
         },
         
         ##------------------------##
@@ -1843,13 +1849,16 @@ class AtState
             list.join joiner
         },
         "Ord" => vectorize_monad { |inst, ent|
+            ent.ord
+        },
+        "Ords" => vectorize_monad { |inst, ent|
             if ent.is_a? String
                 ent.chars.map(&:ord)
             else
                 ent.ord
             end
         },
-        "Split" => vectorize_dyad { |inst, str, sep|
+        "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
             str.split sep
         },
         "Replace" => lambda { |inst, str, search, replace=""|

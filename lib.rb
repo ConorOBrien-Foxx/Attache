@@ -777,7 +777,7 @@ def diagonal(mat, n=0)
     res
 end
 
-def lowerTriangle(mat, strict=false)
+def lower_triangle(mat, strict=false)
     mat.map.with_index { |row, i|
         row.map.with_index { |e, j|
             (strict ? i <= j : i < j) ? 0 : e
@@ -785,7 +785,7 @@ def lowerTriangle(mat, strict=false)
     }
 end
 
-def upperTriangle(mat, strict=false)
+def upper_triangle(mat, strict=false)
     mat.map.with_index { |row, i|
         row.map.with_index { |e, j|
             (strict ? i >= j : i > j) ? 0 : e
@@ -872,4 +872,18 @@ def split_on(iter, func)
         build.last << el
     }
     build
+end
+
+def chop(array, size)
+    array = array.dup
+    size = [*size]
+    
+    collect = []
+    i = 0
+    until array.empty?
+        collect << array.shift(size[i])
+        i += 1
+        i = i % size.size rescue 0
+    end
+    collect
 end
