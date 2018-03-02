@@ -1243,7 +1243,7 @@ class AtState
         },
         "PreviousPrime" => vectorize_dyad { |inst, n, rep=1|
             rep.times {
-                return nil if n <= 2
+                break n = nil if n <= 2
                 if n == 3
                     n = 2
                 else
