@@ -146,7 +146,7 @@ if options[:generate_seen]
         if options[:mode].empty?
             puts "Current aspects:"
             $config.keys.each { |key| pind key }
-            method = prompt_input "Which aspect would you like to modify?"
+            method = prompt_input "Which aspect would you like to modify? "
         else
             method = options[:mode].first.to_s
         end
@@ -157,7 +157,7 @@ if options[:generate_seen]
             
             $config[method] ||= {}
             
-            used_method = prompt_input "Which method does #{method} use?"
+            used_method = prompt_input "Which method does #{method} use? "
             
             $config[method]["method"] = used_method
             $config[method]["cases"] = []
@@ -206,7 +206,7 @@ if options[:generate_seen]
                     i = cases.size if action == "c"
                     
                     cases[i] ||= {}
-                    input = prompt_input "What should the input case be?"
+                    input = prompt_input "What should the input case be? "
                     cases[i]["input"] = input
                     
                     output = send data["method"], input

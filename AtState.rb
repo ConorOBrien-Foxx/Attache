@@ -906,7 +906,7 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option", "Safely", "Series"]
+    @@configurable = ["Print", "Option", "Safely", "Series", "SeriesIf"]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -1064,13 +1064,13 @@ class AtState
             }
             collect
         },
-        "SeriesIf" => lambda { |inst, f, cond, max, start=0|
+        "SeriesIf" => lambda { |inst, f, cond, max, start=0, **config|
             i = start
             collect = []
             loop {
                 value = f[inst, i]
                 unless value.nil?
-                    break if value >= max
+                    break if config[:include] ? value > max : value >= max
                     collect.push value if cond[inst, value]
                 end
                 i += 1
