@@ -2036,7 +2036,7 @@ class AtState
             AtState.falsey?(a) || AtState.falsey?(b) ? true : false
         },
         "and" => lambda { |inst, a, b|
-            AtState.falsey?(b) ? b : a
+            AtState.falsey?(a) ? a : b
         },
         "nor" => lambda { |inst, a, b|
             AtState.truthy?(a) || AtState.truthy?(b) ? false : true
