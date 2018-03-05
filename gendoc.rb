@@ -17,7 +17,7 @@ end
 
 $AFTER_COMMENT = /(?<=#).+/
 $COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
-$SIGNATURE_PARSE = /"(\w+)" => (\w+) \{ \|(.+?)\|\s*$/
+$SIGNATURE_PARSE = /"(\w+)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)\s?(.+)/
 
 groups = input.scan($COMMENT_GROUP)
@@ -32,6 +32,26 @@ $PUSH_COLLECT = {
 $APPEND = [
     "example",
 ]
+
+def text_from_signature(sig)
+    if sig.index "vector"
+        after = case sig
+            when /monad/
+                " monadically"
+            when /RIGHT/
+                " dyadically on the right"
+            when /LEFT/
+                " dyadically on the left"
+            when /dyad/
+                " dyadically"
+            else
+                ""
+        end
+        "<p><em>Vectorizes#{after}.</em></p>"
+    else
+        ""
+    end
+end
 
 groups.each { |group|
     head, *body, tail, signature = group.lines
@@ -121,6 +141,9 @@ $final.sort.each { |k, v|
         args:           v[:args].join(", "),
         genre:          v[:info][:genre],
     }
+    
+    result += text_from_signature v[:type]
+    
     result += v[:info][:description].gsub(/\s+/, " ")
     
     result += "<h3>Arguments</h3>" unless v[:info][:params].empty?

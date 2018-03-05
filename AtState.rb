@@ -1085,6 +1085,7 @@ class AtState
         # @example     i -> "print info",
         # @example     h -> "print hello world"
         # @example ]
+        # @example ?? outputs "Press something!"
         # @example ?? user presses the `i` key
         # @example Print["Received:", Repr[input]]
         # @example ?? Received: "i"
@@ -1208,7 +1209,7 @@ class AtState
         #### NUMERIC FUNCTIONS ####
         ###########################
         #<<
-        # absolute value
+        # Calculates the absolute value of <code>n</code>.
         # @return number
         # @type n number
         # @genre numeric
@@ -1269,6 +1270,16 @@ class AtState
                 n.floor(r)
             end
         },
+        #<<
+        # Converts <code>num</code> from base <code>base</code>
+        # to base <code>10</code>.
+        # @return number
+        # @type num [number]
+        # @param num an array of digits representing the number in base <code>base</code>.
+        # @type base number
+        # @param base a number greater than <code>0</code>, representing the source base of the numeric array.
+        # @genre numeric
+        #>>
         "FromBase" => vectorize_dyad(RIGHT) { |inst, num, base|
             from_base num, base
         },
