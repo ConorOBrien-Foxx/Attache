@@ -1653,6 +1653,11 @@ class AtState
         # "Group" => lambda { |inst, arr|
             
         # },
+        "Hook" => lambda { |inst, f, g|
+            lambda { |inst, *args|
+                f[inst, args.first, g[inst, *args]]
+            }
+        },
         "Tie" => lambda { |inst, *funcs|
             if funcs.any? { |e| !AtState.func_like? e }
                 funcs.inject([]) { |acc, e| [*acc, *e] }
@@ -1958,6 +1963,11 @@ class AtState
         },
         "StdDev" => lambda { |inst, list|
             list.stddev
+        },
+        "Stitch" => lambda { |inst, left, right|
+            left.map.with_index { |e, i|
+                [].concat e, right[i]
+            }
         },
         "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
