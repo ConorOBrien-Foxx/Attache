@@ -150,7 +150,7 @@ $final.sort.each { |k, v|
     result += "</div>"
 }
 
-File.write "docs/out.html", BOILERPLATES[:html] % {
+File.write "docs/index.html", BOILERPLATES[:html] % {
     title: title,
     body: result
 }
