@@ -13,12 +13,31 @@ def highlight_html(str)
     $inst.variables["highlight_html"][$inst, str]
 end
 
+# tio integration
+require 'zlib'
+require 'base64'
+FIELD_SEPARATOR = "\xff"
+def deflate(str)
+    Zlib::Deflate.deflate(str,9)[2..-5]
+end
+
+def finalize(state_string)
+    compressed = deflate(state_string)
+    encoded = Base64.encode64 compressed
+    encoded.tr("+", "@").gsub(/=+/, "")
+end
+
+def tio_encode(program)
+    state_string = "attache#{FIELD_SEPARATOR * 2}#{program}#{FIELD_SEPARATOR * 2}"
+    url = finalize state_string
+    "tio.run/###{url}"
+end
 
 
 $AFTER_COMMENT = /(?<=#).+/
 $COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
 $SIGNATURE_PARSE = /"(\w+)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
-$DATA_LINE = /@(\w+)\s?(.+)/
+$DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
 groups = input.scan($COMMENT_GROUP)
 
@@ -95,9 +114,19 @@ groups.each { |group|
 }
 
 result = ""
-toc = ""
+$toc = Hash.new { |h, k| h[k] = [] }
+
 $final.sort.each { |k, v|
-    result += "<div class=\"function\">"
+    genre = v[:info][:genre]
+
+    if genre.empty?
+        STDERR.puts "Warning: #{k} has no genre"
+    end
+    
+    
+    $toc[genre] << k
+    
+    result += "<div class=\"function\" id=\"#{k}\">"
     args_types = {}
     v[:args].map! { |e|
         # e = e[0]
@@ -140,7 +169,7 @@ $final.sort.each { |k, v|
         return_type:    v[:info][:return],
         name:           k,
         args:           v[:args].join(", "),
-        genre:          v[:info][:genre],
+        genre:          genre,
     }
     
     result += text_from_signature v[:type]
@@ -180,13 +209,30 @@ $final.sort.each { |k, v|
     end
     
     unless v[:info][:example].empty?
+        code = v[:info][:example].join("\n")
+        
         result += BOILERPLATES[:example] % {
-            code: highlight_html(v[:info][:example].join("\n"))
+            code: highlight_html(code),
         }
+        
+        result += "<a href=\"https://#{tio_encode code}\">Try it online!</a>"
     end
     
     result += "</div>"
 }
+
+toc_result = "<h2>Table of Contents</h2><table>"
+$toc.sort_by { |e| e[0].downcase }.each { |genre, names|
+    toc_result += "<tr><td>(#{genre})</td><td><code>"
+    names.each { |name|
+        toc_result += "<a href=\"##{name}\">#{name}</a> "
+    }
+    toc_result += "</code></td></tr>"
+}
+
+toc_result += "</table>"
+
+result = toc_result + result
 
 File.write "docs/index.html", BOILERPLATES[:html] % {
     title: title,

@@ -1206,6 +1206,7 @@ class AtState
         # Returns an array of the arguments.
         # @type args (*)
         # @return [(*)]
+        # @genre data
         #>>
         "V" => lambda { |inst, *args|
             args
@@ -1284,6 +1285,7 @@ class AtState
         # Reverses the elements of <code>ent</code>.
         # @return (*)
         # @type ent (*)
+        # @genre list
         #>>
         "Reverse" => lambda { |inst, ent|
             reverse ent
@@ -1409,23 +1411,70 @@ class AtState
                 arg.chr
             end
         },
+        #<<
+        # Produces the Collatz sequence of <code>n</code>.
+        # @type n number
+        # @return [number]
+        # @genre numeric
+        #>>
         "Collatz" => vectorize_monad { |inst, n|
             collatz n
         },
+        #<<
+        # Returns the number of steps it takes for <code>n</code> to reach <code>1</code> according to the Collatz transformation.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "CollatzSize" => vectorize_monad { |inst, n|
             collatz(n).size - 1
         },
+        #<<
+        # Doubles <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Double" => vectorize_monad { |inst, n|
             @@operators["*"][inst, n, 2]
         },
-        "Digits" => vectorize_monad { |list, n| n.digits.reverse },
+        #<<
+        # Produces the digits of <code>n</code>.
+        # @type n number
+        # @return [number]
+        # @genre numeric
+        #>>
+        "Digits" => vectorize_monad { |list, n|
+            n.digits.reverse
+        },
+        #<<
+        # Divides each number in <code>args</code> by the next. That is, folding division over <code>args</code>
+        # @type args number
+        # @return number
+        # @genre numeric
+        #>>
         "Divide" => lambda { |inst, *args|
             args[0] = args[0].to_f
             args.inject(:/)
         },
+        #<<
+        # Returns the <code>n</code>th number in the Fibonacci sequence, starting with <code>f<sub>0</sub> = 0</code> and <code>f<sub>1</sub> = 1</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Fibonacci" => lambda { |inst, n|
             nth_fibonacci(n)
         },
+        #<<
+        # Returns <code>n</code> rounded half-up to the nearest integer.
+        # @return number
+        # @type n number
+        # @param r the precision to round. No precision if omitted.
+        # @type r number
+        # @optional r
+        # @genre numeric
+        #>>
         "Floor" => vectorize_dyad { |inst, n, r=nil|
             if r.nil?
                 n.floor
@@ -1446,33 +1495,109 @@ class AtState
         "FromBase" => vectorize_dyad(RIGHT) { |inst, num, base|
             from_base num, base
         },
+        #<<
+        # Takes the Greatest Common Divisor of the atoms of <code>args</code>.
+        # @type args number
+        # @param args List of numbers, which can have nested elements.
+        # @return number
+        # @genre numeric
+        #>>
         "GCD" => lambda { |inst, *args|
             gcd args.flatten
         },
+        #<<
+        # Converts <code>n</code> to base <code>16</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/bases
+        #>>
         "Hex" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 16]
         },
+        #<<
+        # Takes half of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Halve" => vectorize_monad { |inst, n|
             @@operators["/"][inst, n, 2]
         },
+        #<<
+        # Takes the Least Common Multiple of the atoms of <code>args</code>.
+        # @type args number
+        # @param args List of numbers, which can have nested elements.
+        # @return number
+        # @genre numeric
+        #>>
         "LCM" => lambda { |inst, *args|
             lcm args.flatten
         },
+        #<<
+        # Takes the base-<code>10</code> logarithm of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Log" => lambda { |inst, n|
             Math::log10 n
         },
+        #<<
+        # Takes the natural logarithm of <code>n</code>. Note that <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>ln</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msub><mi>log</mi><mi>e</mi></msub><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @return number
+        # @type n number
+        # @genre numeric
+        #>>
         "Ln" => lambda { |inst, n|
             Math::log n
         },
+        #<<
+        # Takes the product of the elements of <code>args</code>.
+        # @return number
+        # @type args number
+        # @genre numeric
+        #>>
         "Multiply" => lambda { |inst, *args|
             @@functions["Prod"][inst, args]
         },
-        "N" => lambda { |inst, n|
-            force_number n
+        #<<
+        # Converts <code>ent</code> to an integer.
+        # @type ent [number]|string|number|(*)
+        # @return number
+        # @genre conversion
+        # @paramtype [number] ent Converts <code>ent</code> to base <code>10</code>.
+        # @paramtype string ent Parses <code>ent</code> as a base <code>10</code> integer.
+        # @paramtype number ent Converts <code>ent</code> to an integer if it represents one.
+        # @paramtype (*) ent Attempts to cast <code>ent</code> to an integer.
+        #>>
+        "N" => lambda { |inst, ent|
+            force_number ent
         },
+        #<<
+        # Converts <code>n</code> to base <code>8</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/bases
+        #>>
         "Oct" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 8]
         },
+        #<<
+        # Obtains the <code>n</code>th <code>order</code>-agonal number.
+        # @return number
+        # @type n number
+        # @type order number
+        # @genre numeric
+        # @example (* The triangular numbers (default) *)
+        # @example Print[Polygonal[0:5, 3]]
+        # @example ?? [0, 1, 3, 6, 10, 15]
+        # @example Print[Polygonal[0:5]]
+        # @example ?? [0, 1, 3, 6, 10, 15]
+        # @example 
+        # @example (* The square numbers *)
+        # @example Print[Polygonal[0:5, 4]]
+        # @example ?? [0, 1, 4, 9, 16, 25]
+        #>>
         "Polygonal" => vectorize_dyad { |inst, n, order=3|
             gonal n, order
         },
