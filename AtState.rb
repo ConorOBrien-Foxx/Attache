@@ -1029,6 +1029,13 @@ class AtState
         "Exit" => lambda { |inst, code=0|
             exit! code
         },
+        #<<
+        # Creates a hash.
+        # @return Hash[string -> (*)]
+        # @type opts ConfigureValue
+        # @param opts A series of value pairs <code>a -> v</code>.
+        # @genre data
+        #>>
         "Hash" => lambda { |inst, *opts|
             res = {}
             # p opts
@@ -1056,7 +1063,8 @@ class AtState
         # @genre scope
         # @example a := 3
         # @example Modify[$a, _ * 2 + 1]
-        # @example Print[a]     ?? 7
+        # @example Print[a]
+        # @example ?? 7
         #>>
         "Modify" => lambda { |inst, head, body|
             init = inst.get_variable head
@@ -1098,7 +1106,7 @@ class AtState
         # @type args (*)
         # @return [(*)]
         # @option after String printed after everything else. Default: <code>"\n"</code>.
-        # @option joiner The string which joins <code>args</code>. <code>" "</code>.
+        # @option joiner The string which joins <code>args</code>. Default: <code>" "</code>.
         # @genre IO
         #>>
         "Print" => lambda { |inst, *args, **opts|
@@ -1107,12 +1115,34 @@ class AtState
             inst.out.print opts[:after] || "\n"
             args
         },
+        #<<
+        # Prompts for a line of input. Returns string without trailing newline.
+        # @return string
+        # @type prompt string
+        # @param prompt String to display before input text. Nothing if omitted.
+        # @optional prompt
+        # @genre IO
+        #>>
         "Prompt" => lambda { |inst, prompt=nil|
             prompt_input prompt, inst.in
         },
+        #<<
+        # Reads a line of input, to include any trailing newline.
+        # @return string
+        # @genre IO
+        #>>
         "ReadLine" => lambda { |inst|
             inst.in.gets
         },
+        #<<
+        # Iterates <code>func</code> over lines of stdin received by <code>Prompt[...args]</code>.
+        # Returns a list of these lines modified by <code>func</code>.
+        # @return [string]
+        # @type args (*)
+        # @type func fn[string -> string]
+        # @param func A function that receives lines of input and returns a string.
+        # @genre IO
+        #>>
         "ReadLineLoop" => lambda { |inst, *args, func|
             lines = []
             loop {
@@ -1122,21 +1152,61 @@ class AtState
             }
             lines
         },
+        #<<
+        # Reads a character from the input.
+        # @return string
+        # @genre IO
+        #>>
         "ReadChar" => lambda { |inst|
             inst.in.getc
         },
+        #<<
+        # Reads an integer from the input.
+        # @return number
+        # @genre IO
+        #>>
         "ReadInt" => lambda { |inst|
             inst.in.gets.chomp.to_i
         },
+        #<<
+        # Reads a float from the input.
+        # @return number
+        # @genre IO
+        #>>
+        "ReadFloat" => lambda { |inst|
+            inst.in.gets.chomp.to_f
+        },
+        #<<
+        # Updates values of global abstracts, respective to <code>args</code>. <code>_1</code> would become <code>args[0]</code>, and <code>_<em>n</em></code> would become <code>args[n-1]</code>.
+        # @type args (*)
+        # @return [(*)]
+        # @genre meta
+        #>>
         "Save" => lambda { |inst, *args|
             inst.saved = args
         },
+        #<<
+        # Reads all of STDIN.
+        # @return string
+        # @genre IO
+        #>>
         "Stdin" => lambda { |inst|
             STDIN.read
         },
+        #<<
+        # Writes <code>args</code>, joined together, to STDOUT.
+        # @type args (*)
+        # @genre IO
+        # @return nil
+        #>>
         "Stdout" => lambda { |inst, *args|
             print args.flatten.join
         },
+        #<<
+        # Returns an array of the arguments.
+        # @type args (*)
+        # @return [(*)]
+        #>>
         "V" => lambda { |inst, *args|
             args
         },
@@ -1144,9 +1214,22 @@ class AtState
         ##---------##
         ## File IO ##
         ##---------##
+        #<<
+        # Returns the contents of file <code>name</code>, or <code>nil</code> if the file does not exist.
+        # @type name string
+        # @return string
+        # @genre IO/files
+        #>>
         "FileRead" => lambda { |inst, name|
             File.read(name) rescue nil
         },
+        #<<
+        # Writes <code>content</code> to file <code>name</code>. Returns the number of bytes written.
+        # @type name string
+        # @type content string
+        # @return number
+        # @genre IO/files
+        #>>
         "FileWrite" => lambda { |inst, name, content|
             File.write(name, content)
         },
@@ -1155,9 +1238,23 @@ class AtState
         #################
         #### CLASSES ####
         #################
+        #<<
+        # Creates an anonymous class.
+        # @type body fn[nil -> (*)]
+        # @param body Any local definition made within constitutes a method or instance variable decleration.
+        # @return class
+        # @genre class
+        #>>
         "Class" => lambda { |inst, body|
             AtClass.new inst, body
         },
+        #<<
+        # Instantiates a class with parameters <code>args</code>.
+        # @type ac class
+        # @type args (*)
+        # @return class[]
+        # @genre class
+        #>>
         "New" => lambda { |inst, ac, *args|
             ac.create(*args)
         },
@@ -1165,12 +1262,29 @@ class AtState
         #############################
         #### UNIVERSAL FUNCTIONS ####
         #############################
+        #<<
+        # Identity function; returns its argument.
+        # @return (*)
+        # @type a (*)
+        # @genre functional
+        #>>
         "Id" => lambda { |inst, a|
             a
         },
+        #<<
+        # Determines if <code>ent</code> is palindromic, that is, if it is itself reversed.
+        # @type ent [(*)]|string
+        # @return bool
+        # @genre logic
+        #>>
         "Palindromic" => lambda { |inst, ent|
             reverse(ent) == ent
         },
+        #<<
+        # Reverses the elements of <code>ent</code>.
+        # @return (*)
+        # @type ent (*)
+        #>>
         "Reverse" => lambda { |inst, ent|
             reverse ent
         },
@@ -1178,6 +1292,20 @@ class AtState
         ##########################
         #### HYBRID FUNCTIONS ####
         ##########################
+        #<<
+        # Obtains all non-negative values under <code>max</code> by repeating <code>f</code>.
+        # @return [number]
+        # @type f fn[number]
+        # @type max number
+        # @type start number
+        # @optional start
+        # @genre functional
+        # @option include determines whether or not to include <code>max</code> as an upperbound. Default: <code>false</code>
+        # @example Series[Prime, 13]
+        # @example ?? [2, 3, 5, 7, 11]
+        # @example Series[Prime, 13, include->true]
+        # @example ?? [2, 3, 5, 7, 11, 13]
+        #>>
         "Series" => lambda { |inst, f, max, start=0, **config|
             i = start
             collect = []
@@ -1191,6 +1319,21 @@ class AtState
             }
             collect
         },
+        #<<
+        # Obtains all non-negative values under <code>max</code> which satisfy <code>cond</code> by repeating <code>f</code>.
+        # @return [number]
+        # @type f fn[n]
+        # @type cond fn[n->b]
+        # @type max number
+        # @type start number
+        # @optional start
+        # @genre functional
+        # @option include determines whether or not to include <code>max</code> as an upperbound. Default: <code>false</code>
+        # @example SeriesIf[Prime, Odd, 13]
+        # @example ?? [3, 5, 7, 11]
+        # @example Series[Prime, Odd, 13, include->true]
+        # @example ?? [3, 5, 7, 11, 13]
+        #>>
         "SeriesIf" => lambda { |inst, f, cond, max, start=0, **config|
             i = start
             collect = []
@@ -1217,9 +1360,21 @@ class AtState
         "Abs" => vectorize_monad { |inst, n|
             n.abs
         },
+        #<<
+        # Adds each of <code>args</code> together.
+        # @return number
+        # @type args number
+        # @genre numeric
+        #>>
         "Add" => lambda { |inst, *args|
             @@functions["Sum"][inst, args]
         },
+        #<<
+        # Converts <code>n</code> to base <code>2</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/bases
+        #>>
         "Bin" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 2]
         },
@@ -1239,6 +1394,14 @@ class AtState
                 n.ceil(r)
             end
         },
+        #<<
+        # Converts <code>arg</code> to characters.
+        # @type arg number|[number]
+        # @return string
+        # @paramtype number arg Converts <code>arg</code> to a character.
+        # @paramtype [number] arg Converts <code>arg</code> to a string of char codes.
+        # @genre conversion
+        #>>
         "Char" => lambda { |inst, arg|
             if arg.is_a? Array
                 arg.map(&:chr).join
@@ -1278,7 +1441,7 @@ class AtState
         # @param num an array of digits representing the number in base <code>base</code>.
         # @type base number
         # @param base a number greater than <code>0</code>, representing the source base of the numeric array.
-        # @genre numeric
+        # @genre numeric/bases
         #>>
         "FromBase" => vectorize_dyad(RIGHT) { |inst, num, base|
             from_base num, base
