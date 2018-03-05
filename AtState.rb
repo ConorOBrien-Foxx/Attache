@@ -1063,16 +1063,46 @@ class AtState
             result = inst.evaluate_node body, [init]
             inst.define head, result
         },
+        #<<
+        # Imports libraries. Returns list of libaries' names included.
+        # @type libs string
+        # @param libs list of strings corresponding to library names.
+        # @genre meta
+        # @return [string]
+        #>>
         "Needs" => lambda { |inst, *libs|
             libs.each { |lib|
                 inst.load_lib lib
             }
         },
+        #<<
+        # Prints <code>prompt</code> and waits for character input found in <code>opts</code>.
+        # @type prompt string
+        # @return string
+        # @genre IO
+        # @example input := Option["Press something!",
+        # @example     s -> "stop this program",
+        # @example     i -> "print info",
+        # @example     h -> "print hello world"
+        # @example ]
+        # @example ?? user presses the `i` key
+        # @example Print["Received:", Repr[input]]
+        # @example ?? Received: "i"
+        #>>
         "Option" => lambda { |inst, prompt, **opts|
             read_option prompt, opts
         },
+        #<<
+        # Prints each argument of <code>args</code>, separated by spaces.
+        # @type args (*)
+        # @return [(*)]
+        # @option after String printed after everything else. Default: <code>"\n"</code>.
+        # @option joiner The string which joins <code>args</code>. <code>" "</code>.
+        # @genre IO
+        #>>
         "Print" => lambda { |inst, *args, **opts|
-            inst.out.print args.map(&:to_s).join(" ")
+            joiner = opts[:seperator] || opts[:sep] || " "
+            inst.out.print args.map(&:to_s).join(joiner)
             inst.out.print opts[:after] || "\n"
             args
         },
@@ -2032,6 +2062,10 @@ class AtState
         #### UNSORTED ####
         ##################
         #* none *#
+        #todo: expand
+        "HTMLEscape" => lambda { |inst, str|
+            str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
+        },
         "DoSafe" => lambda { |inst, body|
             begin
                 inst.evaluate_node body

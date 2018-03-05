@@ -22,6 +22,10 @@ h2 {
     font-size: 20px;
 }
 
+p {
+    margin: auto;
+}
+
 .genre {
     font-size: 0.8em;
     float: right;
@@ -37,9 +41,37 @@ h2 {
 }
 
 .function:nth-child(even) {
-    background-color: #dedede;
+    background-color: #e7e7e7;
 }
 
 div.example {
     margin-left: 2em;
+}
+
+/* style */
+.at_string, .at_reference, .at_abstract {
+    color: #cc5555;
+}
+
+.at_operator {
+    color: #330077;
+    font-weight: bold;
+}
+
+.at_number {
+    color: #99AA44;
+}
+
+.at_bracket_open,
+.at_bracket_close,
+.at_curry_open,
+.at_curry_close,
+.at_func_end,
+.at_func_start,
+.at_comma {
+    font-weight: bold;
+}
+
+.at_comment {
+    color: #556677;
 }

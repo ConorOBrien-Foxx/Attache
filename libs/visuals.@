@@ -7,7 +7,6 @@ highlight_styles := <~
     bracket_close   -> "1",
     curry_open      -> "1",
     curry_close     -> "1",
-    bracket_open    -> "1",
     func_end        -> "1",
     func_start      -> "1",
     comma           -> "1",
@@ -24,4 +23,6 @@ highlight := [code] -> {
     } => tokens
 }
 
-highlight_html[code] := {"<code>"} => Tokenize[code]
+highlight_html[code] := Join! {
+    Format["<code class=""at_%s"">%s</code>", _.type, HTMLEscape[_.raw]]
+} => Tokenize[code]

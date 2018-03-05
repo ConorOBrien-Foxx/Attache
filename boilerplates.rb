@@ -12,4 +12,5 @@ BOILERPLATES = {
 <body><h1>%<title>s</h1>%<body>s</body>
 </html>",
     example: "<h3>Example</h3><div class=\"example\"><code>%<code>s</code></div>",
+    option: "<p><code>%<name>s</code> &rarr; %<description>s</p>"
 }

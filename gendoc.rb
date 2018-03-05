@@ -4,10 +4,21 @@ load 'boilerplates.rb'
 title = "AtState.rb"
 input = File.read title
 
+require_relative 'AtState.rb'
+
+$inst = AtState.new "Needs[$visuals]"
+$inst.run
+
+def highlight_html(str)
+    $inst.variables["highlight_html"][$inst, str]
+end
+
+
+
 $AFTER_COMMENT = /(?<=#).+/
 $COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
 $SIGNATURE_PARSE = /"(\w+)" => (\w+) \{ \|(.+?)\|\s*$/
-$DATA_LINE = /@(\w+)\s+(.+)/
+$DATA_LINE = /@(\w+)\s?(.+)/
 
 groups = input.scan($COMMENT_GROUP)
 
@@ -16,6 +27,7 @@ $final = {}
 $PUSH_COLLECT = {
     "type" => :types,
     "param" => :params,
+    "option" => :options
 }
 $APPEND = [
     "example",
@@ -69,15 +81,23 @@ $final.sort.each { |k, v|
     args_types = {}
     v[:args].map! { |e|
         name, default = e.split("=")
+        decoration = name.scan(/\W+/).first
+        name.gsub!(/\W/, "")
         
         pref = v[:info][:types][name]
+        
+        disp_name = name
+        
+        disp_name = "..." + disp_name if decoration == "*"
+        disp_name = "**" + disp_name if decoration == "**"
+        
         head = unless pref.nil?
             BOILERPLATES[:argument] % {
                 type: pref,
-                name: name,
+                name: disp_name,
             }
         else
-            name
+            disp_name
         end
         
         unless default.nil?
@@ -91,6 +111,10 @@ $final.sort.each { |k, v|
         args_types[name] = head
     }
     
+    if v[:info][:return].empty?
+        STDERR.puts "Warning: no return type given for #{k.inspect}"
+    end
+    
     result += BOILERPLATES[:header] % {
         return_type:    v[:info][:return],
         name:           k,
@@ -99,6 +123,7 @@ $final.sort.each { |k, v|
     }
     result += v[:info][:description].gsub(/\s+/, " ")
     
+    result += "<h3>Arguments</h3>" unless v[:info][:params].empty?
     v[:info][:params].each { |var, val|
         result += BOILERPLATES[:param] % {
             name: args_types[var],
@@ -106,9 +131,19 @@ $final.sort.each { |k, v|
         }
     }
     
+    unless v[:info][:options].empty?
+        result += "<h3>Options</h3>"
+        result += v[:info][:options].map { |name, description|
+            BOILERPLATES[:option] % {
+                name: name,
+                description: description,
+            }
+        }.join("\n")
+    end
+    
     unless v[:info][:example].empty?
         result += BOILERPLATES[:example] % {
-            code: v[:info][:example].join("\n")
+            code: highlight_html(v[:info][:example].join("\n"))
         }
     end
     
