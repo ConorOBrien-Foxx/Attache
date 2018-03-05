@@ -596,6 +596,7 @@ def display(entity)
         else
             p entity
     end
+    entity
 end
 
 class AtState
@@ -941,32 +942,90 @@ class AtState
         ## - memory manipulation
         ## - i/o
         ## - functions that are necessary
+        
+        #<<
+        # Reads all input from the instance's source input.
+        # @return string
+        # @genre IO
+        #>>
         "AllInput" => lambda { |inst|
             inst.in.read
         },
+        
+        #<<
+        # Returns the <code>n</code>th argument given to the program.
+        # @return string
+        # @genre IO
+        # @type n number
+        #>>
         "Arg" => lambda { |inst, n=0|
             ARGV[n + 1]
         },
-        "Clear" => lambda { |inst, *args|
-            inst.clear *args
+        #<<
+        # Undefines <code>name</code> from the global scope. Returns that variable's value, or <code>nil</code> if the variable was undefined.
+        # @return (*)
+        # @genre scope
+        # @type name string
+        #>>
+        "Clear" => lambda { |inst, name|
+            inst.clear name
         },
-        "ClearLocal" => lambda { |inst, *args|
-            inst.clear_local *args
+        #<<
+        # Undefines <code>name</code> from the local scope. Returns that variable's value, or <code>nil</code> if the variable was undefined.
+        # @return (*)
+        # @genre scope
+        # @type name string
+        #>>
+        "ClearLocal" => lambda { |inst, name|
+            inst.clear_local name
         },
-        "Define" => lambda { |inst, *args|
-            inst.define *args
+        #<<
+        # Defines <code>name</code> in the global scope as <code>value</code>. Returns <code>value</code>.
+        # @return (*)
+        # @genre scope
+        # @type name string
+        # @type value (*)
+        #>>
+        "Define" => lambda { |inst, name, value|
+            inst.define name, value
         },
+        #<<
+        # Displays the representation of <code>ent</code>.
+        # @return (*)
+        # @type ent (*)
+        # @genre IO
+        #>>
         "Display" => lambda { |inst, ent|
             display ent
         },
+        #<<
+        # Evaluates <code>str</code> in a new scope. Returns the last expression evaluated.
+        # @return (*)
+        # @type str string
+        # @genre meta
+        #>>
         "Eval" => lambda { |inst, str|
             AtState.new(str).run.last
         },
+        #<<
+        # Evaluates <code>str</code> in a the current scope. Returns the last expression evaluated.
+        # @return (*)
+        # @type str string
+        # @genre meta
+        #>>
         "EvalHere" => lambda { |inst, str|
             ast(str).map { |tree|
                 inst.evaluate_node tree
             }.last
         },
+        #<<
+        # Terminates the program with exit code <code>0</code>.
+        # @optional code
+        # @param code the code to exit with.
+        # @type code number
+        # @return nil
+        # @genre IO
+        #>>
         "Exit" => lambda { |inst, code=0|
             exit! code
         },
@@ -978,9 +1037,27 @@ class AtState
             }
             res
         },
-        "Local" => lambda { |inst, *args|
-            inst.define_local *args
+        #<<
+        # Defines <code>name</code> in the local scope as <code>value</code>. Returns <code>value</code>.
+        # @return (*)
+        # @genre scope
+        # @type name string
+        # @type value (*)
+        #>>
+        "Local" => lambda { |inst, name, value|
+            inst.define_local name, value
         },
+        #<<
+        # Modifies <code>head</code> according to <code>body</code>.
+        # @type head string
+        # @param body an expression using the first abstract variable <code>_</code> to represent the original value.
+        # @type body expression
+        # @return (*)
+        # @genre scope
+        # @example a := 3
+        # @example Modify[$a, _ * 2 + 1]
+        # @example Print[a]     ?? 7
+        #>>
         "Modify" => lambda { |inst, head, body|
             init = inst.get_variable head
             result = inst.evaluate_node body, [init]
@@ -1100,6 +1177,12 @@ class AtState
         ###########################
         #### NUMERIC FUNCTIONS ####
         ###########################
+        #<<
+        # absolute value
+        # @return number
+        # @type n number
+        # @genre numeric
+        #>>
         "Abs" => vectorize_monad { |inst, n|
             n.abs
         },
@@ -1109,6 +1192,15 @@ class AtState
         "Bin" => lambda { |inst, n|
             @@functions["ToBase"][inst, n, 2]
         },
+        #<<
+        # Returns <code>n</code> rounded up to the nearest integer.
+        # @return number
+        # @type n number
+        # @param r the precision to round. No precision if omitted.
+        # @type r number
+        # @optional r
+        # @genre numeric
+        #>>
         "Ceiling" => vectorize_dyad { |inst, n, r=nil|
             if r.nil?
                 n.ceil
@@ -1874,6 +1966,11 @@ class AtState
         },
         "Replace" => lambda { |inst, str, search, replace=""|
             replace str, search, replace
+        },
+        "ReplaceF" => lambda { |inst, str, search, func|
+            str.gsub(search) { |e|
+                func[inst, e]
+            }
         },
         "Repr" => lambda { |inst, ent|
             ent.inspect

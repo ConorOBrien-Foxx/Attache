@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css?family=Overpass Mono|Karma&subset=latin-ext');
+
+html, body {
+    font-family: 'Karma', serif;
+    margin: 5px;
+}
+
+code, pre {
+    font-family: 'Overpass Mono', Consolas, monospace;
+    white-space: pre;
+}
+
+h2, h3 {
+    margin: 0;
+}
+
+h3 {
+    font-style: italic;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+.genre {
+    font-size: 0.8em;
+    float: right;
+}
+
+.type, .return {
+    color: blue;
+}
+
+.function {
+    padding: 5px;
+    /* width: 1200px; */
+}
+
+.function:nth-child(even) {
+    background-color: #dedede;
+}
+
+div.example {
+    margin-left: 2em;
+}

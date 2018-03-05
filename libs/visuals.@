@@ -23,3 +23,5 @@ highlight := [code] -> {
         Format["\x1b[%sm%s\x1b[0m", highlight_styles[_.type], _.raw]
     } => tokens
 }
+
+highlight_html[code] := {"<code>"} => Tokenize[code]
