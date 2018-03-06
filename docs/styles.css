@@ -5,6 +5,10 @@ html, body {
     margin: 5px;
 }
 
+#toc td:first-child {
+    text-align: right;
+}
+
 code, pre {
     font-family: 'Overpass Mono', Consolas, monospace;
     white-space: pre;

@@ -1415,7 +1415,7 @@ class AtState
         # Produces the Collatz sequence of <code>n</code>.
         # @type n number
         # @return [number]
-        # @genre numeric
+        # @genre numeric/series
         #>>
         "Collatz" => vectorize_monad { |inst, n|
             collatz n
@@ -1424,7 +1424,7 @@ class AtState
         # Returns the number of steps it takes for <code>n</code> to reach <code>1</code> according to the Collatz transformation.
         # @type n number
         # @return number
-        # @genre numeric
+        # @genre numeric/series
         #>>
         "CollatzSize" => vectorize_monad { |inst, n|
             collatz(n).size - 1
@@ -1461,13 +1461,13 @@ class AtState
         # Returns the <code>n</code>th number in the Fibonacci sequence, starting with <code>f<sub>0</sub> = 0</code> and <code>f<sub>1</sub> = 1</code>.
         # @type n number
         # @return number
-        # @genre numeric
+        # @genre numeric/series
         #>>
         "Fibonacci" => lambda { |inst, n|
             nth_fibonacci(n)
         },
         #<<
-        # Returns <code>n</code> rounded half-up to the nearest integer.
+        # Returns <code>n</code> rounded down to the nearest integer.
         # @return number
         # @type n number
         # @param r the precision to round. No precision if omitted.
@@ -1587,7 +1587,7 @@ class AtState
         # @return number
         # @type n number
         # @type order number
-        # @genre numeric
+        # @genre numeric/series
         # @example (* The triangular numbers (default) *)
         # @example Print[Polygonal[0:5, 3]]
         # @example ?? [0, 1, 3, 6, 10, 15]
@@ -1605,7 +1605,7 @@ class AtState
         # Returns the <code>n</code>th enumeration of the Pythagorean triples.
         # @return [number]
         # @type n number
-        # @genre numeric
+        # @genre numeric/series
         # @example Print => Pythagorean[0:10]
         # @example ?? [3, 4, 5]
         # @example ?? [8, 6, 10]
@@ -1622,9 +1622,29 @@ class AtState
         "Pythagorean" => vectorize_monad { |inst, n|
             pythagorean n
         },
-        "Random" => vectorize_monad { |inst, n=nil, m=nil|
+        #<<
+        # Returns a pseudo-random number. By default, returns a random float between <code>0</code> (inclusive) and <code>1</code> (exclusive).
+        # @param n If <code>m</code> is omitted, returns a random integer between <code>0</code> (inclusive) and <code>n</code> (exclusive).
+        # @param m When provided, returns a random integer between <code>n</code> and <code>m</code>, inclusive.
+        # @optional n
+        # @optional m
+        # @type n number
+        # @type m number
+        # @return number
+        # @genre numeric
+        #>>
+        "Random" => vectorize_dyad { |inst, n=nil, m=nil|
             random(n, m)
         },
+        #<<
+        # Returns <code>n</code> rounded half-up to the nearest integer.
+        # @return number
+        # @type n number
+        # @param r the precision to round. No precision if omitted.
+        # @type r number
+        # @optional r
+        # @genre numeric
+        #>>
         "Round" => vectorize_dyad { |inst, n, r=nil|
             if r.nil?
                 n.round
@@ -1632,55 +1652,157 @@ class AtState
                 n.round(r)
             end
         },
+        #<<
+        # Returns the sign of <code>n</code>; Returns <code>-1</code> if <code>n</code> is negative, <code>1</code> if it is positive, and <code>0</code> otherwise.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Sign" => vectorize_monad { |inst, n|
             sign n
         },
+        #<<
+        # Returns the square root of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Sqrt" => vectorize_monad { |inst, n|
             Math.sqrt n
         },
+        #<<
+        # Returns the square of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
         "Square" => vectorize_monad { |inst, n|
             @@operators["*"][inst, n, n]
         },
+        #<<
+        # Subtracts each number in <code>args</code> by the next. That is, folding subtraction over <code>args</code>
+        # @type args number
+        # @return number
+        # @genre numeric
+        #>>
         "Subtract" => lambda { |inst, *args|
             args.inject(:-)
         },
+        #<<
+        # Converts <code>num</code> to base <code>base</code>.
+        # @type num number
+        # @type base number
+        # @return [number]
+        # @genre numeric/bases
+        #>>
         "ToBase" => vectorize_dyad { |inst, num, base|
             to_base num, base
         },
-        "Triangular" => lambda { |inst, n|
+        #<<
+        # Returns the <code>n</code>th Triangular number.
+        # @type n number
+        # @return number
+        # @example Print[Triangular[0:5]]
+        # @example Print[Polygonal[0:5, 3]]
+        # @example 
+        # @example ?? [0, 1, 3, 6, 10, 15]
+        # @genre numeric/series
+        #>>
+        "Triangular" => vectorize_monad { |inst, n|
             gonal n, 3
         },
-        "UnBin" => lambda { |inst, n|
+        #<<
+        # Converts from base <code>2</code> (binary) to base <code>10</code>.
+        # @genre numeric/bases
+        # @return number
+        # @type n [number]
+        #>>
+        "UnBin" => vectorize_monad { |inst, n|
             @@functions["FromBase"][inst, n, 2]
         },
-        "UnHex" => lambda { |inst, n|
+        #<<
+        # Converts from base <code>16</code> (hexadecimal) to base <code>10</code>.
+        # @genre numeric/bases
+        # @return number
+        # @type n [number]
+        #>>
+        "UnHex" => vectorize_monad { |inst, n|
             @@functions["FromBase"][inst, n, 16]
         },
-        "UnOct" => lambda { |inst, n|
+        #<<
+        # Converts from base <code>8</code> (octal) to base <code>10</code>.
+        # @genre numeric/bases
+        # @return number
+        # @type n [number]
+        #>>
+        "UnOct" => vectorize_monad { |inst, n|
             @@functions["FromBase"][inst, n, 8]
         },
         
         ##-------------------------##
         ## Trigonometric Functions ##
         ##-------------------------##
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>cos</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "ArcCos" => vectorize_monad { |inst, n|
             Math::acos n
         },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sin</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "ArcSin" => vectorize_monad { |inst, n|
             Math::asin n
         },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "ArcTan" => vectorize_monad { |inst, n|
             Math::atan n
         },
-        "ArcTan2" => vectorize_dyad { |inst, n, m|
-            Math::atan2 n, m
+        #<<
+        # Calculates the principle value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
+        # @type y number
+        # @type x number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "ArcTan2" => vectorize_dyad { |inst, y, x|
+            Math::atan2 y, x
         },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cos</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "Cos" => vectorize_monad { |inst, n|
             Math::cos n
         },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sin</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "Sin" => vectorize_monad { |inst, n|
             Math::sin n
         },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
         "Tan" => vectorize_monad { |inst, n|
             Math::tan n
         },
@@ -1688,12 +1810,33 @@ class AtState
         ##-----------------##
         ## Prime Functions ##
         ##-----------------##
+        #<<
+        # Returns <code>true</code> if <code>n</code> is prime, and <code>false</code> otherwise.
+        # @type n number
+        # @return bool
+        # @genre numeric/prime
+        #>>
         "IsPrime" => vectorize_monad { |inst, n|
             Prime.prime? n
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is composite (not prime), and <code>false</code> otherwise.
+        # @type n number
+        # @return bool
+        # @genre numeric/prime
+        #>>
         "IsComposite" => vectorize_monad { |inst, n|
             !Prime.prime? n
         },
+        #<<
+        # Returns the next prime greater than <code>n</code>.
+        # @return number
+        # @type n number
+        # @type rep number
+        # @optional rep
+        # @param rep When specified, returns the <code>rep</code>th prime after <code>n</code>.
+        # @genre numeric/prime
+        #>>
         "NextPrime" => vectorize_dyad { |inst, n, rep=1|
             rep.times {
                 n += 1 + n % 2
@@ -1701,6 +1844,15 @@ class AtState
             }
             n
         },
+        #<<
+        # Returns the closest previous prime before <code>n</code>.
+        # @return number
+        # @type n number
+        # @type rep number
+        # @optional rep
+        # @param rep When specified, returns the <code>rep</code>th prime before <code>n</code>.
+        # @genre numeric/prime
+        #>>
         "PreviousPrime" => vectorize_dyad { |inst, n, rep=1|
             rep.times {
                 break n = nil if n <= 2

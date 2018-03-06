@@ -51,6 +51,7 @@ $PUSH_COLLECT = {
 $APPEND = [
     "example",
     "paramtype",
+    "optional"
 ]
 def text_from_signature(sig)
     if sig.index "vector"
@@ -151,7 +152,7 @@ $final.sort.each { |k, v|
         end
         
         unless default.nil?
-            if v[:info][:optional][name]
+            if v[:info][:optional].include? name
                 head += "?"
             else
                 head += "=" + default
@@ -221,13 +222,14 @@ $final.sort.each { |k, v|
     result += "</div>"
 }
 
-toc_result = "<h2>Table of Contents</h2><table>"
+toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{$final.size}</em></p><table id=\"toc\">"
 $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
-    toc_result += "<tr><td>(#{genre})</td><td><code>"
+    toc_result += "<tr><td>(#{genre})</td><td>"
     names.each { |name|
-        toc_result += "<a href=\"##{name}\">#{name}</a> "
+        toc_result += "<code><a href=\"##{name}\">#{name}</a></code>, "
     }
-    toc_result += "</code></td></tr>"
+    toc_result = toc_result[0..-3]
+    toc_result += "</td></tr>"
 }
 
 toc_result += "</table>"

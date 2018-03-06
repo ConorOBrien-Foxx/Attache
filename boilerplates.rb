@@ -9,7 +9,7 @@ BOILERPLATES = {
     <title>%<title>s</title>
     <link rel=\"STYLESHEET\" href=\"styles.css\">
 </head>
-<body><h1>%<title>s</h1>%<body>s</body>
+<body><div id=\"content\"><h1>%<title>s</h1>%<body>s</div></body>
 </html>",
     example: "<h3>Example</h3><div class=\"example\"><code>%<code>s</code></div>",
     option: "<p><code>%<name>s</code> &rarr; %<description>s</p>"
