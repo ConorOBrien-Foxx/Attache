@@ -1303,9 +1303,9 @@ class AtState
         # @optional start
         # @genre functional
         # @option include determines whether or not to include <code>max</code> as an upperbound. Default: <code>false</code>
-        # @example Series[Prime, 13]
+        # @example Print[Series[Prime, 13]]
         # @example ?? [2, 3, 5, 7, 11]
-        # @example Series[Prime, 13, include->true]
+        # @example Print[Series[Prime, 13, include->true]]
         # @example ?? [2, 3, 5, 7, 11, 13]
         #>>
         "Series" => lambda { |inst, f, max, start=0, **config|
@@ -1331,9 +1331,9 @@ class AtState
         # @optional start
         # @genre functional
         # @option include determines whether or not to include <code>max</code> as an upperbound. Default: <code>false</code>
-        # @example SeriesIf[Prime, Odd, 13]
+        # @example Print[SeriesIf[Prime, Odd, 13]]
         # @example ?? [3, 5, 7, 11]
-        # @example Series[Prime, Odd, 13, include->true]
+        # @example Print[SeriesIf[Prime, Odd, 13, include->true]]
         # @example ?? [3, 5, 7, 11, 13]
         #>>
         "SeriesIf" => lambda { |inst, f, cond, max, start=0, **config|
@@ -1601,6 +1601,24 @@ class AtState
         "Polygonal" => vectorize_dyad { |inst, n, order=3|
             gonal n, order
         },
+        #<<
+        # Returns the <code>n</code>th enumeration of the Pythagorean triples.
+        # @return [number]
+        # @type n number
+        # @genre numeric
+        # @example Print => Pythagorean[0:10]
+        # @example ?? [3, 4, 5]
+        # @example ?? [8, 6, 10]
+        # @example ?? [5, 12, 13]
+        # @example ?? [15, 8, 17]
+        # @example ?? [12, 16, 20]
+        # @example ?? [7, 24, 25]
+        # @example ?? [24, 10, 26]
+        # @example ?? [21, 20, 29]
+        # @example ?? [16, 30, 34]
+        # @example ?? [9, 40, 41]
+        # @example ?? [35, 12, 37]
+        #>>
         "Pythagorean" => vectorize_monad { |inst, n|
             pythagorean n
         },
