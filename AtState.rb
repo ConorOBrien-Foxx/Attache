@@ -1276,7 +1276,7 @@ class AtState
         # Determines if <code>ent</code> is palindromic, that is, if it is itself reversed.
         # @type ent [(*)]|string
         # @return bool
-        # @genre logic
+        # @genre list/logic
         #>>
         "Palindromic" => lambda { |inst, ent|
             reverse(ent) == ent
@@ -1377,7 +1377,7 @@ class AtState
         # @return number
         # @genre numeric/bases
         #>>
-        "Bin" => lambda { |inst, n|
+        "Bin" => vectorize_monad { |inst, n|
             @@functions["ToBase"][inst, n, 2]
         },
         #<<
@@ -1511,7 +1511,7 @@ class AtState
         # @return number
         # @genre numeric/bases
         #>>
-        "Hex" => lambda { |inst, n|
+        "Hex" => vectorize_monad { |inst, n|
             @@functions["ToBase"][inst, n, 16]
         },
         #<<
@@ -1579,7 +1579,7 @@ class AtState
         # @return number
         # @genre numeric/bases
         #>>
-        "Oct" => lambda { |inst, n|
+        "Oct" => vectorize_monad { |inst, n|
             @@functions["ToBase"][inst, n, 8]
         },
         #<<
@@ -1884,18 +1884,42 @@ class AtState
         "PrimeDivision" => vectorize_monad { |inst, n|
             Prime.prime_division n
         },
+        #<<
+        # Returns a list of the prime factors of <code>n</code> with duplicates.
+        # @return [number]
+        # @type n number
+        # @genre numeric/prime
+        #>>
         "PrimeFactors" => vectorize_monad { |inst, n|
             prime_factors n
         },
+        #<<
+        # Returns a list of the first <code>n</code> primes.
+        # @return [number]
+        # @type n number
+        # @genre numeric/prime
+        #>>
         "Primes" => vectorize_monad { |inst, n|
             Prime.first n
         },
         # "PrimePi" => vectorize_monad { |inst, n|
             
         # },
+        #<<
+        # Returns the number of unique prime factors of <code>n</code>.
+        # @return number
+        # @type n number
+        # @genre numeric/prime
+        #>>
         "PrimeNu" => vectorize_monad { |inst, n|
             prime_factors(n).uniq.size
         },
+        #<<
+        # Returns the number of prime factors of <code>n</code>.
+        # @return number
+        # @type n number
+        # @genre numeric/prime
+        #>>
         "PrimeOmega" => vectorize_monad { |inst, n|
             prime_factors(n).size
         },
@@ -1903,18 +1927,48 @@ class AtState
         ##------------------------##
         ## Number Logic Functions ##
         ##------------------------##
+        #<<
+        # Returns <code>true</code> if <code>n</code> is even (a multiple of <code>2</code>), otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
         "Even" => vectorize_monad { |inst, n|
             n.even?
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is less than <code>0</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
         "Negative" => vectorize_monad { |inst, n|
             n.negative?
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is odd (not a multiple of <code>2</code>), otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
         "Odd" => vectorize_monad { |inst, n|
             n.odd?
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is greater than <code>0</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
         "Positive" => vectorize_monad { |inst, n|
             n.positive?
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is <code>0</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
         "Zero" => vectorize_monad { |inst, n|
             n.zero?
         },
@@ -1923,25 +1977,67 @@ class AtState
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
         ##############################
+        #<<
+        # Returns a function <code>fn[...args]</code> such that the <code>cond[...args]</code>th element of <code>flist</code> is called upon <code>args</code>.
+        # @return fn[(*) -> (*)]
+        # @type flist fn
+        # @param flist A list of functions.
+        # @type cond fn[(*) -> number]
+        # @param cond A function which produces an index by which to obtain a function from <code>flist</code>.
+        # @example f := Agenda[ [Halve, {3 * _ + 1}], Odd]
+        # @example Print[f => [1, 2, 3, 4]]
+        # @genre functional
+        #>>
         "Agenda" => lambda { |inst, flist, cond|
             lambda { |inst, *args|
                 ind = from_numlike cond[inst, *args]
                 flist[ind][inst, *args]
             }
         },
+        #<<
+        # Calls <code>func</code> with <code>arg_arr</code>.
+        # @type func fn
+        # @type arg_arr [(*)]
+        # @return (*)
+        # @example Print[ Apply[Map, [ Square, 1:5 ]] ]
+        # @genre functional
+        #>>
         "Apply" => lambda { |inst, func, arg_arr|
             func[inst, *arg_arr]
         },
+        #<<
+        # Returns a function <code>fn[...args]</code> which applies <code>func</code> to <code>args</code>.
+        # @type func fn
+        # @return fn[[(*)]]
+        # @genre functional
+        # @example f := Applier[Print]
+        # @example f[1:5]
+        # @example Print[1, 2, 3, 4, 5]
+        # @example ?? 1 2 3 4 5
+        #>>
         "Applier" => lambda { |inst, func|
             lambda { |inst, args|
                 func[inst, *args]
             }
         },
+        #<<
+        # Bonds <code>larg</code> to the left side of <code>func</code>. That is, <code>Bond[func, larg][...args]</code> is the same as <code>func[larg, ...args]</code>.
+        # @type func fn
+        # @type larg (*)
+        # @return fn
+        # @genre functional
+        #>>
         "Bond" => lambda { |inst, func, larg|
             lambda { |inst, *args|
                 func[inst, larg, *args]
             }
         },
+        #<<
+        # Returns a function that returns <code>arg</code>.
+        # @type arg (*)
+        # @return fn
+        # @genre functional
+        #>>
         "C" => lambda { |inst, arg|
             lambda { |inst, *discard|
                 arg
