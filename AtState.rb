@@ -76,6 +76,9 @@ $PRECEDENCE = {
     ".="    => [3, :right],
     ";"     => [2, :left],
 }
+$PRECEDENCE_UNARY = Hash.new(Infinity)
+$PRECEDENCE_UNARY["..."] = 0
+
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e|
     if /^\w+$/ === e
@@ -227,7 +230,7 @@ def parse(code)
                     # fix unary operator precedence, temporary
                     # todo: unary operator precedence
                     if top_type == :unary_operator
-                        top_prec = Infinity
+                        top_prec = $PRECEDENCE_UNARY[top_raw]
                     end
                     
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
@@ -529,6 +532,14 @@ class ConfigureValue
     alias_method :to_ary, :to_a
     
     attr_accessor :key, :value
+end
+
+class Applicator
+    def initialize(value = [])
+        @value = [*value]
+    end
+    
+    attr_accessor :value
 end
 
 def ast(program)
@@ -855,6 +866,10 @@ class AtState
             config = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
         end
+        
+        args = args.flat_map { |e|
+            Applicator === e ? e.value : [e]
+        }
         
         func = get_value head
 
@@ -2043,12 +2058,39 @@ class AtState
                 arg
             }
         },
+        #<<
+        # Calls <code>f</code> over <code>args</code>.
+        # @type args (*)
+        # @type f fn
+        # @return (*)
+        # @genre functional
+        # @example Call[Print, "Hello", "World"]
+        # @example ?? Hello World
+        #>>
         "Call" => lambda { |inst, f, *args|
             f[inst, *args]
         },
+        #<<
+        # Applies <code>f</code> to <code>n</code> until <code>f[n]</code> converges.
+        # @type f fn
+        # @type n (*)
+        # @return (*)
+        # @genre functional
+        #>>
         "Fixpoint" => lambda { |inst, f, n|
             fixpoint f.bind(inst), n
         },
+        #<<
+        # Composes the functions <code>f</code>, <code>g</code>, and <code>h</code> into a fork. When called with arguments <code>args</code>, this is equivalent to calling <code>g[f[...args], h[...args]]</code>.
+        # @type f fn
+        # @type g fn
+        # @type h fn
+        # @return fn
+        # @genre functional
+        # @example avg := Fork[Sum, Divide, Size]
+        # @example Print[avg[1:5]]
+        # @example ?? 3.0
+        #>>
         "Fork" => lambda { |inst, f, g, h|
             lambda { |inst, *args|
                 g[inst, f[inst, *args], h[inst, *args]]
@@ -2057,6 +2099,13 @@ class AtState
         # "Group" => lambda { |inst, arr|
             
         # },
+        #<<
+        # Composes the functions <code>f</code> and <code>g</code> into a hook. When called with arguments <code>args</code> this is equivalent to calling <code>f[First[args], g[...args]]</code>.
+        # @type f fn
+        # @type g fn
+        # @return fn
+        # @genre functional
+        #>>
         "Hook" => lambda { |inst, f, g|
             lambda { |inst, *args|
                 f[inst, args.first, g[inst, *args]]
@@ -2902,5 +2951,8 @@ class AtState
         "!" => vectorize_monad { |inst, n| factorial n },
         "?" => vectorize_monad { |inst, n| AtState.truthy? n },
         "not" => lambda { |inst, arg| AtState.falsey? arg },
+        "..." => lambda { |inst, arg|
+            Applicator.new arg
+        },
     }
 end
