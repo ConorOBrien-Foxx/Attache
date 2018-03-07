@@ -1865,9 +1865,22 @@ class AtState
             }
             n
         },
+        #<<
+        # Returns the <code>n</code>th prime, starting at <Code>Prime[1] = 2</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/prime
+        # @example Print[Prime[1:10]]
+        #>>
         "Prime" => vectorize_monad { |inst, n|
             nth_prime n
         },
+        #<<
+        # Returns a list of the prime exponents of <code>n</code>. That is, a list of base-exponent pairs <code>[[p1, e1], ..., [pN, eN]]</code> such that <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mi>k</mi></msub><mo>&#x2208;</mo><mi mathvariant="normal">&#x2119;</mi></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>n</mi><mo>=</mo><munder><mo>&#x220F;</mo><mrow><mn>1</mn><mo>&#x2264;</mo><mi>k</mi><mo>&lt;</mo><mi>n</mi></mrow></munder><msubsup><mi>p</mi><mi>k</mi><msub><mi>e</mi><mi>k</mi></msub></msubsup></math>.
+        # @return [[number, number]]
+        # @type n number
+        # @genre numeric/prime
+        #>>
         "PrimeDivision" => vectorize_monad { |inst, n|
             Prime.prime_division n
         },
