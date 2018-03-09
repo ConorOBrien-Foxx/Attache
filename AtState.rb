@@ -565,7 +565,20 @@ def ast(program)
             args = stack.pop(raw)
             func = stack.pop
             stack.push Token.new lambda { |inst, *others|
-                inst.evaluate_node Node.new func, args + others
+                abstracts = []
+                to_remove = []
+                args.clone.map { |el|
+                    if el.type == :abstract
+                        n = get_abstract_number(el.raw)
+                        abstracts[n] = others[n]
+                        to_remove.push n
+                        
+                    end
+                }
+                
+                others.reject!.with_index { |e, i| to_remove.include? i }
+                
+                inst.evaluate_node Node.new(func, args + others), abstracts
             }, :function, start
         
         elsif type == :operator
