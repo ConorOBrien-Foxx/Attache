@@ -28,10 +28,16 @@ AtState.function("AST") { |inst, text|
 AtState.function("Traverse", configurable: true) { |inst, nodes, **opts|
     rec = lambda { |inst, node|
         args = node.children.map { |child|
-            opts[:getValue][inst, child]
+            if Node === child
+                rec[inst, child]
+            else
+                opts[:getValue][inst, child]
+            end
         }
         opts[:operators][node.head.raw][inst, *args]
     }
+    
+    nodes = at_ast(nodes)
     
     nodes.map { |child|
         rec[inst, child]
