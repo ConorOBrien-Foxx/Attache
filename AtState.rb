@@ -2111,16 +2111,48 @@ class AtState
                 f[inst, args.first, g[inst, *args]]
             }
         },
-        "Tie" => lambda { |inst, *funcs|
-            if funcs.any? { |e| !AtState.func_like? e }
-                funcs.inject([]) { |acc, e| [*acc, *e] }
+        #<<
+        # Ties <code>args</code> together.
+        # @type args (*)|fn
+        # @return (*)|fn
+        # @paramtype (*) args Concatenates all <code>args</code> together. 
+        # @paramtype fn args Creates a tie between all of <code>args</code>.
+        # @genre functional
+        # @example Print[Tie[1:3, 5:7]]
+        # @example ?? [1, 2, 3, 5, 6, 7]
+        # @example f := Tie[Double, Halve]
+        # @example Print[f[1, 2, 3, 4, 5, 6]]
+        # @example ?? [2, 1, 6, 2, 10, 3]
+        #>>
+        "Tie" => lambda { |inst, *args|
+            if args.any? { |e| !AtState.func_like? e }
+                args.inject([]) { |acc, e| [*acc, *e] }
             else
-                Tie.new funcs
+                Tie.new args
             end
         },
+        #<<
+        # <code>Tie</code>, but applied to the first argument instead of all arguments.
+        # @type funcs fn
+        # @genre functional
+        # @return fn
+        # @example f := TieArray[Double, Halve]
+        # @example Print[f[1:6]]
+        # @example ?? [2, 1, 6, 2, 10, 3]
+        #>>
         "TieArray" => lambda { |inst, *funcs|
             Tie.new funcs, true
         },
+        #<<
+        # Applies <code>f</code> to <code>e</code> <code>n</code> times.
+        # @type f fn
+        # @type e (*)
+        # @type n number
+        # @return (*)
+        # @genre functional
+        # @example Print[Nest[Double, 1, 3]]
+        # @example ?? 2^3 = 8
+        #>>
         "Nest" => lambda { |inst, f, e, n|
             from_numlike(n).times {
                 e = f[inst, e]
@@ -2231,11 +2263,36 @@ class AtState
         "Accumulate" => lambda { |inst, list|
             list.prefixes.map { |e| e.sum }
         },
+        "ArrayFlatten" => lambda { |inst, list|
+            inner = list.flatten(1).first { |e| Array === e }
+            
+            size = [*dim(inner)]
+            if size.size < 2
+                list
+            else
+                list.map { |row|
+                    row.inject { |acc, mat|
+                        unless Array === mat
+                            mat = mat_from(*size, mat)
+                        end
+                        stitch acc, mat
+                    }
+                }.flatten(1)
+            end
+        },
         "Average" => lambda { |inst, list|
             list.average
         },
         "Chop" => lambda { |inst, list, size|
             chop force_list(list), size
+        },
+        "Chunk" => lambda { |inst, list, fn=nil|
+            list = force_list list
+            if fn.nil?
+                list.chunk { |e| e }.to_a
+            else
+                list.chunk { |e| fn[inst, e] }.to_a
+            end
         },
         "Concat" => lambda { |inst, *args|
             args.flatten(1)
@@ -2355,6 +2412,17 @@ class AtState
             ents = [*ents]
             list.reject { |e| ents.include? e }
         },
+        #<<
+        # Returns an array representing the run-length encoded version of <code>list</code>.
+        # @type list (*)
+        # @return [[(*),  number]]
+        # @genre list
+        #>>
+        "RLE" => lambda { |inst, list|
+            force_list(list)
+                .chunk { |e| e }
+                .map { |k, v| [k, v.size] }
+        },
         "Rotate" => lambda { |inst, list, amount=1|
             if list.is_a? String
                 @@functions["Rotate"][inst, force_list(list), amount].join
@@ -2418,9 +2486,7 @@ class AtState
             list.stddev
         },
         "Stitch" => lambda { |inst, left, right|
-            left.map.with_index { |e, i|
-                [].concat e, right[i]
-            }
+            stitch left, right
         },
         "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
@@ -2932,7 +2998,9 @@ class AtState
         "&" => lambda { |inst, f|
             if AtState.func_like? f
                 lambda { |inst, *args|
-                    f[inst, *args.flatten]
+                    # p args
+                    # (lambda{|*b|p b})[*args]
+                    f[inst, *args.flatten(1)]
                 }
             else
                 f.to_s

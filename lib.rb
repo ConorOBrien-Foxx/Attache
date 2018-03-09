@@ -888,3 +888,14 @@ def chop(array, size)
     end
     collect
 end
+
+def stitch(left, right)
+    left.map.with_index { |e, i|
+        [].concat e, right[i]
+    }
+end
+
+def mat_from(row, col, fill)
+    Array.new(col) { fill }
+    [[ fill ] * col] * row
+end
