@@ -446,8 +446,6 @@ class Node
     
     attr_reader :head, :children
     
-    # def raw;@head;end
-    
     def add_child(children)
         @children.concat children
     end
@@ -567,12 +565,13 @@ def ast(program)
             stack.push Token.new lambda { |inst, *others|
                 abstracts = []
                 to_remove = []
-                args.clone.map { |el|
-                    if el.type == :abstract
+                
+                args.each { |el|
+                    if Token === el && el.type == :abstract
+                        p el
                         n = get_abstract_number(el.raw)
                         abstracts[n] = others[n]
                         to_remove.push n
-                        
                     end
                 }
                 
