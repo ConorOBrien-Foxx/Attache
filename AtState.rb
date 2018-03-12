@@ -23,6 +23,7 @@ $COMMENT_OPEN = /\(\*/
 $COMMENT_CLOSE = /\*\)/
 $CURRY_OPEN = /<~/
 $CURRY_CLOSE = /~>/
+$STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
     "."     => [99, :left],
@@ -74,7 +75,7 @@ $PRECEDENCE = {
     "->"    => [4, :left],
     ":="    => [3, :right],
     ".="    => [3, :right],
-    ";"     => [2, :left],
+    ";;"    => [2, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
@@ -92,6 +93,7 @@ $TYPES = {
     $COMMENT            => :comment,
     $COMMENT_OPEN       => :comment_open,
     $COMMENT_CLOSE      => :comment_close,
+    $STATEMENT_SEP      => :statement_sep,
     $CURRY_OPEN         => :curry_open,
     $CURRY_CLOSE        => :curry_close,
     $BRACKET_OPEN       => :bracket_open,
@@ -188,7 +190,7 @@ def parse(code)
         last_was_data = $DATA_SIGNIFIER.include? last_token.type
         
         # two adjacent datatypes mark a statement
-        if is_data && last_was_data
+        if is_data && last_was_data || type == :statement_sep
             flush(out, stack, [:func_start])
         end
         
@@ -3088,7 +3090,7 @@ class AtState
                 ConfigureValue.new keyval, value
             end
         },
-        ";" => lambda { |inst, x, y| y },
+        ";;" => lambda { |inst, x, y| y },
         "!" => lambda { |inst, a, b|
             if AtState.func_like? a
                 a[inst, b]
