@@ -184,7 +184,7 @@ def parse(code)
         
         next if type == :comment
         
-        is_data = $DATA.include?(type) || type == :func_start || type == :curry_open
+        is_data = $DATA.include?(type) || type == :func_start# || type == :curry_open
         last_was_data = $DATA_SIGNIFIER.include? last_token.type
         
         # two adjacent datatypes mark a statement
