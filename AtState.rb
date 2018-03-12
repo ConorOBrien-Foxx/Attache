@@ -169,7 +169,7 @@ end
 def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
 end
-
+    
 def parse(code)
     # group expression
     stack = []
@@ -184,14 +184,15 @@ def parse(code)
         
         next if type == :comment
         
+        is_data = $DATA.include?(type) || type == :func_start || type == :curry_open
+        last_was_data = $DATA_SIGNIFIER.include? last_token.type
+        
+        # two adjacent datatypes mark a statement
+        if is_data && last_was_data
+            flush(out, stack, [:func_start])
+        end
+        
         if $DATA.include? type
-            # two adjacent datatypes mark a statement
-            if $DATA_SIGNIFIER.include? last_token.type
-                # p out, stack
-                # flush
-                flush(out, stack, [:func_start])
-                # p out, stack
-            end
             out.push ent
         
         elsif type == :func_start
