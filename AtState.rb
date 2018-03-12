@@ -2163,7 +2163,7 @@ class AtState
         # @return (*)
         # @genre functional
         # @example Print[Nest[Double, 1, 3]]
-        # @example ?? 2^3 = 8
+        # @example ?? 8 (= 2 ^ 3)
         #>>
         "Nest" => lambda { |inst, f, e, n|
             from_numlike(n).times {
@@ -2171,6 +2171,16 @@ class AtState
             }
             e
         },
+        #<<
+        # Applies <code>f</code> to <code>init</code> until <code>cond[init]</code> is truthy.
+        # @type f fn
+        # @type cond fn
+        # @type init (*)
+        # @return (*)
+        # @genre functional
+        # @example Print[NestWhile[Halve, 100, Even]]
+        # @example ?? 25
+        #>>
         "NestWhile" => lambda { |inst, f, init, cond|
             iter = init
             while cond[inst, iter]
@@ -2178,17 +2188,42 @@ class AtState
             end
             iter
         },
+        #<<
+        # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the list of intermediate steps.
+        # @type f fn
+        # @return fn
+        # @genre functional
+        # @example dig_root_steps := PeriodicSteps[Sum@Digits]
+        # @example Print[dig_root_steps[1853]]
+        # @example ?? [1853, 17, 8, 8]
+        #>>
         "PeriodicSteps" => lambda { |inst, f|
             lambda { |inst, x|
                 periodicloop f.bind(inst), x
             }
         },
+        #<<
+        # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the final result.
+        # @type f fn
+        # @return fn
+        # @genre functional
+        # @example dig_root := Periodic[Sum@Digits]
+        # @example Print[dig_root[1853]]
+        # @example ?? 8
+        #>>
         "Periodic" => lambda { |inst, f|
             # p "PERIODOC #{f}"
             lambda { |inst, x|
                 periodicloop(f.bind(inst), x).last
             }
         },
+        #<<
+        # Bonds <code>larg</code> to the right side of <code>func</code>. That is, <code>Bond[func, rarg][...args]</code> is the same as <code>func[...args, rarg]</code>.
+        # @type func fn
+        # @type rarg (*)
+        # @return fn
+        # @genre functional
+        #>>
         "RBond" => lambda { |inst, func, rarg|
             lambda { |inst, *args|
                 func[inst, *args, rarg]
@@ -2199,6 +2234,15 @@ class AtState
         #########################
         #### LOGIC FUNCTIONS ####
         #########################
+        #<<
+        # Returns <code>true</code> if all members of <code>Map[f, list]</code> are truthy.
+        # @optional list
+        # @type list [(*)]
+        # @type f fn|[(*)]
+        # @param list When omitted, returns <code>true</code> if all members of <code>f</code> are truthy. Otherwise, returns <code>false</code>. When specified, <code>f</code> <em>must</em> be a function.
+        # @return bool
+        # @genre logic
+        #>>
         "All" => lambda { |inst, f, list=nil|
             if list.nil?
                 f.all? { |e| AtState.truthy? e }
@@ -2206,6 +2250,15 @@ class AtState
                 list.all? { |e| AtState.truthy?(f[inst, e]) }
             end
         },
+        #<<
+        # Returns <code>true</code> if any member of <code>Map[f, list]</code> is truthy.
+        # @optional list
+        # @type list [(*)]
+        # @type f fn|[(*)]
+        # @param list When omitted, returns <code>true</code> if any member of <code>f</code> is truthy. Otherwise, returns <code>false</code>. When specified, <code>f</code> <em>must</em> be a function.
+        # @return bool
+        # @genre logic
+        #>>
         "Any" => lambda { |inst, f, list=nil|
             if list.nil?
                 f.any? { |e| AtState.truthy? e }
@@ -2213,9 +2266,37 @@ class AtState
                 list.any? { |e| AtState.truthy?(f[inst, e]) }
             end
         },
+        #<<
+        # Returns <code>true</code> if <code>arg</code> is falsey, <code>false</code> otherwise. (See also: <a href="#Falsey"><code>Falsey</code></a>.)
+        # @return bool
+        # @type arg (*)
+        # @genre logic
+        #>>
+        "Not" => lambda { |inst, arg|
+            AtState.falsey? arg
+        },
+        #<<
+        # Returns <code>true</code> if <code>arg</code> is falsey, <code>false</code> otherwise. (See also: <a href="#Not"><code>Not</code></a>.)
+        # @return bool
+        # @type arg (*)
+        # @genre logic
+        #>>
         "Falsey" => lambda { |inst, arg|
             AtState.falsey? arg
         },
+        #<<
+        # If <code>cond</code> is truthy, evaluates <code>t</code>. Otherwise, if <code>f</code> is specified, evaluates <code>f</code>.
+        # @return (*)
+        # @type cond (*)
+        # @type t expression
+        # @type f expression
+        # @optional f
+        # @genre logic
+        # @example If[3 = 4,
+        # @example     Print["Logic does not hold!"],
+        # @example     Print["Everything is situation normal."]
+        # @example ]
+        #>>
         "If" => lambda { |inst, cond, t, f=nil|
             res = if AtState.truthy? cond
                 t
@@ -2228,14 +2309,45 @@ class AtState
                 res
             end
         },
-        "Mask" => lambda { |inst, mask, res|
-            res.select.with_index { |e, i|
+        #<<
+        # Selects all elements <code>el</code> in <code>list</code> whose respective member in <code>mask</code> is truthy.
+        # @type mask [(*)]
+        # @type list [(*)]
+        # @return [(*)]
+        # @example Print[Mask[ [true, false, true, true, false], 1:5]]
+        # @example ?? [1, 3, 4]
+        # @genre logic
+        #>>
+        "Mask" => lambda { |inst, mask, list|
+            list.select.with_index { |e, i|
                 AtState.truthy? mask[i]
             }
         },
+        #<<
+        # Returns <code>true</code> if <code>arg</code> is truthy, <code>false</code> otherwise.
+        # @return bool
+        # @type arg (*)
+        # @genre logic
+        #>>
         "Truthy" => lambda { |inst, arg|
             AtState.truthy? arg
         },
+        #<<
+        # While <code>cond</code> evaluates as truthy, evaluates <code>body</code>. Returns <code>nil</code> if <code>cond</code> was false before executing <code>body</code>.
+        # @return (*)
+        # @type cond expression
+        # @type body expression
+        # @genre logic
+        # @example i := 0
+        # @example While[i < 5, Print[i]; i := i + 1]
+        # @example ?? 0
+        # @example ?? 1
+        # @example ?? 2
+        # @example ?? 3
+        # @example ?? 4
+        # @example While[false, Print["Hello!"]]
+        # @example ?? nothing is printed
+        #>>
         "While" => lambda { |inst, cond, body|
             res = nil
             loop {
@@ -2247,6 +2359,22 @@ class AtState
             }
             res
         },
+        #<<
+        # Evaluates <code>body</code>, then stops only if <code>cond</code> evaluates as falsey.
+        # @return (*)
+        # @type cond expression
+        # @type body expression
+        # @genre logic
+        # @example i := 0
+        # @example DoWhile[i < 5, Print[i]; i := i + 1]
+        # @example ?? 0
+        # @example ?? 1
+        # @example ?? 2
+        # @example ?? 3
+        # @example ?? 4
+        # @example DoWhile[false, Print["Hello!"]]
+        # @example ?? Hello!
+        #>>
         "DoWhile" => lambda { |inst, cond, body|
             res = nil
             loop {
@@ -2258,11 +2386,17 @@ class AtState
             }
             res
         },
+        #<<
+        # For every value <code>el</code> in <code>ent</code>, evaluates <code>body</code>, setting the first abstract value to <code>el</code>, and the second to its index.
+        # @genre logic
+        # @type ent [(*)]
+        
+        #>>
         "ForEach" => lambda { |inst, ent, body|
             arr = force_list(ent)
             
-            arr.each { |x|
-                inst.evaluate_node body, [x]
+            arr.each_with_index { |x, i|
+                inst.evaluate_node body, [x, i]
             }
             
             nil
