@@ -194,6 +194,8 @@ def parse(code)
             flush(out, stack, [:func_start])
         end
         
+        next if type == :statement_sep
+        
         if $DATA.include? type
             out.push ent
         
