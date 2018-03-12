@@ -2464,6 +2464,13 @@ class AtState
         "First" => lambda { |inst, list|
             list[0]
         },
+        "Find" => lambda { |inst, list, f|
+            if f.func_like?
+                list.find { |e| f[inst, e] }
+            else
+                raise 'unimplemented'
+            end
+        },
         "Flat" => lambda { |inst, list, n=nil|
             list.flatten(n)
         },
