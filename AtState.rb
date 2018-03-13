@@ -2395,7 +2395,7 @@ class AtState
         # For every value <code>el</code> in <code>ent</code>, evaluates <code>body</code>, setting the first abstract value to <code>el</code>, and the second to its index.
         # @genre logic
         # @type ent [(*)]
-        
+        # @return nil
         #>>
         "ForEach" => lambda { |inst, ent, body|
             arr = force_list(ent)
