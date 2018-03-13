@@ -67,6 +67,12 @@ class AttacheParser
                 options[:repl] = v
             end
             
+            opts.on("-T", "--templat",
+                "Executes TemplAt code"
+            ) do |v|
+                options[:templat] = v
+            end
+            
             opts.on_tail(
                 "-h", "--help",
                 "Show this help message"
@@ -87,6 +93,12 @@ end
 options = AttacheParser.parse(ARGV)
 
 program = options[:program] || File.read(ARGV[0]) rescue ""
+
+if options[:templat]
+    require_relative 'TemplAt.rb'
+    print templat program
+    exit
+end
 
 if options[:repl]
     program += 'Needs["repl"]; REPL[]'
