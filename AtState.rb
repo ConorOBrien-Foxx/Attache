@@ -801,12 +801,10 @@ class AtState
         @locals.last.delete(name)
     end
     
-    def local_descend(adopt)
-        # p @locals
+    def local_descend(arg={})
         res = @locals.last.dup
-        # res = deep_copy @locals.last
-        adopt ||= {}
-        adopt.merge! res
+        adopt = arg.dup
+        adopt.merge! deep_copy res
         @locals.push adopt
         adopt
     end
