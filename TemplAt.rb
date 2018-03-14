@@ -24,7 +24,8 @@ def templat(str)
             HTMLRemove => __
         }
         update .= {
-            HTMLReplace[el, ToHTML[_, document]]
+            dest .= ToHTML[_, document]
+            HTMLReplace[el, dest]
         }
         html .= HTMLSelect[document, "html"]
         head .= HTMLSelect[document, "head"]

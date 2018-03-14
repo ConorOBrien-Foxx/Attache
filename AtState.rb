@@ -803,7 +803,7 @@ class AtState
     def local_descend(arg={})
         res = @locals.last.dup
         adopt = arg.dup
-        adopt.merge! deep_copy res
+        adopt.merge! res.dup
         @locals.push adopt
         adopt
     end
