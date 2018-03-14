@@ -1049,7 +1049,7 @@ class AtState
             }.last
         },
         #<<
-        # Terminates the program with exit code <code>0</code>.
+        # Terminates the program with exit code <code>0</code>. Flushes STDOUT.
         # @optional code
         # @param code the code to exit with.
         # @type code number
@@ -1057,6 +1057,7 @@ class AtState
         # @genre IO
         #>>
         "Exit" => lambda { |inst, code=0|
+            STDOUT.flush
             exit! code
         },
         #<<
