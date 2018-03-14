@@ -1,0 +1,23 @@
+#!/usr/bin/rake
+
+def installed?(gem_name)
+    !!(`gem list -i ^#{gem_name}$`.index "true")
+end
+REQUIREMENTS = [
+    "nokogiri"
+]
+
+def default
+    REQUIREMENTS.each { |gem|
+        next if installed? gem
+        puts "Installing #{gem}."
+        if system("gem install #{gem}")
+            puts "Installation completed."
+        else
+            puts "Installation failed."
+        end
+    }
+    nil
+end
+
+task :default => default

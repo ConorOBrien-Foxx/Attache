@@ -73,6 +73,12 @@ class AttacheParser
                 options[:templat] = v
             end
             
+            opts.on("-S", "--serve-templat",
+                "Starts localhost:8000 with TemplAt code"
+            ) do |v|
+                options[:serve_templat] = v
+            end
+            
             opts.on_tail(
                 "-h", "--help",
                 "Show this help message"
@@ -92,11 +98,27 @@ end
 
 options = AttacheParser.parse(ARGV)
 
-program = options[:program] || File.read(ARGV[0]) rescue ""
+def read_program(options)
+    options[:program] || File.read(ARGV[0]) rescue ""
+end
 
-if options[:templat]
+program = read_program(options)
+
+if options[:serve_templat]
     require_relative 'TemplAt.rb'
-    print templat program
+    inst = AtState.new "Needs[$socket]\nServeTemplat[get_code]"
+    inst.variables['get_code'] = lambda { |inst|
+        read_program options
+    }
+    begin
+        inst.run
+    rescue
+        STDERR.puts "An error occured opening localhost."
+        print templat(program).to_html
+    end
+elsif options[:templat]
+    require_relative 'TemplAt.rb'
+    print templat(program).to_html
     exit
 end
 
