@@ -573,7 +573,6 @@ def ast(program)
                 
                 args.each { |el|
                     if Token === el && el.type == :abstract
-                        p el
                         n = get_abstract_number(el.raw)
                         abstracts[n] = others[n]
                         to_remove.push n
@@ -1141,7 +1140,7 @@ class AtState
         # @genre IO
         #>>
         "Print" => lambda { |inst, *args, **opts|
-            joiner = opts[:seperator] || opts[:sep] || " "
+            joiner = opts[:joiner] || " "
             inst.out.print args.map(&:to_s).join(joiner)
             inst.out.print opts[:after] || "\n"
             args
