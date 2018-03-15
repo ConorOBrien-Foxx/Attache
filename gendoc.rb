@@ -5,6 +5,7 @@ title = "AtState.rb"
 input = File.read title
 
 require_relative 'AtState.rb'
+require_relative 'compress.rb'
 
 $inst = AtState.new "Needs[$visuals]"
 $inst.run
@@ -17,12 +18,9 @@ end
 require 'zlib'
 require 'base64'
 FIELD_SEPARATOR = "\xff"
-def deflate(str)
-    Zlib::Deflate.deflate(str,9)[2..-5]
-end
 
 def finalize(state_string)
-    compressed = deflate(state_string)
+    compressed = zlib_deflate(state_string)
     encoded = Base64.encode64 compressed
     encoded.tr("+", "@").gsub(/=+/, "")
 end
