@@ -2865,7 +2865,7 @@ class AtState
         "Repr" => lambda { |inst, ent|
             ent.inspect
         },
-        "Rot" => lambda { |inst, str, amount=13|
+        "Rot" => vectorize_dyad(RIGHT) { |inst, str, amount=13|
             rotN(str, amount)
         },
         "String" => lambda { |inst, ent|
