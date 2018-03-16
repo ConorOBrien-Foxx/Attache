@@ -1624,7 +1624,7 @@ class AtState
             @@functions["ToBase"][inst, n, 8]
         },
         #<<
-        # Returns <code>[a - b, a + b]</code>
+        # Returns <code>[a - b, a + b]</code>.
         # @return [number]
         # @type a number
         # @type b number
@@ -2858,6 +2858,9 @@ class AtState
         "Format" => lambda { |inst, str, *args|
             str % args
         },
+        "Grid" => lambda { |inst, str|
+            str.lines.map(&:chomp).map(&:chars)
+        },
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
             list.join joiner
         },
@@ -2901,6 +2904,9 @@ class AtState
         },
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
+        },
+        "UnGrid" => lambda { |inst, str|
+            str.map(&:join).join "\n"
         },
         "Downcase" => vectorize_monad { |inst, str|
             str.downcase
