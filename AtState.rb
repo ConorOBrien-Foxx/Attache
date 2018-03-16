@@ -26,56 +26,57 @@ $CURRY_CLOSE = /~>/
 $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
-    "."     => [99, :left],
+    "."       => [99, :left],
     
-    ":"     => [30, :left],
+    ":"       => [30, :left],
     
-    "&"     => [26, :left],
-    "&:"    => [26, :left],
-    "~"     => [25, :left],
-    "@"     => [24, :left],
-    "@@"    => [24, :left],
-    "=>"    => [20, :right],
-    "\\"    => [20, :right],
-    "#"     => [20, :left],
-    "''"    => [20, :left],
-    "'"     => [20, :left],
-    "##"    => [19, :left],
-    "|>"    => [15, :left],
-    "<|"    => [15, :right],
+    "&"       => [26, :left],
+    "&:"      => [26, :left],
+    "~"       => [25, :left],
+    "@"       => [24, :left],
+    "@@"      => [24, :left],
+    "=>"      => [20, :right],
+    "\\"      => [20, :right],
+    "#"       => [20, :left],
+    "''"      => [20, :left],
+    "'"       => [20, :left],
+    "##"      => [19, :left],
+    "|>"      => [15, :left],
+    "<|"      => [15, :right],
     
     
-    "^"     => [15, :right],
-    "!"     => [15, :right],
-    "?"     => [15, :left],
-    "*"     => [13, :left],
-    "/"     => [13, :left],
-    "%"     => [13, :left],
-    "|"     => [12, :left],
-    "+"     => [11, :left],
-    "-"     => [11, :left],
+    "^"       => [15, :right],
+    "!"       => [15, :right],
+    "?"       => [15, :left],
+    "*"       => [13, :left],
+    "/"       => [13, :left],
+    "%"       => [13, :left],
+    "|"       => [12, :left],
+    "+"       => [11, :left],
+    "-"       => [11, :left],
+    "±"       => [11, :left],
     
-    "="     => [9, :left],
-    "=/="   => [9, :left],
-    "/="    => [9, :left],
-    "=="    => [9, :left],
-    "<"     => [9, :left],
-    ">"     => [9, :left],
-    "<="    => [9, :left],
-    ">="    => [9, :left],
-    "in"    => [8, :left],
-    ".."    => [7, :left],
-    "..."   => [7, :left],
-    "and"   => [6, :left],
-    "nor"   => [6, :left],
-    "not"   => [6, :left],
-    "xor"   => [5, :left],
-    "or"    => [5, :left],
-    "nand"  => [5, :left],
-    "->"    => [4, :left],
-    ":="    => [3, :right],
-    ".="    => [3, :right],
-    ";;"    => [2, :left],
+    "="       => [9, :left],
+    "=/="     => [9, :left],
+    "/="      => [9, :left],
+    "=="      => [9, :left],
+    "<"       => [9, :left],
+    ">"       => [9, :left],
+    "<="      => [9, :left],
+    ">="      => [9, :left],
+    "in"      => [8, :left],
+    ".."      => [7, :left],
+    "..."     => [7, :left],
+    "and"     => [6, :left],
+    "nor"     => [6, :left],
+    "not"     => [6, :left],
+    "xor"     => [5, :left],
+    "or"      => [5, :left],
+    "nand"    => [5, :left],
+    "->"      => [4, :left],
+    ":="      => [3, :right],
+    ".="      => [3, :right],
+    ";;"      => [2, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
@@ -134,13 +135,14 @@ $DATA_SIGNIFIER = $DATA + [
     :func_end
 ]
 $SEPARATOR = $DATA_SIGNIFIER
-$TOKENIZER = Regexp.new($TYPES.keys.join "|")
+$TOKENIZER = Regexp.new($TYPES.keys.join("|"), "u")
 
 def tokenize(code)
     Enumerator.new { |enum|
         i = 0
         depth = nil
         build = nil
+        # code.encode("UTF-8").
         code.scan($TOKENIZER) { |part|
             $TYPES.each { |reg, type|
                 next unless /^#{reg}$/ === part
@@ -1622,6 +1624,12 @@ class AtState
             @@functions["ToBase"][inst, n, 8]
         },
         #<<
+        
+        #>>
+        ""±"" => vectorize_dyad { |inst, a, b|
+            [@@operators["+"][inst, a, b], @@operators["-"][inst, a, b]]
+        },
+        #<<
         # Obtains the <code>n</code>th <code>order</code>-agonal number.
         # @return number
         # @type n number
@@ -2865,6 +2873,13 @@ class AtState
         "Replace" => lambda { |inst, str, search, replace=""|
             replace str, search, replace
         },
+        "ReplaceMultiple" => lambda { |inst, str, *args|
+            str = str.dup
+            args.map(&:to_a).each { |k, v|
+                str.gsub!(Regexp.new(k), v)
+            }
+            str
+        },
         "ReplaceF" => lambda { |inst, str, search, func|
             str.gsub(search) { |e|
                 func[inst, e]
@@ -2998,6 +3013,7 @@ class AtState
         "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
         "-" => vectorize_dyad { |inst, a, b| a - b },
         "+" => vectorize_dyad { |inst, a, b| a + b },
+        "±" => @@functions[""±""],
         "^" => vectorize_dyad { |inst, a, b| a ** b },
         "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b|
@@ -3128,6 +3144,9 @@ class AtState
         # matrix size
         "##" => lambda { |inst, n|
             dim n
+        },
+        "±" => vectorize_monad { |inst, a|
+            [a, @@unary_operators["-"][inst, a]]
         },
         "/" => lambda { |inst, r|
             if r.is_a? String

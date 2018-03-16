@@ -99,7 +99,7 @@ end
 options = AttacheParser.parse(ARGV)
 
 def read_program(options)
-    options[:program] || File.read(ARGV[0]) rescue ""
+    options[:program] || File.read(ARGV[0], encoding: "UTF-8") rescue ""
 end
 
 program = read_program(options)
