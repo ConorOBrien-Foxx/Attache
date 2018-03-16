@@ -2580,7 +2580,7 @@ class AtState
                 .chunk { |e| e }
                 .map { |k, v| [k, v.size] }
         },
-        "Rotate" => lambda { |inst, list, amount=1|
+        "Rotate" => vectorize_dyad(RIGHT) { |inst, list, amount=1|
             if list.is_a? String
                 @@functions["Rotate"][inst, force_list(list), amount].join
             else
