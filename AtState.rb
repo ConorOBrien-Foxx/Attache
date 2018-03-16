@@ -1208,6 +1208,14 @@ class AtState
             inst.in.gets.chomp.to_f
         },
         #<<
+        # Reads a number from the input.
+        # @return number
+        # @genre IO
+        #>>
+        "ReadNumber" => lambda { |inst|
+            force_number inst.in.gets.chomp
+        },
+        #<<
         # Updates values of global abstracts, respective to <code>args</code>. <code>_1</code> would become <code>args[0]</code>, and <code>_<em>n</em></code> would become <code>args[n-1]</code>.
         # @type args (*)
         # @return [(*)]

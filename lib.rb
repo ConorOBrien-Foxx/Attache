@@ -369,7 +369,6 @@ class Array
     include ReadableArrays
 end
 
-
 ## GENERIC HELPER FUNCTIONS ##
 
 def deep_copy(o)
