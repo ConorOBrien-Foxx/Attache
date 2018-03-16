@@ -1624,9 +1624,13 @@ class AtState
             @@functions["ToBase"][inst, n, 8]
         },
         #<<
-        
+        # Returns <code>[a - b, a + b]</code>
+        # @return [number]
+        # @type a number
+        # @type b number
+        # @genre numeric
         #>>
-        ""±"" => vectorize_dyad { |inst, a, b|
+        "PlusMinus" => vectorize_dyad { |inst, a, b|
             [@@operators["+"][inst, a, b], @@operators["-"][inst, a, b]]
         },
         #<<
@@ -3013,7 +3017,7 @@ class AtState
         "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
         "-" => vectorize_dyad { |inst, a, b| a - b },
         "+" => vectorize_dyad { |inst, a, b| a + b },
-        "±" => @@functions[""±""],
+        "±" => @@functions["PlusMinus"],
         "^" => vectorize_dyad { |inst, a, b| a ** b },
         "%" => vectorize_dyad { |inst, a, b| a % b },
         "|" => vectorize_dyad { |inst, a, b|
