@@ -35,6 +35,7 @@ $PRECEDENCE = {
     "~"       => [25, :left],
     "@"       => [24, :left],
     "@@"      => [24, :left],
+    "@%"      => [24, :left],
     "=>"      => [20, :right],
     "\\"      => [20, :right],
     "#"       => [20, :left],
@@ -3107,6 +3108,12 @@ class AtState
             else
                 f[inst, *g]
             end
+        },
+        "@%" => lambda { |inst, f, g|
+            lambda { |inst, *args|
+                g[inst, *args]
+                f[inst]
+            }
         },
         "##" => lambda { |inst, f, g|
             @@operators["@"][inst, f, g]
