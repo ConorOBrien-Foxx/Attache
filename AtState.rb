@@ -1306,6 +1306,15 @@ class AtState
         "FileWrite" => lambda { |inst, name, content|
             File.write(name, content)
         },
+        #<<
+        # Returns <code>true</code> if <code>name</code> represents a valid file, <code>false</code> otherwise.
+        # @type name string
+        # @return bool
+        # @genre IO/files
+        #>>
+        "FileExists" => lambda { |inst, name|
+            File.exists? name.strip
+        },
         
         
         #################
