@@ -948,7 +948,15 @@ class AtState
     end
     
     # functions which can receive key things
-    @@configurable = ["Print", "Option", "Safely", "Series", "SeriesIf"]
+    @@configurable = [
+        "Chop",
+        "Configure",
+        "Print",
+        "Option",
+        "Safely",
+        "Series",
+        "SeriesIf",
+    ]
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -1011,6 +1019,26 @@ class AtState
         #>>
         "ClearLocal" => lambda { |inst, name|
             inst.clear_local name
+        },
+        #<<
+        # Returns a function which calls <code>func</code> configured with <code>opts</code>.
+        # @type func fn
+        # @return fn
+        # @example print_weird := Configure[
+        # @example     Print,
+        # @example     joiner->", ",
+        # @example     before->"{",
+        # @example     after->"}\n"
+        # @example ]
+        # @example 
+        # @example print_weird[3, 4, 5]
+        # @example ?? {3, 4, 5}
+        # @genre functional
+        #>>
+        "Configure" => lambda { |inst, func, **opts|
+            lambda { |inst, *args|
+                func[inst, *args, **opts]
+            }
         },
         #<<
         # Defines <code>name</code> in the global scope as <code>value</code>. Returns <code>value</code>.
@@ -1140,11 +1168,13 @@ class AtState
         # @type args (*)
         # @return [(*)]
         # @option after String printed after everything else. Default: <code>"\n"</code>.
+        # @option before String printed before everything else. Default: <code>""</code>.
         # @option joiner The string which joins <code>args</code>. Default: <code>" "</code>.
         # @genre IO
         #>>
         "Print" => lambda { |inst, *args, **opts|
             joiner = opts[:joiner] || " "
+            inst.out.print opts[:before] || ""
             inst.out.print args.map(&:to_s).join(joiner)
             inst.out.print opts[:after] || "\n"
             args
@@ -2457,9 +2487,28 @@ class AtState
         ########################
         #### LIST FUNCTIONS ####
         ########################
+        #<<
+        # Generates the cumulative sums of <code>list</code>.
+        # @type list [number]
+        # @return [number]
+        # @genre list
+        #>>
         "Accumulate" => lambda { |inst, list|
             list.prefixes.map { |e| e.sum }
         },
+        #<<
+        # Flattens the matrices held in the matrix-like <code>list</code>.
+        # @type list [[list]]
+        # @return [list]
+        # @genre list
+        # @example m1 := [[1, 2], [3, 4]]
+        # @example m2 := [[0, 0], [7, 7]]
+        # @example Display[ArrayFlatten[ [[m1, m2, m1], [m2, m1, m2]] ]]
+        # @example ??  1 2 0 0 1 2
+        # @example ??  3 4 7 7 3 4
+        # @example ??  0 0 1 2 0 0
+        # @example ??  7 7 3 4 7 7
+        #>>
         "ArrayFlatten" => lambda { |inst, list|
             inner = list.flatten(1).first { |e| Array === e }
             
@@ -2477,11 +2526,30 @@ class AtState
                 }.flatten(1)
             end
         },
+        #<<
+        # Returns the average of <code>list</code>, that is, the sum of the elements divided by the length.
+        # @type list [number]
+        # @return number
+        # @genre list
+        #>>
         "Average" => lambda { |inst, list|
             list.average
         },
-        "Chop" => lambda { |inst, list, size|
-            chop force_list(list), size
+        #<<
+        # Chops <code>list</code> into groups of length <code>size</code>.
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @option extra Boolean: keeps elements which don't add up to <code>size</code> if <code>true</code>. Default: <code>true</code>.
+        # @genre list
+        # @example Print[Chop[1:8, 3]]
+        # @example ?? [[1, 2, 3], [4, 5, 6], [7, 8]]
+        # @example Print[Chop[1:8, 3], extra->false]
+        # @example ?? [[1, 2, 3], [4, 5, 6]]
+        #>>
+        "Chop" => lambda { |inst, list, size, **opts|
+            list = chop force_list(list), size
+            list.pop if !opts[:extra] && list.last.size < size
+            list
         },
         "Chunk" => lambda { |inst, list, fn=nil|
             list = force_list list
