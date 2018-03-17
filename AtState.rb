@@ -3151,7 +3151,17 @@ class AtState
         "<" => vectorize_dyad { |inst, x, y| x < y },
         ">=" => vectorize_dyad { |inst, x, y| x >= y },
         "<=" => vectorize_dyad { |inst, x, y| x <= y },
-        ":" => vectorize_dyad { |inst, x, y| (x..y).to_a },
+        ":" => vectorize_dyad { |inst, x, y|
+            if AtState.func_like?(x) && AtState.func_like?(y)
+                lambda { |inst, *args|
+                    x[inst, *args.map { |e|
+                        y[inst, e]
+                    }]
+                }
+            else
+                (x..y).to_a
+            end
+        },
         ".." => vectorize_dyad { |inst, x, y| (x..y).to_a },
         "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
         "in" => lambda { |inst, x, y| @@functions["Has"][inst, y, x] },
