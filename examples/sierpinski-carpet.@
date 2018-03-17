@@ -1,0 +1,7 @@
+carpet_init := [[1, 1, 1],
+                [1, 0, 1],
+                [1, 1, 1]]
+carpet[n] :=
+    UnGrid[" #"[Nest[{ArrayFlatten[[0, _][_]]}, carpet_init, n]]]
+
+ReadLine@%Print@carpet => 0:2
