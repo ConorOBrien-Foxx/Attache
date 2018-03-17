@@ -1294,7 +1294,7 @@ class AtState
         # @genre IO/files
         #>>
         "FileRead" => lambda { |inst, name|
-            File.read(name) rescue nil
+            File.read(name.strip) rescue nil
         },
         #<<
         # Writes <code>content</code> to file <code>name</code>. Returns the number of bytes written.
@@ -1304,7 +1304,7 @@ class AtState
         # @genre IO/files
         #>>
         "FileWrite" => lambda { |inst, name, content|
-            File.write(name, content)
+            File.write(name.strip, content)
         },
         #<<
         # Returns <code>true</code> if <code>name</code> represents a valid file, <code>false</code> otherwise.
