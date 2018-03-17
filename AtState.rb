@@ -5,7 +5,7 @@ FOLDER_LOCATION = File.dirname(__FILE__)
 
 $WORD = /[A-Za-z]\w*/
 $ABSTRACT = /_+\d*/
-$NUMBER = /(?:[0-9]*\.[0-9]+)|(?:[0-9]+)/
+$NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
 $REFERENCE = /\$#$WORD/
 $ABSTRACT_REFERENCE = /\$+/
 $BRACKET_OPEN = /\[|do\b/
@@ -1713,13 +1713,13 @@ class AtState
             sign n
         },
         #<<
-        # Returns the square root of <code>n</code>.
+        # Returns the square root of <code>n</code>. The result is imaginary if <code>n</code> is negative.
         # @type n number
         # @return number
         # @genre numeric
         #>>
         "Sqrt" => vectorize_monad { |inst, n|
-            Math.sqrt n
+            CMath.sqrt n
         },
         #<<
         # Returns the square of <code>n</code>.
@@ -1988,6 +1988,19 @@ class AtState
             n.even?
         },
         #<<
+        # Returns <code>true</code> if <code>n</code> = <code>a+bi</code> for <code>b /= 0</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
+        "Imaginary" => vectorize_monad { |inst, n|
+            unless n.real?
+                n.imaginary != 0
+            else
+                false
+            end
+        },
+        #<<
         # Returns <code>true</code> if <code>n</code> is less than <code>0</code>, otherwise <code>false</code>.
         # @return bool
         # @type n number
@@ -2013,6 +2026,19 @@ class AtState
         #>>
         "Positive" => vectorize_monad { |inst, n|
             n.positive?
+        },
+        #<<
+        # Returns <code>true</code> if <code>n</code> has no imaginary part, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
+        "Real" => vectorize_monad { |inst, n|
+            unless n.real?
+                n.imaginary == 0
+            else
+                true
+            end
         },
         #<<
         # Returns <code>true</code> if <code>n</code> is <code>0</code>, otherwise <code>false</code>.
@@ -2825,9 +2851,9 @@ class AtState
                 a.product(*bs).map { |e| f[inst, *e] }
             end
         },
-        "Select" => lambda { |inst, f, list|
-            if AtState.func_like? list
-                g = list
+        "Select" => lambda { |inst, f, list=nil|
+            if AtState.func_like?(list) || list.nil?
+                g = list || lambda { |inst, a| a }
                 lambda { |inst, *args|
                     @@functions["Select"][inst, f, g[inst, *args]]
                 }

@@ -1,0 +1,18 @@
+Print["== Quadratic Formula Solver =="]
+Print["ax^2 + bx + c = 0"]
+
+read_var[name] := Print[name + " = ", after -> es] and Define[name, ReadNumber[]]
+
+read_var => [$a, $b, $c]
+
+d := b^2 - 4*a*c
+num := -b ± Sqrt[d]
+den := 2*a
+
+solns := Round[num / den, 3]
+
+im := Imaginary \ solns
+re := Real \ solns
+
+Print["There are", #re, "real solutions:", re]
+Print["There are", #im, "imaginary solutions:", im]

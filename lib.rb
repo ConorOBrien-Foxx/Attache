@@ -1,6 +1,7 @@
 require 'prime'
 require 'date'
 require 'matrix'
+require 'cmath'
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -369,6 +370,22 @@ class Array
     include ReadableArrays
 end
 
+class Complex
+    def Complex.from((re, im))
+        re + 1i*im
+    end
+    
+    def components
+        [real, imaginary]
+    end
+    
+    [:round, :floor, :ceil].each { |prop|
+        define_method(prop) { |*args|
+            Complex.from components.map { |e| e.send prop, *args }
+        }
+    }
+end
+
 ## GENERIC HELPER FUNCTIONS ##
 
 def deep_copy(o)
@@ -534,7 +551,7 @@ end
 def simplify_number(n)
     n = from_numlike n
     return n if n.abs == Infinity
-    return n.to_i if n == n.to_i
+    return n.to_i if n == n.to_i rescue nil
     return n
 end
 
