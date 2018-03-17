@@ -2941,6 +2941,13 @@ class AtState
                 }
             end
         },
+        "Table" => lambda { |inst, f, as, bs=as|
+            as.map { |a|
+                bs.map { |b|
+                    f[inst, a, b]
+                }
+            }
+        },
         "Reject" => lambda { |inst, f, list|
             if AtState.func_like? list
                 g = list
