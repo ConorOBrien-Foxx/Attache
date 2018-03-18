@@ -148,12 +148,14 @@ def tokenize(code)
             $TYPES.each { |reg, type|
                 next unless /^#{reg}$/ === part
                 
-                if type == :comment_open
-                    depth = 1
-                    build = part
-                elsif depth.nil?
-                    enum.yield Token.new part, type, i
-                    i += part.size
+                if depth.nil?
+                    if type == :comment_open
+                        depth = 1
+                        build = part
+                    else
+                        enum.yield Token.new part, type, i
+                        i += part.size
+                    end
                 else
                     build += part
                     depth += 1 if type == :comment_open
