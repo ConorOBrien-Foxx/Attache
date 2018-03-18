@@ -34,8 +34,6 @@ $COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
 $SIGNATURE_PARSE = /"(\w+)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
-$final = {}
-
 $PUSH_COLLECT = {
     "type" => [:types, 2],
     "param" => [:params, 2],
@@ -70,6 +68,8 @@ def generate(title)
     input = File.read title
     
     groups = input.scan($COMMENT_GROUP)
+    
+    final = {}
 
     groups.each { |group|
         head, *body, tail, signature = group.lines
@@ -105,7 +105,7 @@ def generate(title)
         
         args.shift # remove inst
         
-        $final[name] = {
+        final[name] = {
             info: info,
             type: type,
             args: args,
@@ -115,7 +115,7 @@ def generate(title)
     result = ""
     $toc = Hash.new { |h, k| h[k] = [] }
 
-    $final.sort.each { |k, v|
+    final.sort.each { |k, v|
         genre = v[:info][:genre]
 
         if genre.empty?
@@ -220,7 +220,7 @@ def generate(title)
         result += "</div>"
     }
 
-    toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{$final.size}</em></p><table id=\"toc\">"
+    toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><table id=\"toc\">"
     $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
         toc_result += "<tr><td>(#{genre})</td><td>"
         names.each { |name|
@@ -231,8 +231,10 @@ def generate(title)
     }
 
     toc_result += "</table>"
-
-    result = toc_result + result
+    
+    preamble = "<p><a href=\"./index.html\">Return to the index.</a><p>"
+    
+    result = preamble + toc_result + result
 
     BOILERPLATES[:html] % {
         title: title,
@@ -242,8 +244,23 @@ end
 
 sources = ["AtState.rb"]
 
+index = ""
+
+index += "<p>This is an index of all documentation of the features of Attache. <code>AtState</code> contains most of the functions found in Attache.</p>"
+
+index += "<h2>Documented files</h2>"
+index += "<ul>"
 sources.each { |source|
     base = File.basename source, ".*"
+    dest = "docs/#{base}.html"
     
-    File.write "docs/#{base}.html", generate(source)
+    File.write dest, generate(source)
+    
+    index += "<li><a href=\"./#{base}.html\">#{base}</a></li>"
+}
+index += "</ul>"
+
+File.write "docs/index.html", BOILERPLATES[:html] % {
+    title: "Attache: Documentation",
+    body: index
 }
