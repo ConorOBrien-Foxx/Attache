@@ -487,7 +487,6 @@ class Node
     end
 end
 
-#idk
 class AtLambda
     ARG_CONST = "ARGUMENTS"
     def initialize(inner_ast, params=[])
@@ -3211,8 +3210,15 @@ class AtState
         },
         ":=" => lambda { |inst, var, val|
             if Node === var
-                #todo: pattern matching
-                args = var.children.map(&:raw)
+                #todo: pattern matching++
+                args = var.children.map { |e|
+                    if Node === e
+                        e.children[0].raw
+                        STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
+                    else
+                        e.raw
+                    end
+                }
                 res = AtLambda.new [val], args
                 inst.define var.head.raw, res
             else
