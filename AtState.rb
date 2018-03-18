@@ -2849,6 +2849,9 @@ class AtState
             end
         },
         "SortBy" => lambda { |inst, list, func|
+            if String === list
+                return @@functions["SortBy"][inst, list.chars].join
+            end
             list.sort_by { |e|
                 res = func[inst, e]
                 if res == !!res
