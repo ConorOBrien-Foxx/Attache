@@ -2837,6 +2837,9 @@ class AtState
             args.min
         },
         "Sort" => lambda { |inst, list, func=nil|
+            if String === list
+                return @@functions["Sort"][inst, list.chars].join
+            end
             if func.nil?
                 list.sort
             else
