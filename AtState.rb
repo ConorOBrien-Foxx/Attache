@@ -708,7 +708,10 @@ class AtState
     end
     
     def get_variable(name)
-        if @locals.last.has_key? name
+        if @@extended_variables.has_key? name
+            @@extended_variables[name]
+        
+        elsif @locals.last.has_key? name
             @locals.last[name]
         
         elsif @variables.has_key? name
@@ -1046,15 +1049,36 @@ class AtState
         # @genre scope
         # @type name string
         # @type value (*)
+        # @example Define[$a, "This is variable a!"]
+        # @example Print[a]
+        # @example ?? This is variable a!
         #>>
         "Define" => lambda { |inst, name, value|
             inst.define name, value
         },
         #<<
-        # Displays the representation of <code>ent</code>.
+        # Returns the value of the variable whose name is <code>name</code>.
+        # @return (*)
+        # @type name string
+        # @genre scope
+        # @example a := 323
+        # @example Print[Retrieve[$a]]
+        # @example ?? 323
+        #>>
+        "Retrieve" => lambda { |inst, name|
+            inst.get_variable name
+        },
+        #<<
+        # Displays <code>ent</code> in a human-reversible format. Primarily, prints the elements of arrays (whose dimension is at least 2) on separate lines.
         # @return (*)
         # @type ent (*)
         # @genre IO
+        # @example Display[ [1:3, 4:6, 9:11] ]
+        # @example ??  1  2  3
+        # @example ??  4  5  6
+        # @example ??  9 10 11
+        # @example Display[ "Hello, World!" ]
+        # @example ?? "Hello, World!"
         #>>
         "Display" => lambda { |inst, ent|
             display ent
@@ -1861,7 +1885,7 @@ class AtState
             Math::atan n
         },
         #<<
-        # Calculates the principle value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
+        # Calculates the principal value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
         # @type y number
         # @type x number
         # @return number
@@ -2560,17 +2584,49 @@ class AtState
             list.pop if !opts[:extra] && list.last.size < size
             list
         },
-        "Chunk" => lambda { |inst, list, fn=nil|
+        #<<
+        # Chunks <code>list</code> into runs of consecutive values. Returns an array of members which look like <code>[el, els]</code>, where <code>el</code> is the principal run value, and <code>els</code> are the values in that run.
+        # @type list [(*)]
+        # @optional f
+        # @type f fn
+        # @param f When specified, maps each value <code>el</code> in <code>list</code> over <code>f</code>, then uses <code>f[el]</code> as the principal run value.
+        # @return [[(*), [(*)]]]
+        # @genre list
+        # @example Print[Chunk[ [1, 2, 3, 2, 2, 3] ]]
+        # @example ?? [[1, [1]], [2, [2]], [3, [3]], [2, [2, 2]], [3, [3]]]
+        # @example Display[Chunk[ [1, -1, 1, 1, 2, 3, -3, 5, -2 ], Square ]]
+        # @example ??   1 [1, -1, 1, 1]
+        # @example ??   4           [2]
+        # @example ??   9       [3, -3]
+        # @example ??  25           [5]
+        # @example ??   4          [-2]
+        #>>
+        "Chunk" => lambda { |inst, list, f=nil|
             list = force_list list
-            if fn.nil?
+            if f.nil?
                 list.chunk { |e| e }.to_a
             else
-                list.chunk { |e| fn[inst, e] }.to_a
+                list.chunk { |e| f[inst, e] }.to_a
             end
         },
+        #<<
+        # Returns the concatentation of each list in <code>args</code>.
+        # @type args [(*)]
+        # @return [(*)]
+        # @genre list
+        # @example Print[Concat[ 1:5, 2:3, [7], [[8, 9]] ]]
+        # @example ?? [1, 2, 3, 4, 5, 2, 3, 7, [8, 9]]
+        #>>
         "Concat" => lambda { |inst, *args|
             args.flatten(1)
         },
+        #<<
+        # Counts the number of members satisfying <code>f</code> in <code>list</code>; or, if <code>f</code> is not a function, the number of times <code>f</code> appears in <code>list</code>.
+        # @type list [(*)]
+        # @type f fn|(*)
+        # @return number
+        # @genre list
+        #>>
         "Count" => lambda { |inst, list, f|
             if f.is_a?(Proc) || f.is_a?(AtLambda)
                 list.count { |e| f[inst, e] }
@@ -2578,12 +2634,50 @@ class AtState
                 list.count f
             end
         },
+        #<<
+        # Returns <code>true</code> if every element <code>a</code> which is followed by an element <code>b</code> is strictly greater than <code>b</code>.
+        # @type list [(*)]
+        # @return bool
+        # @genre list/logic
+        # @example Print[Decreasing[ -(1:5) ]]
+        # @example ?? true
+        # @example Print[Decreasing[ [2, 1, 0] ]]
+        # @example ?? true
+        # @example Print[Decreasing[ [] ]]
+        # @example ?? true
+        # @example Print[Decreasing[ [2, 2, 1, 0] ]]
+        # @example ?? false
+        # @example Print[Decreasing[ 1:5 ]]
+        # @example ?? false
+        #>>
         "Decreasing" => lambda { |inst, list|
             list.delta.all?(&:negative?) rescue false
         },
+        #<<
+        # Returns the differences between each member of <code>list</code>.
+        # @type list [number]
+        # @return [number]
+        # @genre list
+        # @example Print[Delta[ 1:4 ]]
+        # @example ?? [1, 1, 1]
+        # @example Print[Delta[ [] ]]
+        # @example ?? []
+        # @example Print[Delta[ Square[0:4] ]]
+        # @example ?? [1, 3, 5, 7]
+        #>>
         "Delta" => lambda { |inst, list|
             list.delta
         },
+        #<<
+        # Returns the first element of <code>list</code>.
+        # @type list [(*)]
+        # @return (*)
+        # @genre list
+        # @example Print[First[ [3, 9, 2, 0] ]]
+        # @example ?? 3
+        # @example Print[First[ "Hello!" ]]
+        # @example ?? H
+        #>>
         "First" => lambda { |inst, list|
             list[0]
         },
