@@ -76,9 +76,10 @@ $PRECEDENCE = {
     "or"      => [5, :left],
     "nand"    => [5, :left],
     "->"      => [4, :left],
-    ":="      => [3, :right],
-    ".="      => [3, :right],
-    ";;"      => [2, :left],
+    "else"    => [3, :left],
+    ":="      => [2, :right],
+    ".="      => [2, :right],
+    ";;"      => [1, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
@@ -976,6 +977,13 @@ class AtState
         ".=" => [true, true],
         "." => [false, true],
         "DoSafe" => [true],
+        
+        "and" => [true, true],
+        "nand" => [true, true],
+        "else" => [true, true],
+        "or" => [true, true],
+        "nor" => [true, true],
+        "not" => [true, true],
     }
     
     # All builtins
@@ -1752,6 +1760,16 @@ class AtState
         #>>
         "Random" => vectorize_dyad { |inst, n=nil, m=nil|
             random(n, m)
+        },
+        #<<
+        # Returns a fraction representing <code>a / b</code>.
+        # @return rational
+        # @type a number
+        # @type b number
+        # @genre numeric
+        #>>
+        "Rational" => vectorize_dyad { |inst, a, b|
+            Rational(a, b)
         },
         #<<
         # Returns <code>n</code> rounded half-up to the nearest integer.
@@ -2612,6 +2630,17 @@ class AtState
             end
         },
         #<<
+        # Returns all elements of <code>parent</code> not included in any of the lists in <code>args</code>.
+        # @type parent [(*)]
+        # @type args [(*)]
+        # @return [(*)]
+        # @genre list
+        #>>
+        "Complement" => lambda { |inst, parent, *args|
+            any = args.flatten(1)
+            parent.reject { |e| any.include? e }
+        },
+        #<<
         # Returns the concatentation of each list in <code>args</code>.
         # @type args [(*)]
         # @return [(*)]
@@ -2669,6 +2698,18 @@ class AtState
         #>>
         "Delta" => lambda { |inst, list|
             list.delta
+        },
+        #<<
+        # Returns all elements exclusive to <code>a</code> or <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre list
+        #>>
+        "Difference" => lambda { |inst, a, b|
+            halve1 = @@functions["Complement"][inst, a, b]
+            halve2 = @@functions["Complement"][inst, b, a]
+            halve1 + halve2
         },
         #<<
         # Returns the first element of <code>list</code>.
@@ -2885,6 +2926,24 @@ class AtState
             list.inject(0) { |a, e|
                 @@operators["+"][inst, a, e]
             }
+        },
+        #<<
+        # Returns an array of lists representing all pairs <code>(x, y)</code> such that <code>a <= y <= b</code> and <code>a <= x < y</code>.
+        # @genre list
+        # @type a number
+        # @type b number
+        # @return [[number, number]]
+        #>>
+        "TriangleRange" => lambda { |inst, a, b, **opts|
+            pairs = []
+            
+            (a..b).each { |y|
+                (a...y).each { |x|
+                    pairs << [x, y]
+                }
+            }
+            
+            pairs
         },
         "Union" => lambda { |inst, *lists|
             lists.inject(&:|)
@@ -3187,8 +3246,10 @@ class AtState
                 rescue Exception => e
                     if catch.nil?
                         e
-                    else
+                    elsif AtState.func_like? catch
                         catch[inst, e]
+                    else
+                        catch
                     end
                     if opts[:redo]
                         rec[inst, *args]
@@ -3283,23 +3344,59 @@ class AtState
         "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
         "in" => lambda { |inst, x, y| @@functions["Has"][inst, y, x] },
         "or" => lambda { |inst, a, b|
-            AtState.truthy?(a) ? a : b
+            lres = inst.evaluate_node a
+            if AtState.truthy? lres
+                lres
+            else
+                inst.evaluate_node b
+            end
         },
+        # no short circuiting, since both values must be compared
         "xor" => lambda { |inst, a, b|
             AtState.truthy?(a) ^ AtState.truthy?(b)
         },
         "nand" => lambda { |inst, a, b|
-            AtState.falsey?(a) || AtState.falsey?(b) ? true : false
+            if AtState.falsey? inst.evaluate_node a
+                true
+            elsif AtState.falsey? inst.evaluate_node b
+                true
+            else
+                false
+            end
         },
         "and" => lambda { |inst, a, b|
-            AtState.falsey?(a) ? a : b
+            lres = inst.evaluate_node a
+            if AtState.falsey? lres
+                lres
+            else
+                inst.evaluate_node b
+            end
+        },
+        "else" => lambda { |inst, a, b|
+            lres = inst.evaluate_node a
+            if AtState.truthy? lres
+                lres
+            else
+                inst.evaluate_node b
+            end
         },
         "nor" => lambda { |inst, a, b|
-            AtState.truthy?(a) || AtState.truthy?(b) ? false : true
+            if AtState.truthy? inst.evaluate_node a
+                false
+            elsif AtState.truthy? inst.evaluate_node b
+                false
+            else
+                true
+            end
         },
         "not" => lambda { |inst, a, b|
             # A && !B
-            AtState.truthy?(b) ? b : a
+            rres = inst.evaluate_node b
+            if AtState.truthy? rres
+                rres
+            else
+                inst.evaluate_node a
+            end
         },
         
         ## -- functional -- #
