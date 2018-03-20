@@ -2873,6 +2873,12 @@ class AtState
                 rotate list, amount
             end
         },
+        "Rotations" => lambda { |inst, list|
+            list = force_list list
+            (0...list.size).map { |rot|
+                rotate list, rot
+            }
+        },
         "Same" => lambda { |inst, *args|
             list = args.flatten(1)
             list.all? { |e| e == list[0] }
