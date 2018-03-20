@@ -1,0 +1,12 @@
+?? rather inefficient
+
+fds := Sum@`!@Digits
+
+??max := GenerateFirst[{N[_&9]}, {fds[_] < _}]
+max := 9999999
+
+PE34 := Invariant[fds]
+
+solns := PE34 \ 3:max
+
+Print[Sum[solns]]

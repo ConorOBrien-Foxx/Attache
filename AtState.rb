@@ -1464,6 +1464,13 @@ class AtState
             }
             collect
         },
+        "GenerateFirst" => lambda { |inst, f, cond, start=0|
+            res = nil
+            until AtState.truthy? cond[inst, res = f[inst, start]]
+                start += 1
+            end
+            res
+        },
         
         ###########################
         #### NUMERIC FUNCTIONS ####
@@ -2441,6 +2448,24 @@ class AtState
                 inst.evaluate_node res
             else
                 res
+            end
+        },
+        #<<
+        # Determines whether or not <code>arg = func[arg]</code>
+        # @return bool
+        # @genre logic
+        # @type arg (*)
+        # @type func fn
+        # @optional arg
+        # @param arg when omitted, returns a function <code>f[x] = Invariant[func, x]</code>.
+        #>>
+        "Invariant" => lambda { |inst, func, arg=nil|
+            if arg.nil?
+                lambda { |inst, arg|
+                    func[inst, arg] == arg
+                }
+            else
+                func[inst, arg] == arg
             end
         },
         #<<
