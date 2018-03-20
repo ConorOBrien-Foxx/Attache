@@ -3393,7 +3393,7 @@ class AtState
             # A && !B
             rres = inst.evaluate_node b
             if AtState.truthy? rres
-                rres
+                false
             else
                 inst.evaluate_node a
             end
