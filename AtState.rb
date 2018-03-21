@@ -2965,12 +2965,31 @@ class AtState
         # @type b number
         # @return [[number, number]]
         #>>
-        "TriangleRange" => lambda { |inst, a, b, **opts|
+        "TriangleRange" => lambda { |inst, a, b|
             pairs = []
             
             (a..b).each { |y|
                 (a...y).each { |x|
                     pairs << [x, y]
+                }
+            }
+            
+            pairs
+        },
+        #<<
+        # Returns an array of lists representing all pairs <code>(x, y)</code> satisfying <code>cond</code> such that <code>a <= y <= b</code> and <code>a <= x < y</code>.
+        # @genre list
+        # @type a number
+        # @type b number
+        # @type cond fn
+        # @return [[number, number]]
+        #>>
+        "TriangleSelect" => lambda { |inst, cond, a, b|
+            pairs = []
+            
+            (a..b).each { |y|
+                (a...y).each { |x|
+                    pairs << [x, y] if cond[inst, x, y]
                 }
             }
             

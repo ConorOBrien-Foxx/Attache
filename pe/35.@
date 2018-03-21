@@ -1,0 +1,9 @@
+
+is_circular_prime[x] :=
+    All[IsPrime, N => Rotations[x]]
+
+max := 1000000 - 1
+
+solns := is_circular_prime \ 2:max
+
+Print[#solns]
