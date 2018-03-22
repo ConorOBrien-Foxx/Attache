@@ -2408,6 +2408,18 @@ class AtState
             end
         },
         #<<
+        # Returns <code>Not[Any[...]]</code>.
+        # @optional list
+        # @type list [(*)]
+        # @type f fn|[(*)]
+        # @param list When omitted, returns <code>true</code> if any member of <code>f</code> is truthy. Otherwise, returns <code>false</code>. When specified, <code>f</code> <em>must</em> be a function.
+        # @return bool
+        # @genre logic
+        #>>
+        "None" => lambda { |inst, f, list=nil|
+            !@@functions["Any"][inst, f, list]
+        },
+        #<<
         # Returns <code>true</code> if <code>arg</code> is falsey, <code>false</code> otherwise. (See also: <a href="#Falsey"><code>Falsey</code></a>.)
         # @return bool
         # @type arg (*)
