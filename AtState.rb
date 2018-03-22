@@ -3186,6 +3186,14 @@ class AtState
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
             list.join joiner
         },
+        "Match" => vectorize_dyad { |inst, source, match|
+            match = make_regex match
+            source.match(match).to_a
+        },
+        "MatchAll" => vectorize_dyad { |inst, source, match|
+            match = make_regex match
+            source.scan(match)
+        },
         "Ord" => vectorize_monad { |inst, ent|
             ent.ord
         },

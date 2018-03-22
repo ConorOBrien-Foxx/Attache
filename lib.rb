@@ -630,7 +630,12 @@ $MAKE_REGEX_ESCAPE = {
     "I" => "[^A-Za-z0-9]",
 }
 $MAKE_REGEX_STANDARD = "abcfnrv\\'\"^$*+?/(){}|[]bBdDwWsSc0123456789."
-def make_regex(str)
+$flags = {
+    "x" => Regexp::EXTENDED,
+    "i" => Regexp::IGNORECASE,
+    "m" => Regexp::MULTILINE,
+}
+def make_regex(str, flags="")
     return str if str.is_a? Regexp
     
     build = ""
@@ -664,7 +669,7 @@ def make_regex(str)
         i += 1
     end
     
-    Regexp.new build
+    Regexp.new build, flags.chars.map { |c| $flags[c] }.inject(0, :|)
 end
 
 def format_replace(repl, str, data, i)
