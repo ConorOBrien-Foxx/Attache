@@ -929,6 +929,14 @@ class AtState
         res
     end
     
+    def evaluate_node_safe(node_maybe)
+        if Node === node_maybe || Token === node_maybe
+            evaluate_node node_maybe
+        else
+            node_maybe
+        end
+    end
+    
     def run
         @trees.map { |tree|
             evaluate_node tree
@@ -2457,11 +2465,7 @@ class AtState
             else
                 f
             end
-            if res.is_a?(Token) || res.is_a?(Node)
-                inst.evaluate_node res
-            else
-                res
-            end
+            inst.evaluate_node_safe res
         },
         #<<
         # Determines whether or not <code>arg = func[arg]</code>
@@ -3427,11 +3431,11 @@ class AtState
         "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
         "in" => lambda { |inst, x, y| @@functions["Has"][inst, y, x] },
         "or" => lambda { |inst, a, b|
-            lres = inst.evaluate_node a
+            lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
             else
-                inst.evaluate_node b
+                inst.evaluate_node_safe b
             end
         },
         # no short circuiting, since both values must be compared
@@ -3439,34 +3443,34 @@ class AtState
             AtState.truthy?(a) ^ AtState.truthy?(b)
         },
         "nand" => lambda { |inst, a, b|
-            if AtState.falsey? inst.evaluate_node a
+            if AtState.falsey? inst.evaluate_node_safe a
                 true
-            elsif AtState.falsey? inst.evaluate_node b
+            elsif AtState.falsey? inst.evaluate_node_safe b
                 true
             else
                 false
             end
         },
         "and" => lambda { |inst, a, b|
-            lres = inst.evaluate_node a
+            lres = inst.evaluate_node_safe a
             if AtState.falsey? lres
                 lres
             else
-                inst.evaluate_node b
+                inst.evaluate_node_safe b
             end
         },
         "else" => lambda { |inst, a, b|
-            lres = inst.evaluate_node a
+            lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
             else
-                inst.evaluate_node b
+                inst.evaluate_node_safe b
             end
         },
         "nor" => lambda { |inst, a, b|
-            if AtState.truthy? inst.evaluate_node a
+            if AtState.truthy? inst.evaluate_node_safe a
                 false
-            elsif AtState.truthy? inst.evaluate_node b
+            elsif AtState.truthy? inst.evaluate_node_safe b
                 false
             else
                 true
@@ -3474,11 +3478,11 @@ class AtState
         },
         "not" => lambda { |inst, a, b|
             # A && !B
-            rres = inst.evaluate_node b
+            rres = inst.evaluate_node_safe b
             if AtState.truthy? rres
                 false
             else
-                inst.evaluate_node a
+                inst.evaluate_node_safe a
             end
         },
         
