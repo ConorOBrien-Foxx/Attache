@@ -661,10 +661,12 @@ class AtState
         "inf" => Infinity,
         "E" => Math::E,
         "PI" => Math::PI,
+        "TAU" => Math::PI * 2,
+        "PAU" => Math::PI * 1.5,
+        "argv" => ARGV[1..-1],
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
-        "argv" => ARGV[1..-1],
     }
     @@extended_variables = {}
     
