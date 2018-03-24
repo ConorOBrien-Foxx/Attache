@@ -2766,11 +2766,20 @@ class AtState
         "First" => lambda { |inst, list|
             list[0]
         },
-        "Find" => lambda { |inst, list, f|
-            if f.func_like?
+        #<<
+        # Returns the first element <code>e</code> in <code>list</code> which satisfies <code>f</code>. Returns <code>nil</code> otherwise.
+        # @type f fn|(*)
+        # @type list [(*)]
+        # @return (*)
+        # @paramtype fn f Applied to each successive member of <code>list</code> until a truthy value is obtained.
+        # @paramtype (*) f Returns the first element in <code>list</code> equal to <code>f</code>.
+        # @genre list
+        #>>
+        "Find" => lambda { |inst, f, list|
+            if AtState.func_like? f
                 list.find { |e| f[inst, e] }
             else
-                raise 'unimplemented'
+                list.find { |e| e == f }
             end
         },
         "Flat" => lambda { |inst, list, n=nil|
