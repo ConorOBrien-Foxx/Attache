@@ -2771,8 +2771,8 @@ class AtState
         # @type f fn|(*)
         # @type list [(*)]
         # @return (*)
-        # @paramtype fn f Applied to each successive member of <code>list</code> until a truthy value is obtained.
-        # @paramtype (*) f Returns the first element in <code>list</code> equal to <code>f</code>.
+        # @paramtype fn f applied to each successive member of <code>list</code> until a truthy value is obtained.
+        # @paramtype (*) f returns the first element in <code>list</code> equal to <code>f</code>.
         # @genre list
         #>>
         "Find" => lambda { |inst, f, list|
@@ -2782,12 +2782,40 @@ class AtState
                 list.find { |e| e == f }
             end
         },
+        #<<
+        # Flattens <code>list</code>.
+        # @type list [(*)]
+        # @optional n
+        # @type n number
+        # @return [(*)]
+        # @genre list
+        # @param n when specified, flattens <code>list</code> to 1 level <code>n</code> times.
+        #>>
         "Flat" => lambda { |inst, list, n=nil|
             list.flatten(n)
         },
-        "Get" => vectorize_dyad(RIGHT) { |inst, list, inds|
-            list[inds]
+        #<<
+        # Gets all members at indices <code>inds</code> from list.
+        # @type list [(*)]
+        # @type ind number
+        # @return [(*)]
+        # @genre list
+        # @example Print[Get[1:5, 2]]
+        # @example ?? 3
+        # @example Print[Get["Hello, World!", 0:4]]
+        # @example ?? ["H", "e", "l", "l", "o"]
+        #>>
+        "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
+            list[ind]
         },
+        #<<
+        # Returns <code>true</code> if <code>list</code> contains <code>member</code>, <code>false</code> otherwise.
+        # @type list [(*)]|string
+        # @type member (*)
+        # @return bool
+        # @genre list
+        # @paramtype string list returns if <code>member</code> is contained within <code>list</code>.
+        #>>
         "Has" => lambda { |inst, list, member|
             if String === list
                 !!list.index(member)
@@ -2795,6 +2823,13 @@ class AtState
                 list.include? member
             end
         },
+        #<<
+        # Returns <code>list[i0][i1]...[iN]</code> for each <code>i</code> in <code>inds</code>.
+        # @type list [(*)]
+        # @type inds [(*)]|(*)
+        # @return (*)
+        # @genre list
+        #>>
         "FlatGet" => lambda { |inst, list, inds|
             [*inds].each { |i|
                 list = list[i]
