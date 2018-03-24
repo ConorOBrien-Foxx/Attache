@@ -239,8 +239,7 @@ def parse(code)
                     top_raw, top_type = stack.last
                     break if top_type != :operator && top_type != :unary_operator
                     top_prec, top_assoc = $PRECEDENCE[top_raw]
-                    # fix unary operator precedence, temporary
-                    # todo: unary operator precedence
+
                     if top_type == :unary_operator
                         top_prec = $PRECEDENCE_UNARY[top_raw]
                     end
@@ -3310,8 +3309,6 @@ class AtState
         ##################
         #### UNSORTED ####
         ##################
-        #* none *#
-        #todo: expand
         "HTMLEscape" => lambda { |inst, str|
             str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
         },
