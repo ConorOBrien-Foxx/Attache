@@ -2810,6 +2810,12 @@ class AtState
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
             list.index ind
         },
+        "IndicesFlat" => lambda { |inst, list, ind|
+            list.indices ind
+        },
+        "IndexFlat" => lambda { |inst, list, ind|
+            list.index ind
+        },
         "Intersection" => lambda { |inst, *lists|
             lists.inject(&:&)
         },
