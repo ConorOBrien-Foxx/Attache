@@ -3244,6 +3244,9 @@ class AtState
             #todo:standardize
             ent.to_s
         },
+        "SwapCase" => vectorize_monad { |inst, str|
+            raise 'unimplemented'
+        },
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
         },
