@@ -3084,7 +3084,7 @@ class AtState
             diagonal mat, diag
         },
         "Identity" => vectorize_monad { |inst, size|
-            Matrix.identity size
+            Matrix.identity(size).to_a
         },
         "LowerTriangle" => lambda { |inst, mat, strict=false|
             lower_triangle mat, AtState.truthy?(strict)
