@@ -3219,6 +3219,9 @@ class AtState
         "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
             str.split sep
         },
+        "Lines" => vectorize_monad { |inst, str|
+            str.split(/\r?\n/)
+        },
         "Replace" => lambda { |inst, str, search, replace=""|
             replace str, search, replace
         },
@@ -3245,7 +3248,15 @@ class AtState
             ent.to_s
         },
         "SwapCase" => vectorize_monad { |inst, str|
-            raise 'unimplemented'
+            str.chars.map { |e|
+                if e != e.upcase
+                    e.upcase
+                elsif e != e.downcase
+                    e.downcase
+                else
+                    e
+                end
+            }.join
         },
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
