@@ -2,7 +2,8 @@ require 'zlib'
 require_relative 'lib.rb'
 
 def zlib_deflate(str)
-    Zlib::Deflate.deflate(str, 9)[2..-6]
+    deflated = Zlib::Deflate.deflate(str, 9)
+    deflated[2..-5]
 end
 
 INFLATION = Zlib::Inflate.new(-8)

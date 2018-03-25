@@ -2,30 +2,13 @@
 
 load 'boilerplates.rb'
 require_relative 'AtState.rb'
-require_relative 'compress.rb'
+require_relative 'tio.rb'
 
 $inst = AtState.new "Needs[$visuals]"
 $inst.run
 
 def highlight_html(str)
     $inst.variables["highlight_html"][$inst, str]
-end
-
-# tio integration
-require 'zlib'
-require 'base64'
-FIELD_SEPARATOR = "\xff"
-
-def finalize(state_string)
-    compressed = zlib_deflate(state_string)
-    encoded = Base64.encode64 compressed
-    encoded.tr("+", "@").gsub(/=+/, "")
-end
-
-def tio_encode(program)
-    state_string = "attache#{FIELD_SEPARATOR * 2}#{program}#{FIELD_SEPARATOR * 2}"
-    url = finalize state_string
-    "tio.run/###{url}"
 end
 
 
@@ -214,7 +197,7 @@ def generate(title)
                 code: highlight_html(code),
             }
             
-            result += "<a href=\"https://#{tio_encode code}\">Try it online!</a>"
+            result += "<a href=\"#{tio_encode code}\">Try it online!</a>"
         end
         
         result += "</div>"

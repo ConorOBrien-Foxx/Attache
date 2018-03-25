@@ -2829,6 +2829,17 @@ class AtState
         # @type inds [(*)]|(*)
         # @return (*)
         # @genre list
+        # @example id := Identity[3]
+        # @example Display[id]
+        # @example ??  1 0 0
+        # @example ??  0 1 0
+        # @example ??  0 0 1
+        # @example Print[FlatGet[id, 0]]
+        # @example ?? [1, 0, 0]
+        # @example Print[FlatGet[id, [0]]]
+        # @example ?? [1, 0, 0]
+        # @example Print[FlatGet[id, [0, 0]]]
+        # @example ?? 1
         #>>
         "FlatGet" => lambda { |inst, list, inds|
             [*inds].each { |i|
