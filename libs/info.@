@@ -1,4 +1,15 @@
 ?? information library
 
+
 vowels := ["a", "e", "i", "o", "u"]
 consonants := Complement[alpha, vowels]
+
+colors := ["Red", "Orange", "Yellow", "Green", "Blue", "Indigo", "Violet"]
+colors2 := ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
+
+weekdays := ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+weekdays2 := ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+
+months := ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+months2 := ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+
