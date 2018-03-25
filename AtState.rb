@@ -3257,6 +3257,30 @@ class AtState
         "Chars" => vectorize_monad { |inst, n|
             n.chars
         },
+        #<<
+        # Selects the first key (or value) in <code>opts</code> which start with <code>val</code>.
+        # @genre string
+        # @return string
+        # @type opts [string]|{string->(*)}
+        # @type val string
+        # @example options := <~
+        # @example   stop -> 0,
+        # @example   continue -> 1,
+        # @example   redo -> 2
+        # @example ~>
+        # @example choice := "s"
+        # @example Print[FindHead[options, choice]]
+        # @example ?? stop
+        #>>
+        "FindHead" => lambda { |inst, opts, val|
+            if Hash === opts
+                opts = opts.keys
+            end
+            
+            opts.sort.select { |e|
+                e.start_with? val
+            }.first
+        },
         "Format" => lambda { |inst, str, *args|
             str % args
         },
