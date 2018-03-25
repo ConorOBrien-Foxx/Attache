@@ -145,7 +145,7 @@ def tokenize(code)
         i = 0
         depth = nil
         build = nil
-        # code.encode("UTF-8").
+        code = code.encode("UTF-8")
         code.scan($TOKENIZER) { |part|
             $TYPES.each { |reg, type|
                 next unless /^#{reg}$/ === part

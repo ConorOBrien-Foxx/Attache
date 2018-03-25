@@ -1,2 +1,14 @@
 ?? english library
 
+?? accent-adder
+
+hash_pair[x] := Hash[...Chop[x, 2]]
+
+diaereses := "AÄEËIÏOÖUÜaäeëiïoöuüyÿYŸϒϔАӒаӓӘӚәӛЖӜжӝЗӞзӟИӤиӥОӦоӧӨӪөӫЭӬэӭУӰуӱЧӴчӵЫӸыӹHḦhḧÕṎõṏŪṺūṻWẄwẅXẌxẍtẗ"
+diaereses_add := hash_pair[diaereses]
+
+graves := "AÀEÈIÌOÒUÙaàeèiìoòuùÜǛüǜNǸnǹЕЀИЍеѐиѝĒḔēḕŌṐōṑWẀwẁÂẦâầĂẰăằÊỀêềÔỒôồƠỜơờƯỪưừYỲyỳ"
+graves_add := hash_pair[graves]
+
+acutes := "AÁEÉIÍOÓUÚYÝaáeéiíoóuúyýCĆcćLĹlĺNŃnńÓŐóőRŔrŕSŚsśÚŰúűZŹzźÜǗüǘGǴgǵÅǺåǻÆǼæǽØǾøǿϒϓÇḈçḉĒḖēḗÏḮïḯKḰkḱMḾmḿÕṌõṍŌṒōṓPṔpṕṠṤṡṥŨṸũṹWẂwẃÂẤâấĂẮăắÊẾêếÔỐôốƠỚơớƯỨưứ"
+acutes_add := hash_pair[acutes]
