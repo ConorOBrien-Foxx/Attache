@@ -1,0 +1,4 @@
+?? information library
+
+vowels := ["a", "e", "i", "o", "u"]
+consonants := Complement[alpha, vowels]

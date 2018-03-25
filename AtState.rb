@@ -2679,8 +2679,10 @@ class AtState
         # @genre list
         #>>
         "Complement" => lambda { |inst, parent, *args|
-            any = args.flatten(1)
-            parent.reject { |e| any.include? e }
+            any = args.map { |e|
+                force_list e
+            }.flatten(1)
+            force_list(parent).reject { |e| any.include? e }
         },
         #<<
         # Returns the concatentation of each list in <code>args</code>.
