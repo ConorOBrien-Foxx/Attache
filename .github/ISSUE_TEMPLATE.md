@@ -1,3 +1,5 @@
+(If this is a feature request, just describe the feature request and ignore the rest of this document.)
+
 ### Expected Behaviour
 
 _Please include a minimal working example, if possible._
