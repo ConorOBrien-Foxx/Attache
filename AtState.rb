@@ -77,6 +77,7 @@ $PRECEDENCE = {
     "nand"    => [5, :left],
     "->"      => [4, :left],
     "else"    => [3, :left],
+    ":>"      => [3, :left],
     ":="      => [2, :right],
     ".="      => [2, :right],
     ";;"      => [1, :left],
@@ -2275,6 +2276,19 @@ class AtState
             }
         },
         #<<
+        # Given a function <code>func</code>, returns a function which calls <code>func</code> with an additional
+        # argument representing the number of times <code>func</code> has been invoked.
+        # @type func fn
+        # @return fn
+        # @genre functional
+        #>>
+        "InvocationIndex" => lambda { |inst, func|
+            i = -1
+            lambda { |inst, *args|
+                func[inst, *args, i += 1]
+            }
+        },
+        #<<
         # Ties <code>args</code> together.
         # @type args (*)|fn
         # @return (*)|fn
@@ -3623,6 +3637,9 @@ class AtState
             end
         },
         "=>" => @@functions["Map"],
+        ":>" => lambda { |inst, source, func|
+            source.map { |x| func[inst, x] }
+        },
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|

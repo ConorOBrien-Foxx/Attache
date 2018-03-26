@@ -1,25 +1,33 @@
 ?? this is a program which encodes plaintext in a /// program.
 ?? /// link: https://esolangs.org/wiki////
 
-(**
- *  cost is a function like this:
- *  cost[number n] -> number
- * 
- **)
-find_substr := [str, min, max, cost] -> {
-    min:max
+
+
+escape_slashes := Replace<~_, /"\\\\|/", "\\\\\\$&"~>
+
+format_replace := Format<~"/%s/%s/"~>:escape_slashes
+
+find_candidate := [str, id, min, max] -> {
+    subs := Flat[min:max :> [el] -> {
+        Join => Slices[str, el]
+    }]
+    
+    candidates := subs :> {
+        format_replace[id, _] + Replace[str, _, id]
+    }
+    
+    MinBy[Size, candidates]
 }
 
 golf_slashes := [code] -> {
-    unused := Complement[ascii, code]
-    ind := 0
+    unused .= Complement[ascii, code]
     
+    Fixpoint[InvocationIndex[{
+        find_candidate[_1, unused[i], _2, #_1]
+    }], code]
 }
 
-escape_slashes[str] :=
-    Replace[str, /"\\\\|/", "\\\\\\$&"]
+s := "Hello!!!!!!!!!!!!!"
+??Print[find_substr[s, "q", 1, #s]]
 
-cost[str] := #escape_slashes[str]
-
-s := "Hello, World!!!!!!!!!!!!!"
-Print[find_substr[s, 0, #s, cost]]
+Print[golf_slashes[s]]
