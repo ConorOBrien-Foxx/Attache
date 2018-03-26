@@ -3450,6 +3450,29 @@ class AtState
     
     # operators with two arguments
     @@operators = {
+        #<<
+        # Obtains the member in <code>obj</code> with <code>prop</code> as a key.
+        # </p><p><em>Note:</em> this feature is not completely finished, and may have unintended behaviours, such as <code>[1, 2, 3].size</code>.
+        # @type prop raw
+        # @type obj (*)
+        # @return (*)
+        # @genre operator
+        # @example ages := <~
+        # @example   john -> 32,
+        # @example   bob -> 14,
+        # @example   dude -> 92
+        # @example ~>
+        # @example Print[ages.john]
+        # @example ?? 32
+        # @example 
+        # @example Person := Class! {
+        # @example     name .= _1
+        # @example     age .= _2
+        # @example }
+        # @example john := New[Person, "John Smith", 43]
+        # @example Print[john.name, john.age, joiner->", "]
+        # @examlpe ?? John Smith, 43
+        #>>
         "." => lambda { |inst, obj, prop|
             if AtClassInstance === obj || Hash === obj
                 obj[prop.raw]
@@ -3489,9 +3512,36 @@ class AtState
                 inst.define_local name, inst.evaluate_node(val)
             end
         },
-        "*" => vectorize_dyad { |inst, a, b| a * b },
-        "/" => vectorize_dyad { |inst, a, b| simplify_number a * 1.0 / b },
-        "//" => vectorize_dyad { |inst, a, b| Rational(a, b) },
+        #<<
+        # Multiplication.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
+        "*" => vectorize_dyad { |inst, a, b|
+            a * b
+        },
+        #<<
+        # Divides <code>a</code> by <code>b</code>. If <code>a / b</code> represents an integer, the argument becomes an integer. E.g., <code>4 / 2</code> is <code>2</code>, not <code>2.0</code>.
+        # @type a number
+        # @type b number
+        # @return number
+        # @genre operator
+        #>>
+        "/" => vectorize_dyad { |inst, a, b|
+            simplify_number a * 1.0 / b
+        },
+        #<<
+        # Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code>
+        # @type a number
+        # @type b number
+        # @return rational
+        # @genre operator
+        #>>
+        "//" => vectorize_dyad { |inst, a, b|
+            Rational(a, b)
+        },
         "-" => vectorize_dyad { |inst, a, b| a - b },
         "+" => vectorize_dyad { |inst, a, b| a + b },
         "±" => @@functions["PlusMinus"],
