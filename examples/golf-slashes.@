@@ -1,33 +1,29 @@
 ?? this is a program which encodes plaintext in a /// program.
 ?? /// link: https://esolangs.org/wiki////
 
-
-
 escape_slashes := Replace<~_, /"\\\\|/", "\\\\\\$&"~>
 
 format_replace := Format<~"/%s/%s/"~>:escape_slashes
 
 find_candidate := [str, id, min, max] -> {
-    subs := Flat[min:max :> [el] -> {
-        Join => Slices[str, el]
-    }]
+    subs .= Flat[min:max :> Join => str&Slices]
     
-    candidates := subs :> {
+    candidates .= subs :> {
         format_replace[id, _] + Replace[str, _, id]
     }
     
-    MinBy[Size, candidates]
+    potential .= MinBy[Size, candidates]
+    
+    If[#potential > #str, str, potential]
 }
 
 golf_slashes := [code] -> {
-    unused .= Complement[ascii, code]
+    unused .= Complement[ascii, code, "/\\ "]
+    base .= 2
     
     Fixpoint[InvocationIndex[{
-        find_candidate[_1, unused[i], _2, #_1]
+        find_candidate[_1, unused[_2], base, #_1 / 2]
     }], code]
 }
 
-s := "Hello!!!!!!!!!!!!!"
-??Print[find_substr[s, "q", 1, #s]]
-
-Print[golf_slashes[s]]
+Print[golf_slashes[Arg[0]]]
