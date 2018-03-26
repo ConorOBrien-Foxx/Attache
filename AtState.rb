@@ -667,6 +667,7 @@ class AtState
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
+        "ascii" => (32..126).map(&:chr).join,
     }
     @@extended_variables = {}
     

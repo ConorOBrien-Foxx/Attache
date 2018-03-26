@@ -1,0 +1,10 @@
+?? this is a program which encodes plaintext in a /// program.
+?? /// link: https://esolangs.org/wiki////
+
+
+golf_slashes := [code] -> {
+    unused := Complement[ascii, code]
+    unused
+}
+
+Print[golf_slashes["Hello, World!!!!!!!!!!!!!"]]
