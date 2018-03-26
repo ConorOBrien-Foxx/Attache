@@ -14,7 +14,7 @@ end
 
 $AFTER_COMMENT = /(?<=#).+/
 $COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
-$SIGNATURE_PARSE = /"(\w+)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
+$SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
 $PUSH_COLLECT = {
@@ -27,6 +27,7 @@ $APPEND = [
     "paramtype",
     "optional"
 ]
+
 def text_from_signature(sig)
     if sig.index "vector"
         after = case sig
@@ -100,7 +101,10 @@ def generate(title)
 
     final.sort.each { |k, v|
         genre = v[:info][:genre]
-
+        
+        is_operator = genre.index "operator"
+        is_unary_operator = genre.index "unary"
+        
         if genre.empty?
             STDERR.puts "Warning: #{k} has no genre"
         end
@@ -110,6 +114,8 @@ def generate(title)
         
         result += "<div class=\"function\" id=\"#{k}\">"
         args_types = {}
+        
+        # associate types with each argument
         v[:args].map! { |e|
             # e = e[0]
             name, default = e.split("=")
@@ -147,10 +153,14 @@ def generate(title)
             STDERR.puts "Warning: no return type given for #{k.inspect}"
         end
         
-        result += BOILERPLATES[:header] % {
+        header_plate = is_operator ? is_unary_operator ? :header_op_unary : :header_op : :header
+            
+        result += BOILERPLATES[header_plate] % {
             return_type:    v[:info][:return],
             name:           k,
             args:           v[:args].join(", "),
+            left:           v[:args][0],
+            right:          v[:args][1],
             genre:          genre,
         }
         

@@ -1,5 +1,7 @@
 BOILERPLATES = {
     header: "<h2><code>%<name>s[%<args>s] &rarr; <span class=\"return\">%<return_type>s</span> </code><span class=\"genre\">(%<genre>s)</span></h2>",
+    header_op: "<h2><code>%<left>s %<name>s %<right>s &rarr; <span class=\"return\">%<return_type>s</span> </code><span class=\"genre\">(%<genre>s)</span></h2>",
+    header_op_unary: "<h2><code>%<name>s %<left>s &rarr; <span class=\"return\">%<return_type>s</span> </code><span class=\"genre\">(%<genre>s)</span></h2>",
     param: "<p><code>%<name>s</code> - %<description>s</p>",
     argument: "<span class=\"type\">%<type>s</span> %<name>s",
     html: "<!DOCTYPE html>

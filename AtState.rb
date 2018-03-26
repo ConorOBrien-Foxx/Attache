@@ -3677,6 +3677,24 @@ class AtState
                 n.size
             end
         },
+        #<<
+        # Forces <code>func</code> to use parent scope.
+        # @type func fn
+        # @return fn
+        # @operator
+        # @genre unary operator
+        # @example a .= 5
+        # @example Call[{ a .= 3 }]
+        # @example Print[a]
+        # @example ?? 5
+        # @example Call['{ a .= 93 }]
+        # @example Print[a]
+        # @example ?? 93
+        #>>
+        "'" => lambda { |inst, func|
+            func.descend = func.ascend = false
+            func
+        },
         # matrix size
         "##" => lambda { |inst, n|
             dim n
