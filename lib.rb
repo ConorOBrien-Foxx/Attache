@@ -428,6 +428,24 @@ def debug_obj(title,**obj)
     puts "[/#{title}]"
 end
 
+$debug_level = 0
+def di(msg)
+    d "\x1b[34m>>>" + msg.upcase + "<<<\x1b[0m"
+    $debug_level += 4
+end
+def dd(msg)
+    $debug_level -= 4
+    d "\x1b[34;1m<<<" + msg.upcase + ">>>\x1b[0m"
+end
+def d(*x)
+    x.each { |y|
+        puts " " * $debug_level + "#{y}"
+    }
+end
+def dh(x, y)
+    d "\x1b[35;1m#{x}:\x1b[0m #{y}"
+end
+
 def rotN(str, n)
     str.gsub(/[a-z]/i) { |letter|
         res = $ALPHA_LOWER[($ALPHA_LOWER.index(letter.downcase) + n) % 26]

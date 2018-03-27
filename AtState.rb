@@ -136,7 +136,7 @@ $DATA_SIGNIFIER = $DATA + [
     :bracket_close,
     :curry_close,
     :paren_close,
-    :func_end
+    :func_end,
 ]
 $SEPARATOR = $DATA_SIGNIFIER
 $TOKENIZER = Regexp.new($TYPES.keys.join("|"), "u")
@@ -202,7 +202,10 @@ def parse(code)
             flush(out, stack, [:func_start])
         end
         
-        next if type == :statement_sep
+        if type == :statement_sep
+            last_token = ent
+            next
+        end
         
         if $DATA.include? type
             out.push ent
@@ -509,22 +512,45 @@ class AtLambda
     
     def [](inst, *args)
         inst.local_descend(@scope) if @descend
+        
+        # di "begin function call"
+        # dh "scope", @scope
+        
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
         @params.each_with_index { |name, i|
             inst.define_local name, args[i]
         }
-        res = @tokens.map { |token|
+        
+        # di "evaluating tokens"
+        res = @tokens.map.with_index { |token, i|
+            # dh "current scope", @scope
+            # dh "token #{i}", token.inspect
+            
             inner = inst.evaluate_node(token, args)
+            
+            # dh "eval result", inner.inspect
+            
             if inner.kind_of? AtLambda
-                # p "inner=",inner
                 inner.scope.merge! @scope
             end
+            
+            # dh "post eval result", inner.inspect  
+            
+            @scope.merge! inst.locals.last if @ascend && @descend
+            
             inner
         }.last
+        # dd "done evaluating tokens"
+        
         inst.abstract_references.pop
         @scope = inst.local_ascend if @ascend
+        
+        # d @scope
+        # dd "end function call"
+        # puts
+        
         res
     end
 end
