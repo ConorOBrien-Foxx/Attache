@@ -42,8 +42,6 @@ $PRECEDENCE = {
     "''"      => [20, :left],
     "'"       => [20, :left],
     "##"      => [19, :left],
-    "|>"      => [15, :left],
-    "<|"      => [15, :right],
     
     
     "^"       => [15, :right],
@@ -69,6 +67,8 @@ $PRECEDENCE = {
     "in"      => [8, :left],
     ".."      => [7, :left],
     "..."     => [7, :left],
+    "|>"      => [6, :left],
+    "<|"      => [6, :right],
     "and"     => [6, :left],
     "nor"     => [6, :left],
     "not"     => [6, :left],
@@ -1481,6 +1481,18 @@ class AtState
                 start += 1
             end
             res
+        },
+        "GenerateFirstN" => lambda { |inst, f, cond, size, start=0|
+            res = nil
+            collect = []
+            until collect.size >= size
+                res = f[inst, start]
+                if !res.nil? && AtState.truthy?(cond[inst, res])
+                    collect << res
+                end
+                start += 1
+            end
+            collect
         },
         
         ###########################
@@ -2991,7 +3003,11 @@ class AtState
             end
         },
         "Size" => lambda { |inst, list|
-            list.size
+            if Numeric === list
+                list.abs.to_s.size
+            else
+                list.size
+            end
         },
         "Slices" => lambda { |inst, list, skew=(1..list.size).to_a|
             if skew.is_a? Array
@@ -3728,7 +3744,7 @@ class AtState
             if n.is_a? Train
                 n.freeze
             else
-                n.size
+                @@functions["Size"][inst, n]
             end
         },
         #<<
