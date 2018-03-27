@@ -3542,8 +3542,12 @@ class AtState
         "//" => vectorize_dyad { |inst, a, b|
             Rational(a, b)
         },
-        "-" => vectorize_dyad { |inst, a, b| a - b },
-        "+" => vectorize_dyad { |inst, a, b| a + b },
+        "-" => vectorize_dyad { |inst, a, b|
+            a - b
+        },
+        "+" => vectorize_dyad { |inst, a, b|
+            a + b
+        },
         "±" => @@functions["PlusMinus"],
         "^" => vectorize_dyad { |inst, a, b| a ** b },
         "%" => vectorize_dyad { |inst, a, b| a % b },

@@ -1,0 +1,3 @@
+PE36 := Palindromic # `and # Palindromic@Bin
+
+Print[Sum[PE36 \ (1...1000000)]]

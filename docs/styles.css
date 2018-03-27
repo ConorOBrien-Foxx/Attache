@@ -35,6 +35,17 @@ p {
     float: right;
 }
 
+.source-button {
+    font-size: 0.8em;
+    display: block;
+}
+
+.code-source {
+    height: 0px;
+    overflow: hidden;
+    transition: height 0.3s ease-in-out;
+}
+
 .type, .return {
     color: blue;
 }

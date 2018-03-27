@@ -13,7 +13,7 @@ end
 
 
 $AFTER_COMMENT = /(?<=#).+/
-$COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?$/
+$COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?\r?\n[\s\S]+?\},/
 $SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
@@ -48,6 +48,11 @@ def text_from_signature(sig)
     end
 end
 
+def fit_least_indent(lines)
+    least_indent = lines.map { |e| e.scan(/\s+/)[0].size }.min
+    lines.map { |e| e[least_indent..-1] }
+end
+
 def generate(title)
     input = File.read title
     
@@ -56,7 +61,12 @@ def generate(title)
     final = {}
 
     groups.each { |group|
-        head, *body, tail, signature = group.lines
+        group = group.lines
+        
+        last = group.index { |e| e.strip == "#>>" } + 1
+        
+        head, *body, tail, signature = group[0..last]
+        code_source = group[last..-1]
         
         body.map! { |e|
             e.scan($AFTER_COMMENT).first.strip
@@ -93,6 +103,7 @@ def generate(title)
             info: info,
             type: type,
             args: args,
+            source: fit_least_indent(code_source),
         }
     }
 
@@ -210,9 +221,35 @@ def generate(title)
             result += "<a href=\"#{tio_encode code}\">Try it online!</a>"
         end
         
+        
+        result += "<button class=\"source-button\" id=\"#{k}-button\">toggle source</button>"
+        result += "<div id=\"#{k}-source\" class=\"code-source\"><pre>"
+        result += v[:source].join
+        result += "</pre></div>"
+        
         result += "</div>"
     }
-
+    
+result += <<EOT
+    <script>
+        document.querySelectorAll(".source-button").forEach(function(button) {
+            var sourceId = button.id.replace("-button", "-source");
+            var source = document.getElementById(sourceId);
+            var hidden = true;
+            button.addEventListener("click", function() {
+                if(hidden) {
+                    source.style.height = source.scrollHeight + "px";
+                }
+                else {
+                    source.style.height = "0px";
+                }
+                
+                hidden = !hidden;
+            });
+        });
+    </script>
+EOT
+    
     toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><table id=\"toc\">"
     $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
         toc_result += "<tr><td>(#{genre})</td><td>"
