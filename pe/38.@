@@ -1,0 +1,8 @@
+pandigital := Sort # `= # C["123456789"]
+
+
+concat_prod := Join@`*
+
+??Print[concat_prod[192, 1:3]]
+
+??todo

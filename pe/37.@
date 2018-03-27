@@ -1,0 +1,16 @@
+truncations := [x] -> {
+    split   .= SplitAt[x, 0:#x]
+    left    .= Last => split[0...#x]
+    right   .= First => split[1..#x]
+    
+    left ' right
+}
+
+truncatable_prime := All&:IsPrime ## N => truncations
+
+tprime_count := 11
+
+?? start at 5, since single digits are exclduded
+tprimes := GenerateFirstN[Prime, truncatable_prime, tprime_count, 5]
+
+Print[Sum[tprimes]]
