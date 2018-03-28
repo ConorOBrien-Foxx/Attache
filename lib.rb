@@ -430,21 +430,35 @@ end
 
 $debug_level = 0
 def di(msg)
-    d "\x1b[34m>>>" + msg.upcase + "<<<\x1b[0m"
+    puts
+    d "\x1b[34;1m>>>" + msg.upcase + "<<<\x1b[0m"
     $debug_level += 4
+    puts
 end
 def dd(msg)
     $debug_level -= 4
-    d "\x1b[34;1m<<<" + msg.upcase + ">>>\x1b[0m"
+    puts
+    d "\x1b[34m<<<" + msg.upcase + ">>>\x1b[0m"
+    puts
 end
 def d(*x)
     x.each { |y|
-        puts " " * $debug_level + "#{y}"
+        puts "#{y}".gsub(/^/, " " * $debug_level)
     }
 end
 def dh(x, y)
     d "\x1b[35;1m#{x}:\x1b[0m #{y}"
 end
+def dhash(name, h)
+    dh name, "{"
+    $debug_level += 4
+    h.each { |v, k|
+        d "\x1b[36m#{v} \x1b[1m=>\x1b[0m #{k.inspect}"
+    }
+    $debug_level -= 4
+    d "}"
+end
+
 
 def rotN(str, n)
     str.gsub(/[a-z]/i) { |letter|

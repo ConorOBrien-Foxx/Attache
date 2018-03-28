@@ -489,6 +489,11 @@ class Node
     
     def inspect
         "#Node<#{@head}>{#{@children.inspect}}"
+        # if @head.type == :operator
+            # @children.map(&:raw).join @head.raw
+        # else
+            # @head.raw + @children.inspect
+        # end
     end
 end
 
@@ -525,20 +530,22 @@ class AtLambda
         
         # di "evaluating tokens"
         res = @tokens.map.with_index { |token, i|
-            # dh "current scope", @scope
+            # dhash "current scope", @scope
             # dh "token #{i}", token.inspect
+            # dh "args", args
+            inner = inst.evaluate_node(token, args, @scope)
             
-            inner = inst.evaluate_node(token, args)
+            @scope.merge! inst.locals.last if @ascend && @descend
             
             # dh "eval result", inner.inspect
             
-            if inner.kind_of? AtLambda
-                inner.scope.merge! @scope
-            end
+            AtState.traverse(inner) { |atom|
+                if atom.kind_of? AtLambda
+                    atom.scope.merge! @scope
+                end
+            }
             
-            # dh "post eval result", inner.inspect  
-            
-            @scope.merge! inst.locals.last if @ascend && @descend
+            # dh "post eval result", inner.inspect 
             
             inner
         }.last
@@ -675,6 +682,21 @@ class AtState
         AtState.new(*args).run
     end
     
+    def AtState.traverse(container, &fn)
+        rec = lambda { |arg|
+            if Hash === arg
+                arg.map { |k, v|
+                   [k, rec[v]]
+                }.to_h
+            elsif Array === arg
+                arg.map { |e| rec[e] }
+            else
+                fn[arg]
+            end
+        }
+        rec[container]
+    end
+    
     @@default_variables = {
         "true" => true,
         "false" => false,
@@ -735,8 +757,8 @@ class AtState
     
     def error(message)
         STDERR.puts message
-        # exit
-        raise
+        exit
+        # raise
     end
     
     def get_variable(name)
@@ -869,7 +891,7 @@ class AtState
         end
     end
     
-    def evaluate_node(node, blank_args = nil)
+    def evaluate_node(node, blank_args = nil, merge_with = nil)
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
             
@@ -901,7 +923,7 @@ class AtState
                 child
             else
                 if child.is_a? Node
-                    evaluate_node child, blank_args
+                    evaluate_node child, blank_args, merge_with
                 elsif type == :abstract
                     get_blank raw, blank_args
                 else
@@ -927,12 +949,21 @@ class AtState
         func = get_value head
 
         if func.is_a? Node
-            func = evaluate_node func, blank_args
+            func = evaluate_node func, blank_args, merge_with
         end
         
         if func.nil?
             STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
+        end
+        
+        
+        if func.kind_of?(AtLambda) && !merge_with.nil?
+            # di "func infusion"
+            # dh "func", func.inspect
+            # dhash "merge_with", merge_with
+            func.scope.merge! merge_with
+            # dd "func infused"
         end
         
         res = if head.is_a?(Token) && configurable
@@ -954,6 +985,14 @@ class AtState
             end
         end
         
+        if res.kind_of?(AtLambda) && !merge_with.nil?
+            # di "res infusion"
+            # dh "func", func.inspect
+            # dhash "merge_with", merge_with
+            res.scope.merge! merge_with
+            # dd "res infused"
+        end
+        
         res
     end
     
@@ -967,7 +1006,7 @@ class AtState
     
     def run
         @trees.map { |tree|
-            evaluate_node tree
+            evaluate_node tree#, [], @locals.last.dup
         }
     end
     
@@ -2548,7 +2587,7 @@ class AtState
         # @genre logic
         #>>
         "Mask" => lambda { |inst, mask, list|
-            list.select.with_index { |e, i|
+            force_list(list).select.with_index { |e, i|
                 AtState.truthy? mask[i]
             }
         },
@@ -3539,6 +3578,8 @@ class AtState
                 inst.define var.head.raw, res
             else
                 name = var.raw
+                # dh "`:=` value", val.inspect
+                # dh "locals: ", inst.locals.last
                 inst.define name, inst.evaluate_node(val)
             end
         },
