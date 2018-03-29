@@ -2228,7 +2228,24 @@ class AtState
         "Zero" => vectorize_monad { |inst, n|
             n.zero?
         },
-        
+        #<<
+        # Returns <code>true</code> if <code>n</code> represents an integer, otherwise <code>false</code>.
+        # @type n number
+        # @return bool
+        # @genre numeric/logic
+        #>>
+        "Integral" => vectorize_monad { |inst, n|
+            n == n.floor
+        },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is a numeric value, otherwise <code>false</code>.
+        # @type n number
+        # @return bool
+        # @genre numeric/logic
+        #>>
+        "Numeric" => lambda { |inst, n|
+            Numeric === n
+        },
         
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
