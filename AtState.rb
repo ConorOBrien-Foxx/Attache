@@ -3415,8 +3415,10 @@ class AtState
         "Format" => lambda { |inst, str, *args|
             str % args
         },
-        "Grid" => lambda { |inst, str|
-            str.lines.map(&:chomp).map(&:chars)
+        "Grid" => lambda { |inst, str, inner=" "|
+            str = str.lines rescue str
+            grid = str.map(&:chomp).map(&:chars)
+            pad_grid grid, inner
         },
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
             list.join joiner
@@ -3638,7 +3640,11 @@ class AtState
         # @genre operator
         #>>
         "*" => vectorize_dyad { |inst, a, b|
-            a * b
+            if String === b
+                b * a
+            else
+                a * b
+            end
         },
         #<<
         # Divides <code>a</code> by <code>b</code>. If <code>a / b</code> represents an integer, the argument becomes an integer. E.g., <code>4 / 2</code> is <code>2</code>, not <code>2.0</code>.

@@ -978,3 +978,11 @@ def mat_from(row, col, fill)
     Array.new(col) { fill }
     [[ fill ] * col] * row
 end
+
+def pad_grid(grid, fill=" ")
+    max_len = grid.map(&:size).max
+    grid.map { |row|
+        row.push inner until row.size >= max_len
+        row
+    }
+end
