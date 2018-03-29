@@ -556,12 +556,38 @@ def collatz(n)
     array + [1]
 end
 
-def lcm(arr)
-    arr.reduce(1, :lcm)
+def gcd2(x, y)
+    if Integer === x && Integer === y
+        x.gcd y
+    else
+        Rational(gcd2(x.numerator, y.numerator), lcm2(x.denominator, y.denominator))
+    end
 end
 
 def gcd(arr)
-    arr.reduce(0, :gcd)
+    arr.reduce(0) { |acc, e|
+        gcd2 acc, e
+    }
+end
+
+def lcm2(x, y)
+    if Integer === x && Integer === y
+        x.lcm y
+    else
+        Rational(lcm2(x.numerator, y.numerator), gcd2(x.denominator, y.denominator))
+    end
+end
+
+def lcm(arr)
+    if arr.size == 1
+        arr[0]
+    elsif arr.size == 0
+        1
+    else
+        arr.reduce { |acc, e|
+            lcm2 acc, e
+        }
+    end
 end
 
 def random(min=nil, max=nil)
