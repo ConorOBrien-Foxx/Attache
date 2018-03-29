@@ -1892,6 +1892,24 @@ class AtState
             sign n
         },
         #<<
+        # Returns the numerator of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/rational
+        #>>
+        "Numerator" => vectorize_monad { |inst, n|
+            Rational(n).numerator
+        },
+        #<<
+        # Returns the numerator of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric/rational
+        #>>
+        "Denominator" => vectorize_monad { |inst, n|
+            Rational(n).denominator
+        },
+        #<<
         # Returns the square root of <code>n</code>. The result is imaginary if <code>n</code> is negative.
         # @type n number
         # @return number
