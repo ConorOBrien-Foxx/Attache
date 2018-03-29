@@ -367,7 +367,7 @@ def vectorize_monad(&fn)
         if x.is_a? Array
             x.map { |e| res[inst, e] }
         else
-            if args.size != fn.arity - 1
+            if args.size != fn.arity - 1 && !fn.arity.negative?
                 raise ArgumentError.new
             else
                 fn[inst, *args]
