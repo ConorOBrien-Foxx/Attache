@@ -1547,7 +1547,7 @@ class AtState
             end
             res
         },
-        "GenerateFirstN" => lambda { |inst, f, cond, size, start=0|
+        "GenerateN" => lambda { |inst, f, cond, size, start=0|
             res = nil
             collect = []
             until collect.size >= size

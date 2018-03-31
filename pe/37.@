@@ -11,6 +11,6 @@ truncatable_prime := All&:IsPrime ## N => truncations
 tprime_count := 11
 
 ?? start at 5, since single digits are exclduded
-tprimes := GenerateFirstN[Prime, truncatable_prime, tprime_count, 5]
+tprimes := GenerateN[Prime, truncatable_prime, tprime_count, 5]
 
 Print[Sum[tprimes]]
