@@ -1540,22 +1540,50 @@ class AtState
             }
             collect
         },
+        #<<
+        # Starting at <code>n = start</code>, increments <code>n</code> until
+        # <code>cond[f[n]]</code> is truthy. Returns <code>f[n]</code>. Note: this ignores <code>nil</code> values returned.
+        # @type f fn
+        # @type cond fn
+        # @type start number
+        # @optional start
+        # @param f A function that maps a number to a domain, such as <code>Square</code> or <code>Prime</code>.
+        # @param cond A function which, given a possible result of <code>f</code>, returns a truthy or falsey value.
+        # @param start The starting point for testing numbers.
+        # @return (*)
+        # @genre functional
+        #>>
         "GenerateFirst" => lambda { |inst, f, cond, start=0|
             res = nil
-            until AtState.truthy? cond[inst, res = f[inst, start]]
-                start += 1
+            n = start
+            until !res.nil? && AtState.truthy?(cond[inst, res = f[inst, n]])
+                n += 1
             end
             res
         },
+        #<<
+        # Similar to <a href="#GenerateFirst"><code>GenerateFirst</code></a>, returns the first <code>size</code> values of <code>f</code> satisfying <code>cond</code>
+        # @type size number
+        # @type f fn
+        # @type cond fn
+        # @type start number
+        # @optional start
+        # @param f A function that maps a number to a domain, such as <code>Square</code> or <code>Prime</code>.
+        # @param cond A function which, given a possible result of <code>f</code>, returns a truthy or falsey value.
+        # @param start The starting point for testing numbers.
+        # @return (*)
+        # @genre functional
+        #>>
         "GenerateN" => lambda { |inst, f, cond, size, start=0|
             res = nil
             collect = []
+            n = start
             until collect.size >= size
-                res = f[inst, start]
+                res = f[inst, n]
                 if !res.nil? && AtState.truthy?(cond[inst, res])
                     collect << res
                 end
-                start += 1
+                n += 1
             end
             collect
         },
@@ -2976,6 +3004,12 @@ class AtState
             }
             list
         },
+        #<<
+        # Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>.
+        # @type list [(*)]
+        # @return bool
+        # @genre list/logic
+        #>>
         "Increasing" => lambda { |inst, list|
             list.delta.all?(&:positive?) rescue false
         },
