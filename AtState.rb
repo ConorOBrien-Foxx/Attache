@@ -584,6 +584,46 @@ class Applicator
     attr_accessor :value
 end
 
+def make_curry(args, func)
+    lambda { |inst, *others|
+        abstracts = []
+        to_remove = []
+        
+        args.each { |el|
+            if Token === el && el.type == :abstract
+                n = get_abstract_number(el.raw)
+                abstracts[n] = others[n]
+                to_remove.push n
+            end
+        }
+        
+        not_provided = to_remove - (0...others.size).to_a
+        
+        if not_provided.empty?
+            others.reject!.with_index { |e, i| to_remove.include? i }
+            
+            inst.evaluate_node Node.new(func, args + others), abstracts
+        else
+            next_args = args.map { |el|
+                if Token === el && el.type == :abstract
+                    n = get_abstract_number(el.raw)
+                    ind = not_provided.index n
+                    if ind
+                        dest = n - others.size + 1
+                        Token.new "_#{dest}", :abstract, nil
+                    else
+                        abstracts[n]
+                    end
+                else
+                    el
+                end
+            }
+            
+            make_curry(next_args, func)
+        end
+    }
+end
+
 def ast(program)
     shunted = if program.is_a? Array
         program
@@ -606,22 +646,7 @@ def ast(program)
         elsif type == :curry_func
             args = stack.pop(raw)
             func = stack.pop
-            stack.push Token.new lambda { |inst, *others|
-                abstracts = []
-                to_remove = []
-                
-                args.each { |el|
-                    if Token === el && el.type == :abstract
-                        n = get_abstract_number(el.raw)
-                        abstracts[n] = others[n]
-                        to_remove.push n
-                    end
-                }
-                
-                others.reject!.with_index { |e, i| to_remove.include? i }
-                
-                inst.evaluate_node Node.new(func, args + others), abstracts
-            }, :function, start
+            stack.push Token.new make_curry(args, func), :function, start
         
         elsif type == :operator
             args = stack.pop(2)
