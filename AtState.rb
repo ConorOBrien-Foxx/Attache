@@ -1056,6 +1056,7 @@ class AtState
     
     # functions which can receive key things
     @@configurable = [
+        "Bisect",
         "Chop",
         "Configure",
         "Print",
@@ -2811,6 +2812,36 @@ class AtState
             list.average
         },
         #<<
+        # Splits <code>list</code> in half.
+        # @type list [(*)]
+        # @return [[(*)], [(*)]]
+        # @genre list
+        #>>
+        "Bisect" => lambda { |inst, list, **opts|
+            opts[:bias] ||= "none"
+            right_upper = list.size / 2.0
+            left_lower = list.size / 2.0
+            
+            case opts[:bias]
+                when "none"
+                    right_upper = right_upper.floor
+                    left_lower = left_lower.ceil
+                    
+                when "left"
+                    right_upper = right_upper.ceil
+                    left_lower = left_lower.ceil
+                    
+                when "right"
+                    right_upper = right_upper.floor
+                    left_lower = left_lower.floor
+                    
+                else
+                    STDERR.puts "Invalid option to `Bisect`: #{opts[:bias].inspect}"
+            end
+            
+            [list[0...right_upper], list[left_lower..-1]]
+        },
+        #<<
         # Chops <code>list</code> into groups of length <code>size</code>.
         # @type list [(*)]
         # @return [[(*)]]
@@ -3038,49 +3069,162 @@ class AtState
         "Increasing" => lambda { |inst, list|
             list.delta.all?(&:positive?) rescue false
         },
+        #<<
+        # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return [number]
+        # @genre list
+        # @example Print[Indices[ [1, 1, 2, 3, 1, 3, 1], [1, 3] ]]
+        # @example ?? [[0, 1, 4, 6], [3, 5]]
+        #>>
         "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            list.indices ind
+            force_list(list).indices ind
         },
+        #<<
+        # Returns the index of the first occurrence of <code>ind</code> in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return number
+        # @genre list
+        #>>
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            list.index ind
+            force_list(list).index ind
         },
+        #<<
+        # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return [number]
+        # @genre list
+        # @example Print[IndicesFlat[ [1, 1, 2, 3, 1, 3, 1], [1, 3] ]]
+        # @example ?? []
+        #>>
         "IndicesFlat" => lambda { |inst, list, ind|
-            list.indices ind
+            force_list(list).indices ind
         },
+        #<<
+        # Returns the index of the first occurrence of <code>ind</code> in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return number
+        # @genre list
+        #>>
         "IndexFlat" => lambda { |inst, list, ind|
-            list.index ind
+            force_list(list).index ind
         },
+        #<<
+        # Returns the intersection of the arguments.
+        # @type lists [(*)]
+        # @return [(*)]
+        # @genre list
+        #>>
         "Intersection" => lambda { |inst, *lists|
             lists.inject(&:&)
         },
-        "Intersperse" => lambda { |inst, lists, joiner|
+        #<<
+        # Returns a list where <code>joiner</code> is placed in between each element of <code>list</code>.
+        # @type list [(*)]
+        # @type joiner (*)
+        # @return [(*)]
+        # @genre list
+        # @example Print[Intersperse[1:3, 0]]
+        # @example ?? [1, 0, 2, 0, 3]
+        #>>
+        "Intersperse" => lambda { |inst, list, joiner|
             res = []
-            lists.each_with_index { |e, i|
+            force_list(list).each_with_index { |e, i|
                 res << e
                 res << joiner if i != lists.size - 1
             }
             res
         },
+        #<<
+        # Returns an range from <code>0</code> (inclusive) to <code>min</code> or the length of <code>min</code> as applicable (exclusive).
+        # @type min [(*)]|number
+        # @return [(*)]
+        # @genre list
+        # @example Print[Iota[5]]
+        # @example ?? [0, 1, 2, 3, 4]
+        # @example Print[Iota["Hi!"]]
+        # @example ?? [0, 1, 2]
+        #>>
         "Iota" => lambda { |inst, min|
             ((0...min) rescue (0...min.size)).to_a
         },
-        "Larger" => vectorize_dyad { |inst, *args|
-            args.max
+        #<<
+        # Returns the larger of <code>a</code> and <code>b</code>. Similar to <a href="#Max"><code>Max</code></a>, except <code>Larger</code> vectorizes.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return (*)
+        # @genre list
+        # @example Print[Larger[1, 5]]
+        # @example ?? 5
+        # @example Print[Larger[[1, 2, 3], [3, 2, 1]]]
+        # @example ?? [3, 2, 3]
+        #>>
+        "Larger" => vectorize_dyad { |inst, a, b|
+            [a, b].max
         },
+        #<<
+        # Returns the last member of <code>list</code>.
+        # @type list [(*)]|string
+        # @return (*)
+        # @genre list
+        # @example Print[Last["hiya"]]
+        # @example ?? a
+        # @example Print[Last[1:5]]
+        # @example ?? 5
+        #>>
         "Last" => lambda { |inst, list|
             list[-1]
         },
+        #<<
+        # Returns the largest element contained in any atom of <code>args</code>.
+        # @type args (*)
+        # @return (*)
+        # @genre list
+        #>>
         "Max" => lambda { |inst, *args|
             args.flatten.max
         },
+        #<<
+        # Returns the median of <code>list</code>.
+        # @type list [number]
+        # @return number
+        # @genre list
+        # @example Print[Median[[1, 2, 3]]]
+        # @example ?? 2
+        # @example Print[Median[[1, 2, 3, 4]]]
+        # @example ?? 2.5
+        #>>
         "Median" => lambda { |inst, list|
-            list.median
+            force_number list.median
         },
+        #<<
+        # Returns the smallest element contained in any atom of <code>args</code>.
+        # @type args (*)
+        # @return (*)
+        # @genre list
+        #>>
         "Min" => lambda { |inst, *args|
             args.flatten.min
         },
-        "Outers" => vectorize_dyad(RIGHT) { |inst, arr, n=1|
-            arr[0...n] + arr[-n..-1]
+        #<<
+        # Returns the outermost <code>n</code> elements from the left and right sides of <code>list</code>.
+        # @type list [(*)]
+        # @type n number
+        # @optional n
+        # @return [(*)]
+        # @param n Default: <code>1</code>
+        # @genre list
+        # @example Print[Outers[1:5]]
+        # @example ?? [1, 5]
+        # @example Print[Outers[1:5, 2]]
+        # @example ?? [1, 2, 4, 5]
+        #>>
+        "Outers" => vectorize_dyad(RIGHT) { |inst, list, n=1|
+            list[0...n] + list[-n..-1]
         },
         "Overlap" => lambda { |inst, list, arr|
             overlap list, arr
