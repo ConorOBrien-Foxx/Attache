@@ -2816,6 +2816,17 @@ class AtState
         # @type list [(*)]
         # @return [[(*)], [(*)]]
         # @genre list
+        # @option bias what should be done with the center element, in the case of odd lists. <code>"none"</code>: drop it (default). <code>"left"</code>: append center to the left half. <code>"right"</code>: append center to the right half.
+        # @example Print[Bisect[1:4]]
+        # @example ?? [[1, 2], [3, 4]]
+        # @example Print[Bisect[1:5]]
+        # @example ?? [[1, 2], [4, 5]]
+        # @example Print[Bisect[1:5, bias->$none]]
+        # @example ?? [[1, 2], [4, 5]]
+        # @example Print[Bisect[1:5, bias->$left]]
+        # @example ?? [[1, 2, 3], [4, 5]]
+        # @example Print[Bisect[1:5, bias->$right]]
+        # @example ?? [[1, 2], [3, 4, 5]]
         #>>
         "Bisect" => lambda { |inst, list, **opts|
             opts[:bias] ||= "none"
