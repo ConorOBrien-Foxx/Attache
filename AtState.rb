@@ -3564,7 +3564,7 @@ class AtState
                     }
                 }
             else
-                outer(*lists) { |*e|
+                combine(*lists) { |*e|
                     f[inst, *e]
                 }
             end
@@ -3986,7 +3986,13 @@ class AtState
         
         ## -- functional -- #
         "@" => lambda { |inst, f, g|
-            lambda { |inst, *args| f[inst, g[inst, *args]] }
+            if AtState.func_like? g
+                lambda { |inst, *args|
+                    f[inst, g[inst, *args]]
+                }
+            else
+                f[g]
+            end
         },
         "@@" => lambda { |inst, f, g|
             if AtState.func_like? g
@@ -4142,7 +4148,7 @@ class AtState
         },
         # reverses arguments
         "~" => lambda { |inst, f|
-            if f.is_a? Proc
+            if AtState.func_like? f
                 lambda { |inst, *args|
                     f[inst, *args.reverse]
                 }
@@ -4150,9 +4156,15 @@ class AtState
                 ~f
             end
         },
-        "!" => vectorize_monad { |inst, n| factorial n },
-        "?" => vectorize_monad { |inst, n| AtState.truthy? n },
-        "not" => lambda { |inst, arg| AtState.falsey? arg },
+        "!" => vectorize_monad { |inst, n|
+            factorial n
+        },
+        "?" => vectorize_monad { |inst, n|
+            AtState.truthy? n
+        },
+        "not" => lambda { |inst, arg|
+            AtState.falsey? arg
+        },
         "..." => lambda { |inst, arg|
             Applicator.new arg
         },
