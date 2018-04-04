@@ -3021,13 +3021,15 @@ class AtState
         #<<
         # Gets all members at indices <code>inds</code> from list.
         # @type list [(*)]
-        # @type ind number
-        # @return [(*)]
+        # @type ind number|ConfigureValue
+        # @return [(*)]|string
+        # @paramtype ConfigureValue ind Returns the members between the key and the value. If the value is negative, starts at the respective index from the right. Returns a string if given a string, instead of an array of characters.
         # @genre list
         # @example Print[Get[1:5, 2]]
         # @example ?? 3
         # @example Print[Get["Hello, World!", 0:4]]
         # @example ?? ["H", "e", "l", "l", "o"]
+        # @example Print[Get["Hello, World!", 4 -> -4]]
         #>>
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
             if ConfigureValue === ind
