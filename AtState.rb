@@ -3556,13 +3556,17 @@ class AtState
         "MinBy" => lambda { |inst, f, list|
             list.min_by { |e| f[inst, e] }
         },
-        "Outer" => lambda { |inst, f, a=nil, *bs|
-            if a.nil?
-                lambda { |inst, a, *bs|
-                    a.product(*bs).map { |e| f[inst, *e] }
+        "Outer" => lambda { |inst, f, *lists|
+            if lists.empty?
+                lambda { |inst, *lists|
+                    combine(*lists) { |*e|
+                        f[inst, *e]
+                    }
                 }
             else
-                a.product(*bs).map { |e| f[inst, *e] }
+                outer(*lists) { |*e|
+                    f[inst, *e]
+                }
             end
         },
         "Select" => lambda { |inst, f, list=nil|

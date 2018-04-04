@@ -986,3 +986,20 @@ def pad_grid(grid, fill=" ")
         row
     }
 end
+
+# https://stackoverflow.com/a/1543628/4119004
+def combine(*arrs)
+    if arrs.empty?
+        yield
+    else
+        first, *rest = arrs
+        first.map { |el|
+            combine(*rest) { |*args| yield el, *args }
+        }
+    end
+end
+
+def outer(a, *bs)
+    list = a.product(*bs)
+    chop list, list.size / a.size
+end
