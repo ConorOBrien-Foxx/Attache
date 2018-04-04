@@ -3030,7 +3030,11 @@ class AtState
         # @example ?? ["H", "e", "l", "l", "o"]
         #>>
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            list[ind]
+            if ConfigureValue === ind
+                list[ind.key..ind.value]
+            else
+                list[ind]
+            end
         },
         #<<
         # Returns <code>true</code> if <code>list</code> contains <code>member</code>, <code>false</code> otherwise.
