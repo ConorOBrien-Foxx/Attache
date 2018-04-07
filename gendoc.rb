@@ -230,29 +230,13 @@ def generate(title)
         result += "</div>"
     }
     
-result += <<EOT
-    <script>
-        document.querySelectorAll(".source-button").forEach(function(button) {
-            var sourceId = button.id.replace("-button", "-source");
-            var source = document.getElementById(sourceId);
-            var hidden = true;
-            button.addEventListener("click", function() {
-                if(hidden) {
-                    source.style.height = source.scrollHeight + "px";
-                }
-                else {
-                    source.style.height = "0px";
-                }
-                
-                hidden = !hidden;
-            });
-        });
-    </script>
-EOT
-    
-    toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><table id=\"toc\">"
+    toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><p>Click on genres to show all functions in that genre.</p><table id=\"toc\">"
     $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
-        toc_result += "<tr><td>(#{genre})</td><td>"
+        # emphasize genre
+        genre, specs = genre.split(/(?=\/)/, 2)
+        specs = "<span class=\"minimize\">#{specs}</span>"
+        genre += specs
+        toc_result += "<tr><td class=\"genre-source\">(#{genre})</td><td>"
         names.each { |name|
             toc_result += "<code><a href=\"##{name}\">#{name}</a></code>, "
         }
@@ -264,7 +248,7 @@ EOT
     
     preamble = "<p><a href=\"./index.html\">Return to the index.</a><p>"
     
-    result = preamble + toc_result + result
+    result = preamble + toc_result + "<div id=\"functions\">#{result}</div>"
 
     BOILERPLATES[:html] % {
         title: title,

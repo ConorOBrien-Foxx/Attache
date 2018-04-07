@@ -10,6 +10,7 @@ BOILERPLATES = {
     <meta charset=\"UTF8\">
     <title>%<title>s</title>
     <link rel=\"STYLESHEET\" href=\"styles.css\">
+    <script src=\"main.js\" type=\"text/javascript\"></script>
 </head>
 <body><div id=\"content\"><h1>%<title>s</h1>%<body>s</div></body>
 </html>",

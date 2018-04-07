@@ -691,6 +691,8 @@ def display(entity)
 end
 
 class AtState
+    NOT_PROVIDED = :not_provided
+
     def AtState.truthy?(ent)
         ent && ent != 0 && (ent.size != 0 rescue true)
     end
@@ -3609,8 +3611,14 @@ class AtState
         ##########################
         #### STRING FUNCTIONS ####
         ##########################
-        "Chars" => vectorize_monad { |inst, n|
-            n.chars
+        #<<
+        # Returns the characters of <code>str</code>.
+        # @return [string]
+        # @type str string
+        # @genre string
+        #>>
+        "Chars" => vectorize_monad { |inst, str|
+            str.chars
         },
         #<<
         # Selects the first key (or value) in <code>opts</code> which start with <code>val</code>.
@@ -3636,6 +3644,15 @@ class AtState
                 e.start_with? val
             }.first
         },
+        #<<
+        # Formats a string. Currently, uses Ruby's <a href="https://ruby-doc.org/core-2.0.0/String.html#method-i-25"><code>%</code></a> method on strings.
+        # @type str string
+        # @type args (*)
+        # @return string
+        # @genre string
+        # @example Print[Format["%s is a %s", "Java", "Joke"]]
+        # @example ?? Java is a Joke
+        #>>
         "Format" => lambda { |inst, str, *args|
             str % args
         },
@@ -3663,6 +3680,66 @@ class AtState
                 ent.chars.map(&:ord)
             else
                 ent.ord
+            end
+        },
+        #<<
+        # Pads <code>ent</code> to be no less than length <code>amt</code>, padding with fill elements <code>fill</code> on the left.
+        # @type ent (*)
+        # @type amt number
+        # @type fill (*)
+        # @return (*)
+        # @genre string
+        # @optional fill
+        # @paramtype string ent appends space characters to the left of <code>ent</code>.
+        # @paramtype [(*)] ent appends <code>0</code>s to the left of <code>ent</code>.
+        # @example Display[PadLeft["Charles", 20]]
+        # @example ?? "             Charles"
+        # @example Print[PadLeft[1:3, 6]]
+        # @example ?? [0, 0, 0, 1, 2, 3]
+        #>>
+        "PadLeft" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
+            case ent
+                when String
+                    fill = fill == NOT_PROVIDED ? " " : fill
+                    ent.rjust(amt, fill)
+                    
+                else
+                    fill = fill == NOT_PROVIDED ? 0 : fill
+                    ent = force_list ent
+                    until ent.size >= amt
+                        ent = [fill, *ent]
+                    end
+                    ent
+            end
+        },
+        #<<
+        # Pads <code>ent</code> to be no less than length <code>amt</code>, padding with fill elements <code>fill</code> on the right.
+        # @type ent (*)
+        # @type amt number
+        # @type fill (*)
+        # @return (*)
+        # @genre string
+        # @optional fill
+        # @paramtype string ent appends space characters to the right of <code>ent</code>.
+        # @paramtype [(*)] ent appends <code>0</code>s to the right of <code>ent</code>.
+        # @example Display[PadRight["Charles", 20]]
+        # @example ?? "Charles             "
+        # @example Print[PadRight[1:3, 6]]
+        # @example ?? [1, 2, 3, 0, 0, 0]
+        #>>
+        "PadRight" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
+            case ent
+                when String
+                    fill = fill == NOT_PROVIDED ? " " : fill
+                    ent.ljust(amt, fill)
+                    
+                else
+                    fill = fill == NOT_PROVIDED ? 0 : fill
+                    ent = force_list ent
+                    until ent.size >= amt
+                        ent = [*ent, fill]
+                    end
+                    ent
             end
         },
         "Split" => vectorize_dyad { |inst, str, sep=/\s+/|

@@ -18,7 +18,8 @@ find_candidate := [str, id, min, max] -> {
 }
 
 golf_slashes := [code] -> {
-    code .= Replace[code, "/", "\\/"]
+    code .= Replace[code, /"/|\\\\", "\\$&"]
+    Print[code]
     unused .= Complement[ascii, code, "/\\ "]
     base .= 2
     
