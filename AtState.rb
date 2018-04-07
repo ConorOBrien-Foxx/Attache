@@ -3154,7 +3154,7 @@ class AtState
             res = []
             force_list(list).each_with_index { |e, i|
                 res << e
-                res << joiner if i != lists.size - 1
+                res << joiner if i != list.size - 1
             }
             res
         },
