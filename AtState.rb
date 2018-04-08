@@ -562,6 +562,18 @@ class AtLambda
     end
 end
 
+class AtError
+    def initialize(name, message, origin="(null)")
+        @name = name
+        @message = message
+        @origin = origin
+    end
+    
+    def to_s
+        "#{@origin}: #{@name}: #{@message}"
+    end
+end
+
 class ConfigureValue
     def initialize(key, value)
         @key = key
@@ -918,7 +930,7 @@ class AtState
         end
     end
     
-    def evaluate_node(node, blank_args = nil, merge_with = nil)
+    def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
             
@@ -950,7 +962,7 @@ class AtState
                 child
             else
                 if child.is_a? Node
-                    evaluate_node child, blank_args, merge_with
+                    evaluate_node child, blank_args, merge_with, check_error: check_error
                 elsif type == :abstract
                     get_blank raw, blank_args
                 else
@@ -959,7 +971,16 @@ class AtState
             end
         }
         args.concat children
-
+        
+        # check if error occured
+        if check_error
+            args.each { |arg|
+                if AtError === arg
+                    return arg
+                end
+            }
+        end
+        
         configurable = @@configurable.include?(head.raw) rescue false
         # filter ConfigureValue
         if configurable
@@ -976,7 +997,7 @@ class AtState
         func = get_value head
 
         if func.is_a? Node
-            func = evaluate_node func, blank_args, merge_with
+            func = evaluate_node func, blank_args, merge_with, check_error: check_error
         end
         
         if func.nil?
@@ -1033,7 +1054,11 @@ class AtState
     
     def run
         @trees.map { |tree|
-            evaluate_node tree#, [], @locals.last.dup
+            res = evaluate_node tree#, [], @locals.last.dup
+            if AtError === res
+                puts res.to_s
+                exit -2
+            end
         }
     end
     
@@ -1081,6 +1106,7 @@ class AtState
         ".=" => [true, true],
         "." => [false, true],
         "DoSafe" => [true],
+        "TryCatch" => [true, true],
         
         "and" => [true, true],
         "nand" => [true, true],
@@ -3664,7 +3690,10 @@ class AtState
         # @optional inner
         # @param inner Character to pad the ends of each line with. Default: <code>" "</code>.
         # @genre string
-        # @example Print[Grid["Hello,\nWorld of mine!"]]
+        # @example Map[Print, Grid["Hello,\nWorld\nof mine!"]]
+        # @example ?? ["H", "e", "l", "l", "o", ",", " ", " "]
+        # @example ?? ["W", "o", "r", "l", "d", " ", " ", " "]
+        # @example ?? ["o", "f", " ", "m", "i", "n", "e", "!"]
         #>>
         "Grid" => lambda { |inst, str, inner=" "|
             str = str.lines rescue str
@@ -3846,6 +3875,9 @@ class AtState
         ##################
         #### UNSORTED ####
         ##################
+        "Error" => lambda { |inst, name, msg="An error has occured."|
+            AtError.new name, msg
+        },
         "HTMLEscape" => lambda { |inst, str|
             str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
         },
@@ -3855,6 +3887,15 @@ class AtState
                 nil
             rescue Exception => e
                 e
+            end
+        },
+        "TryCatch" => lambda { |inst, body, catch|
+            res = inst.evaluate_node body
+            if AtError === res
+                inst.evaluate_node catch, [res], check_error: false
+                nil
+            else
+                res
             end
         },
         "Safely" => lambda { |inst, func, catch=nil, **opts|
