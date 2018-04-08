@@ -535,7 +535,13 @@ class AtLambda
             # dh "args", args
             inner = inst.evaluate_node(token, args, @scope)
             
-            @scope.merge! inst.locals.last if @ascend && @descend
+            if @ascend && @descend
+                temp = inst.locals.last.dup
+                @params.each { |param|
+                    temp.delete param
+                }
+                @scope.merge! temp
+            end
             
             # dh "eval result", inner.inspect
             
@@ -700,6 +706,12 @@ def display(entity)
             p entity
     end
     entity
+end
+
+# used for property overloading
+def class_has?(klass, prop)
+    return false unless AtClassInstance === klass
+    klass.methods.has_key? "$#{prop}"
 end
 
 class AtState
@@ -1082,6 +1094,14 @@ class AtState
         @@extended_variables[name] = value
     end
     
+    def cast_string(value)
+        if AtClassInstance === value && value.methods["$string"]
+            value.methods["$string"][self]
+        else
+            value.to_s rescue "#{value}"
+        end
+    end
+    
     # functions which can receive key things
     @@configurable = [
         "Bisect",
@@ -1340,7 +1360,9 @@ class AtState
         "Print" => lambda { |inst, *args, **opts|
             joiner = opts[:joiner] || " "
             inst.out.print opts[:before] || ""
-            inst.out.print args.map(&:to_s).join(joiner)
+            inst.out.print args.map { |e|
+                inst.cast_string e
+            }.join(joiner)
             inst.out.print opts[:after] || "\n"
             args
         },
@@ -3843,8 +3865,7 @@ class AtState
             rotN(str, amount)
         },
         "String" => lambda { |inst, ent|
-            #todo:standardize
-            ent.to_s
+            inst.cast_string ent
         },
         "SwapCase" => vectorize_monad { |inst, str|
             str.chars.map { |e|
@@ -4056,7 +4077,13 @@ class AtState
             a - b
         },
         "+" => vectorize_dyad { |inst, a, b|
-            a + b
+            if class_has? a, "add"
+                a["$add"][inst, b]
+            elsif class_has? b, "radd"
+                b["$radd"][inst, a]
+            else
+                a + b
+            end
         },
         "±" => @@functions["PlusMinus"],
         "^" => vectorize_dyad { |inst, a, b| a ** b },
