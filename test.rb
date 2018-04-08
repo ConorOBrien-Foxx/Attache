@@ -192,7 +192,8 @@ if options[:generate_seen]
                 "j" => "jump to record number",
                 "d" => "delete current record",
                 "m" => "modify current record",
-                "s" => "stop"
+                "r" => "refresh output of current record",
+                "s" => "stop",
             }
             case action
                 when "p"
@@ -208,12 +209,16 @@ if options[:generate_seen]
                     i = gets.to_i
                 when "d"
                     cases.delete_at i
-                when "m", "c"
+                when "m", "c", "r"
                     i = cases.size if action == "c"
                     
                     cases[i] ||= {}
-                    input = prompt_input "What should the input case be? "
-                    cases[i]["input"] = input
+                    if action == "r"
+                        input = cases[i]["input"]
+                    else
+                        input = prompt_input "What should the input case be? "
+                        cases[i]["input"] = input
+                    end
                     
                     output = send data["method"], input
                     puts "Received output and error:"

@@ -706,11 +706,11 @@ class AtState
     NOT_PROVIDED = :not_provided
 
     def AtState.truthy?(ent)
-        ent && ent != 0 && (ent.size != 0 rescue true)
+        res = ent && ent != 0 && (ent.size != 0 rescue true)
     end
     
     def AtState.falsey?(ent)
-        !AtState.truthy? ent
+        !AtState.truthy?(ent)
     end
     
     def AtState.func_like?(ent)
@@ -4298,7 +4298,7 @@ class AtState
             AtState.truthy? n
         },
         "not" => lambda { |inst, arg|
-            AtState.falsey? arg
+            AtState.falsey? inst.evaluate_node arg
         },
         "..." => lambda { |inst, arg|
             Applicator.new arg
