@@ -982,7 +982,7 @@ end
 def pad_grid(grid, fill=" ")
     max_len = grid.map(&:size).max
     grid.map { |row|
-        row.push inner until row.size >= max_len
+        row.push fill until row.size >= max_len
         row
     }
 end

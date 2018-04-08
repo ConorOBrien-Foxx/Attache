@@ -3656,6 +3656,16 @@ class AtState
         "Format" => lambda { |inst, str, *args|
             str % args
         },
+        #<<
+        # Returns the characters of each line of <code>str</code>.
+        # @type str string
+        # @type inner string
+        # @return string
+        # @optional inner
+        # @param inner Character to pad the ends of each line with. Default: <code>" "</code>.
+        # @genre string
+        # @example Print[Grid["Hello,\nWorld of mine!"]]
+        #>>
         "Grid" => lambda { |inst, str, inner=" "|
             str = str.lines rescue str
             grid = str.map(&:chomp).map(&:chars)
