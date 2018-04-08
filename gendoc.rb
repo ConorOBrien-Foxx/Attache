@@ -28,7 +28,7 @@ $APPEND = [
     "optional"
 ]
 
-def text_from_signature(sig)
+def vector_from_signature(sig)
     if sig.index "vector"
         after = case sig
             when /monad/
@@ -46,6 +46,16 @@ def text_from_signature(sig)
     else
         ""
     end
+end
+
+def reform_from_signature(sig)
+    inner = case sig
+        when /element|member/
+            "'s elements"
+        else
+            ""
+    end
+    "Reforms result#{inner}."
 end
 
 def fit_least_indent(lines)
@@ -176,8 +186,8 @@ def generate(title)
         }
         
         sig = []
-        sig.push text_from_signature v[:type]
-        sig.push "Reforms argument." if v[:info].has_key? :reforms
+        sig.push vector_from_signature v[:type]
+        sig.push reform_from_signature v[:info][:reforms] if v[:info].has_key? :reforms
         
         sig.reject!(&:empty?)
         

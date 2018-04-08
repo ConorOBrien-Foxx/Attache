@@ -2035,7 +2035,7 @@ class AtState
             @@operators["*"][inst, n, n]
         },
         #<<
-        # Subtracts each number in <code>args</code> by the next. That is, folding subtraction over <code>args</code>
+        # Subtracts each number in <code>args</code> by the next. That is, folding subtraction over <code>args</code>.
         # @type args number
         # @return number
         # @genre numeric
@@ -2727,11 +2727,13 @@ class AtState
         # @example Print[Mask[ [true, false, true, true, false], 1:5]]
         # @example ?? [1, 3, 4]
         # @genre logic
+        # @reforms
         #>>
         "Mask" => lambda { |inst, mask, list|
-            force_list(list).select.with_index { |e, i|
+            masked = force_list(list).select.with_index { |e, i|
                 AtState.truthy? mask[i]
             }
+            reform_list masked, list
         },
         #<<
         # Returns <code>true</code> if <code>arg</code> is truthy, <code>false</code> otherwise.
@@ -2915,12 +2917,18 @@ class AtState
         # @example ?? [[1, 2, 3], [4, 5, 6], [7, 8]]
         # @example Print[Chop[1:8, 3], extra->false]
         # @example ?? [[1, 2, 3], [4, 5, 6]]
+        # @example Print[Chop["Hello, World!", 3]]
+        # @example ?? ["Hel", "lo,", " Wo", "rld", "!"]
+        # @example Print[Chop[1:12, [1, 2, 3]]]
+        # @example ?? [[1], [2, 3], [4, 5, 6], [7], [8, 9], [10, 11, 12]]
+        # @reforms elements
         #>>
         "Chop" => lambda { |inst, list, size, **opts|
             extra = opts.has_key?(:extra) ? opts[:extra] : true
-            list = chop force_list(list), size, extra
-            # list.pop if !opts[:extra] && list.last.size < size
-            list
+            res = chop force_list(list), size, extra
+            res.map { |e|
+                reform_list e, list
+            }
         },
         #<<
         # Chunks <code>list</code> into runs of consecutive values. Returns an array of members which look like <code>[el, els]</code>, where <code>el</code> is the principal run value, and <code>els</code> are the values in that run.
