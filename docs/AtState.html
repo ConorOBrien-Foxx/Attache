@@ -16,7 +16,11 @@
     func.descend = func.ascend = false
     func
 },</pre></div></div><div class="function" id="*"><h2><code>(<span class="type">(*)</span> a) * (<span class="type">(*)</span> b) &rarr; <span class="return">(*)</span> </code><span class="genre">(operator)</span></h2><p><em>Vectorizes dyadically.</em></p>Multiplication. <button class="source-button" id="*-button">toggle source</button><div id="*-source" class="code-source"><pre>"*" => vectorize_dyad { |inst, a, b|
-    if String === b
+    if class_has? a, "mul"
+        a["$mul"][inst, b]
+    elsif class_has? b, "rmul"
+        b["$rmul"][inst, a]
+    elsif String === b
         b * a
     else
         a * b
@@ -43,7 +47,13 @@
         raise 'idk'
     end
 },</pre></div></div><div class="function" id="/"><h2><code>(<span class="type">number</span> a) / (<span class="type">number</span> b) &rarr; <span class="return">number</span> </code><span class="genre">(operator)</span></h2><p><em>Vectorizes dyadically.</em></p>Divides <code>a</code> by <code>b</code>. If <code>a / b</code> represents an integer, the argument becomes an integer. E.g., <code>4 / 2</code> is <code>2</code>, not <code>2.0</code>. <button class="source-button" id="/-button">toggle source</button><div id="/-source" class="code-source"><pre>"/" => vectorize_dyad { |inst, a, b|
-    simplify_number a * 1.0 / b
+    if class_has? a, "div"
+        a["$div"][inst, b]
+    elsif class_has? b, "rdiv"
+        b["$rdiv"][inst, a]
+    else
+        simplify_number a * 1.0 / b
+    end
 },</pre></div></div><div class="function" id="//"><h2><code>(<span class="type">number</span> a) // (<span class="type">number</span> b) &rarr; <span class="return">rational</span> </code><span class="genre">(operator)</span></h2><p><em>Vectorizes dyadically.</em></p>Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code> <button class="source-button" id="//-button">toggle source</button><div id="//-source" class="code-source"><pre>"//" => vectorize_dyad { |inst, a, b|
     Rational(a, b)
 },</pre></div></div><div class="function" id="Abs"><h2><code>Abs[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric)</span></h2><p><em>Vectorizes monadically.</em></p>Calculates the absolute value of <code>n</code>. <button class="source-button" id="Abs-button">toggle source</button><div id="Abs-source" class="code-source"><pre>"Abs" => vectorize_monad { |inst, n|
@@ -702,7 +712,9 @@
 <p><code>joiner</code> &rarr; The string which joins <code>args</code>. Default: <code>" "</code>.</p><button class="source-button" id="Print-button">toggle source</button><div id="Print-source" class="code-source"><pre>"Print" => lambda { |inst, *args, **opts|
     joiner = opts[:joiner] || " "
     inst.out.print opts[:before] || ""
-    inst.out.print args.map(&:to_s).join(joiner)
+    inst.out.print args.map { |e|
+        inst.cast_string e
+    }.join(joiner)
     inst.out.print opts[:after] || "\n"
     args
 },</pre></div></div><div class="function" id="Prompt"><h2><code>Prompt[<span class="type">string</span> prompt?] &rarr; <span class="return">string</span> </code><span class="genre">(IO)</span></h2>Prompts for a line of input. Returns string without trailing newline. <h3>Arguments</h3><p><code><span class="type">string</span> prompt?</code> - String to display before input text. Nothing if omitted.</p><button class="source-button" id="Prompt-button">toggle source</button><div id="Prompt-source" class="code-source"><pre>"Prompt" => lambda { |inst, prompt=nil|

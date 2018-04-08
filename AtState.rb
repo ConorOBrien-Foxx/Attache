@@ -4047,7 +4047,11 @@ class AtState
         # @genre operator
         #>>
         "*" => vectorize_dyad { |inst, a, b|
-            if String === b
+            if class_has? a, "mul"
+                a["$mul"][inst, b]
+            elsif class_has? b, "rmul"
+                b["$rmul"][inst, a]
+            elsif String === b
                 b * a
             else
                 a * b
@@ -4061,7 +4065,13 @@ class AtState
         # @genre operator
         #>>
         "/" => vectorize_dyad { |inst, a, b|
-            simplify_number a * 1.0 / b
+            if class_has? a, "div"
+                a["$div"][inst, b]
+            elsif class_has? b, "rdiv"
+                b["$rdiv"][inst, a]
+            else
+                simplify_number a * 1.0 / b
+            end
         },
         #<<
         # Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code>
@@ -4074,7 +4084,13 @@ class AtState
             Rational(a, b)
         },
         "-" => vectorize_dyad { |inst, a, b|
-            a - b
+            if class_has? a, "sub"
+                a["$sub"][inst, b]
+            elsif class_has? b, "rsub"
+                b["$rsub"][inst, a]
+            else
+                a + b
+            end
         },
         "+" => vectorize_dyad { |inst, a, b|
             if class_has? a, "add"
@@ -4087,12 +4103,20 @@ class AtState
         },
         "±" => @@functions["PlusMinus"],
         "^" => vectorize_dyad { |inst, a, b| a ** b },
-        "%" => vectorize_dyad { |inst, a, b| a % b },
+        "%" => vectorize_dyad { |inst, a, b|
+            if class_has? a, "mod"
+                a["$mod"][inst, b]
+            elsif class_has? b, "rmod"
+                b["$rmod"][inst, a]
+            else
+                a % b
+            end
+        },
         "|" => vectorize_dyad { |inst, a, b|
             if AtState.func_like? b
                 b[inst, a]
             else
-                b % a == 0
+                @@operators["%"][inst, b, a] == 0
             end
         },
         "|>" => lambda { |inst, x, y|
@@ -4101,14 +4125,30 @@ class AtState
         "<|" => lambda { |inst, x, y|
             x[inst, y]
         },
-        "=" => vectorize_dyad { |inst, x, y| x == y },
-        "/=" => vectorize_dyad { |inst, x, y| x != y },
-        "==" => lambda { |inst, x, y| x == y },
-        "=/=" => lambda { |inst, x, y| x != y },
-        ">" => vectorize_dyad { |inst, x, y| x > y },
-        "<" => vectorize_dyad { |inst, x, y| x < y },
-        ">=" => vectorize_dyad { |inst, x, y| x >= y },
-        "<=" => vectorize_dyad { |inst, x, y| x <= y },
+        "=" => vectorize_dyad { |inst, x, y|
+            x == y
+        },
+        "/=" => vectorize_dyad { |inst, x, y|
+            x != y
+        },
+        "==" => lambda { |inst, x, y|
+            x == y
+        },
+        "=/=" => lambda { |inst, x, y|
+            x != y
+        },
+        ">" => vectorize_dyad { |inst, x, y|
+            x > y
+        },
+        "<" => vectorize_dyad { |inst, x, y|
+            x < y
+        },
+        ">=" => vectorize_dyad { |inst, x, y|
+            x >= y
+        },
+        "<=" => vectorize_dyad { |inst, x, y|
+            x <= y
+        },
         ":" => vectorize_dyad { |inst, x, y|
             if AtState.func_like?(x) && AtState.func_like?(y)
                 lambda { |inst, *args|
