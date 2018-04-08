@@ -40,6 +40,14 @@ class AttacheParser
             end
             
             opts.on(
+                "-i", "--STDIN [TYPE]",
+                String,
+                "Reads the program from STDIN, until [TYPE]"
+            ) do |v=nil|
+                options[:stdin] = v
+            end
+            
+            opts.on(
                 "-p", "--program",
                 "Display the program received by #{FILENAME}"
             ) do |v|
@@ -99,7 +107,11 @@ end
 options = AttacheParser.parse(ARGV)
 
 def read_program(options)
-    options[:program] || File.read(ARGV[0], encoding: "UTF-8") rescue ""
+    if options.has_key? :stdin
+        STDIN.gets options[:stdin]
+    else
+        options[:program] || File.read(ARGV[0], encoding: "UTF-8") rescue ""
+    end
 end
 
 program = read_program(options)
