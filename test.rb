@@ -35,7 +35,9 @@ def eval_test(text)
 end
 
 def environment_test(program)
-    safe_run(program) { |e| AtState.execute(e).last }
+    safe_run(program) { |e|
+        AtState.execute(e).last
+    }
 end
 
 # allows for {a:NaN} == {a:NaN}

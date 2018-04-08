@@ -1059,6 +1059,7 @@ class AtState
                 puts res.to_s
                 exit -2
             end
+            res
         }
     end
     
