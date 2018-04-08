@@ -189,6 +189,7 @@ if options[:generate_seen]
                 "n" => "next record",
                 "f" => "first record",
                 "l" => "last record",
+                "j" => "jump to record number",
                 "d" => "delete current record",
                 "m" => "modify current record",
                 "s" => "stop"
@@ -202,6 +203,9 @@ if options[:generate_seen]
                     i = cases.size - 1
                 when "n"
                     i += 1
+                when "j"
+                    puts "Please enter the index number:"
+                    i = gets.to_i
                 when "d"
                     cases.delete_at i
                 when "m", "c"

@@ -2048,7 +2048,7 @@ class AtState
         # @return number
         # @type n [number]
         #>>
-        "UnBin" => vectorize_monad { |inst, n|
+        "UnBin" => lambda { |inst, n|
             @@functions["FromBase"][inst, n, 2]
         },
         #<<
@@ -2057,7 +2057,7 @@ class AtState
         # @return number
         # @type n [number]
         #>>
-        "UnHex" => vectorize_monad { |inst, n|
+        "UnHex" => lambda { |inst, n|
             @@functions["FromBase"][inst, n, 16]
         },
         #<<
@@ -2066,7 +2066,7 @@ class AtState
         # @return number
         # @type n [number]
         #>>
-        "UnOct" => vectorize_monad { |inst, n|
+        "UnOct" => lambda { |inst, n|
             @@functions["FromBase"][inst, n, 8]
         },
         
