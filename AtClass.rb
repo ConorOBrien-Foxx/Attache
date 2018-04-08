@@ -19,6 +19,7 @@ class AtClassInstance
     end
     
     def inspect
+        @vars.delete AtLambda::ARG_CONST
         "Class[#{@vars.map { |k, v| "#{k} = #{v}" }.join ", "}]"
     end
 end
@@ -41,7 +42,7 @@ class AtClass
         vars = {}
         scope.each { |name, val|
             if AtState.func_like? val
-                val.scope = scope
+                val.scope = vars
                 methods[name] = val
             else
                 vars[name] = val
