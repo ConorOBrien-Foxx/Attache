@@ -1596,6 +1596,30 @@ class AtState
             collect
         },
         #<<
+        # Returns elements from <code>list</code> until before the first element which does not satisfy <code>cond</code>.
+        # @type cond fn
+        # @type list [(*)]
+        # @return list
+        # @reforms
+        # @genre functional
+        # @example Display[TakeWhile[{_ /= sp}, "Hello, World!"]]
+        # @example ?? "Hello,"
+        # @example Print[TakeWhile[Even, [2, 4, 6, 1, 2, 3]]]
+        # @example ?? [2, 4, 6]
+        # @example Print[TakeWhile[IsPrime, 357923]]
+        # @example ?? 357
+        #>>
+        "TakeWhile" => lambda { |inst, cond, list|
+            collect = []
+            
+            force_list(list).each { |el|
+                break unless cond[inst, el]
+                collect << el
+            }
+            
+            reform_list collect, list
+        },
+        #<<
         # Starting at <code>n = start</code>, increments <code>n</code> until
         # <code>cond[f[n]]</code> is truthy. Returns <code>f[n]</code>. Note: this ignores <code>nil</code> values returned.
         # @type f fn

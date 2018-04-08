@@ -42,7 +42,7 @@ def text_from_signature(sig)
             else
                 ""
         end
-        "<p><em>Vectorizes#{after}.</em></p>"
+        "Vectorizes#{after}."
     else
         ""
     end
@@ -175,7 +175,15 @@ def generate(title)
             genre:          genre,
         }
         
-        result += text_from_signature v[:type]
+        sig = []
+        sig.push text_from_signature v[:type]
+        sig.push "Reforms argument." if v[:info].has_key? :reforms
+        
+        sig.reject!(&:empty?)
+        
+        unless sig.empty?
+            result += "<p><em>#{sig.join " "}</em></p>"
+        end
         
         result += v[:info][:description].gsub(/\s+/, " ")
         

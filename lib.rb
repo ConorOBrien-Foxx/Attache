@@ -641,6 +641,17 @@ def force_list(list)
     return list.to_a rescue list
 end
 
+def reform_list(list, source)
+    case source
+        when String
+            list.all? { |e| String === e } ? list.join : list
+        when Numeric
+            list.all? { |e| Numeric === e } ? list.map(&:to_i).join.to_i : list
+        else
+            list
+    end
+end
+
 def pythagorean2(m, n)
     [m*m - n*n, 2*m*n, m*m + n*n]
 end
