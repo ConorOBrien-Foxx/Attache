@@ -2893,8 +2893,9 @@ class AtState
         # @example ?? [[1, 2, 3], [4, 5, 6]]
         #>>
         "Chop" => lambda { |inst, list, size, **opts|
-            list = chop force_list(list), size
-            list.pop if !opts[:extra] && list.last.size < size
+            extra = opts.has_key?(:extra) ? opts[:extra] : true
+            list = chop force_list(list), size, extra
+            # list.pop if !opts[:extra] && list.last.size < size
             list
         },
         #<<

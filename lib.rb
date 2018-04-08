@@ -954,17 +954,22 @@ def split_on(iter, func)
     build
 end
 
-def chop(array, size)
+def chop(array, size, extra=true)
     array = array.dup
     size = [*size]
     
     collect = []
-    i = 0
+    i = -1
     until array.empty?
-        collect << array.shift(size[i])
         i += 1
         i = i % size.size rescue 0
+        collect << array.shift(size[i])
     end
+    
+    unless extra
+        collect.pop if collect.last.size != size[i]
+    end
+    
     collect
 end
 
