@@ -4088,7 +4088,7 @@ class AtState
             elsif class_has? b, "rsub"
                 b["$rsub"][inst, a]
             else
-                a + b
+                a - b
             end
         },
         "+" => vectorize_dyad { |inst, a, b|
