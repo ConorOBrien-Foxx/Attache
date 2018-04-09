@@ -3,7 +3,7 @@ require_relative 'AtClass.rb'
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
-$WORD = /[A-Za-z]\w*/
+$WORD = /[[:alpha:]]+/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
 $REFERENCE = /\$#$WORD/
@@ -21,8 +21,8 @@ $UNKNOWN = /./
 $COMMENT = /\?\?.*(?:\n|$)/
 $COMMENT_OPEN = /\(\*/
 $COMMENT_CLOSE = /\*\)/
-$CURRY_OPEN = /<~/
-$CURRY_CLOSE = /~>/
+$CURRY_OPEN = /<~|«/
+$CURRY_CLOSE = /~>|»/
 $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
@@ -76,6 +76,7 @@ $PRECEDENCE = {
     "or"      => [5, :left],
     "nand"    => [5, :left],
     "->"      => [4, :left],
+    "→"       => [4, :left],
     "else"    => [3, :left],
     ":>"      => [3, :left],
     ":="      => [2, :right],
@@ -1115,6 +1116,7 @@ class AtState
     HOLD_ALL = Hash.new(true)
     @@held_arguments = {
         "->" => [true, false],
+        "→" => [true, false],
         "If" => [false, true, true],
         "While" => [true, true],
         "DoWhile" => [true, true],
@@ -4293,6 +4295,9 @@ class AtState
                 keyval = inst.get_value key
                 ConfigureValue.new keyval, value
             end
+        },
+        "→" => lambda { |inst, key, value|
+            @@operators["->"][inst, key, value]
         },
         ";;" => lambda { |inst, x, y| y },
         "!" => lambda { |inst, a, b|
