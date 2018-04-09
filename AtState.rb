@@ -1495,8 +1495,9 @@ class AtState
         # @return string
         # @genre IO/files
         #>>
-        "FileRead" => lambda { |inst, name|
-            File.read(name.strip) rescue nil
+        "FileRead" => lambda { |inst, name, **opts|
+            opts[:encoding] ||= "UTF-8"
+            File.read(name.strip, encoding: opts[:encoding]) rescue nil
         },
         #<<
         # Writes <code>content</code> to file <code>name</code>. Returns the number of bytes written.
@@ -3572,6 +3573,9 @@ class AtState
         },
         "Transpose" => lambda { |inst, list|
             list.transpose
+        },
+        "Translate" => lambda { |inst, str, source, repl|
+            str.tr source, repl
         },
         "UpperTriangle" => lambda { |inst, mat, strict=false|
             upper_triangle mat, AtState.truthy?(strict)
