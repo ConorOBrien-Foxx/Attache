@@ -45,7 +45,6 @@ class AtClass
         @body[@inst, *params]
         scope = @inst.locals.pop
         scope.delete AtLambda::ARG_CONST
-        dhash "scope", scope
         
         methods = {}
         vars = {}
