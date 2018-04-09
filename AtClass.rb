@@ -20,7 +20,15 @@ class AtClassInstance
     
     def inspect
         @vars.delete AtLambda::ARG_CONST
-        "Class[#{@vars.map { |k, v| "#{k} = #{v}" }.join ", "}]"
+        # p @vars.keys
+        inner = @vars.map { |k, v|
+            if v === self
+                "#{k} = <recursive>"
+            else
+                "#{k} = #{v}"
+            end
+        }.join ", "
+        "Class[#{inner}]"
     end
 end
 
@@ -37,12 +45,14 @@ class AtClass
         @body[@inst, *params]
         scope = @inst.locals.pop
         scope.delete AtLambda::ARG_CONST
+        dhash "scope", scope
         
         methods = {}
         vars = {}
         scope.each { |name, val|
             if AtState.func_like? val
                 val.scope = vars
+                val.ignore_other = true
                 methods[name] = val
             else
                 vars[name] = val

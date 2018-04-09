@@ -505,6 +505,7 @@ class AtLambda
         @scope = {}
         @ascend = true
         @descend = true
+        @ignore_other = false
     end
     
     def bind(inst)
@@ -513,13 +514,10 @@ class AtLambda
         }
     end
     
-    attr_accessor :params, :scope, :ascend, :descend
+    attr_accessor :params, :scope, :ascend, :descend, :ignore_other
     
     def [](inst, *args)
         inst.local_descend(@scope) if @descend
-        
-        # di "begin function call"
-        # dh "scope", @scope
         
         # define locals
         inst.define_local ARG_CONST, args
@@ -528,11 +526,10 @@ class AtLambda
             inst.define_local name, args[i]
         }
         
-        # di "evaluating tokens"
+        temp_scope = @scope.dup
+        
         res = @tokens.map.with_index { |token, i|
-            # dhash "current scope", @scope
-            # dh "token #{i}", token.inspect
-            # dh "args", args
+            
             inner = inst.evaluate_node(token, args, @scope)
             
             if @ascend && @descend
@@ -540,29 +537,22 @@ class AtLambda
                 @params.each { |param|
                     temp.delete param
                 }
-                @scope.merge! temp
+                temp_scope.merge! temp
             end
-            
-            # dh "eval result", inner.inspect
             
             AtState.traverse(inner) { |atom|
                 if atom.kind_of? AtLambda
-                    atom.scope.merge! @scope
+                    atom.scope.merge! temp_scope
                 end
             }
             
-            # dh "post eval result", inner.inspect 
-            
             inner
         }.last
-        # dd "done evaluating tokens"
         
         inst.abstract_references.pop
-        @scope = inst.local_ascend if @ascend
+        temp_scope = inst.local_ascend if @ascend
         
-        # d @scope
-        # dd "end function call"
-        # puts
+        @scope = temp_scope unless @ignore_other
         
         res
     end
@@ -3409,6 +3399,8 @@ class AtState
         "Size" => lambda { |inst, list|
             if Numeric === list
                 list.abs.to_s.size
+            elsif class_has? list, "size"
+                list["$size"][inst]
             else
                 list.size
             end
