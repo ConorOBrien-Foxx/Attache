@@ -419,6 +419,11 @@ def vectorize(&fn)
     }
 end
 
+Holder = Struct.new "Holder", :held, :fn
+def held(*held, &fn)
+    Holder.new(held, fn)
+end
+
 class Token
     def initialize(raw, type, start)
         @raw = raw
@@ -950,8 +955,12 @@ class AtState
         
         # special cases
         args = []
-
-        if head.is_a? Token
+        
+        func = get_value head
+        if Holder === func
+            held = func.held
+            func = func.fn
+        elsif head.is_a? Token
             held = @@held_arguments[head.raw] || []
         else
             held = []
@@ -995,8 +1004,6 @@ class AtState
         args = args.flat_map { |e|
             Applicator === e ? e.value : [e]
         }
-        
-        func = get_value head
 
         if func.is_a? Node
             func = evaluate_node func, blank_args, merge_with, check_error: check_error

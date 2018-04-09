@@ -3,9 +3,10 @@
 require_relative 'AtState.rb'
 
 class AtClassInstance
-    def initialize(inherit, methods, vars)
+    def initialize(inherit, methods, vars, privates)
         @methods = methods
         @vars = vars
+        @privates = privates
     end
     
     attr_accessor :vars, :methods
@@ -25,9 +26,16 @@ class AtClassInstance
             if v === self
                 "#{k} = <recursive>"
             else
-                "#{k} = #{v}"
+                "#{k} = #{v.inspect}"
             end
-        }.join ", "
+        }
+        
+        inner.concat @privates.map { |k, v|
+            "Private[#{k}]"
+        }
+        
+        inner = inner.join ", "
+        
         "Class[#{inner}]"
     end
 end
@@ -42,21 +50,44 @@ class AtClass
     
     def create(*params)
         @inst.locals << {}
+        privates = {}
+        
+        @inst.define_local "Private", held(true) { |inst, name|
+            privates[name.raw] = true
+        }
+        
         @body[@inst, *params]
         scope = @inst.locals.pop
         scope.delete AtLambda::ARG_CONST
         
+        scope.delete "Private"
+        
         methods = {}
         vars = {}
+        all = {}
         scope.each { |name, val|
             if AtState.func_like? val
-                val.scope = vars
+                val.scope = all
                 val.ignore_other = true
-                methods[name] = val
+                if privates[name]
+                    privates[name] = val
+                    methods[name] = lambda { |inst, *ignore|
+                        AtError.new "Access Error", "Attempting to access private method #{name.inspect}."
+                    }
+                else
+                    methods[name] = val
+                end
+            elsif privates[name]
+                privates[name] = val
             else
                 vars[name] = val
             end
         }
-        AtClassInstance.new self, methods, vars
+        
+        all.merge! vars
+        all.merge! methods
+        all.merge! privates
+        
+        AtClassInstance.new self, methods, vars, privates
     end
 end
