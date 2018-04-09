@@ -1494,6 +1494,7 @@ class AtState
         # @type name string
         # @return string
         # @genre IO/files
+        # @option encoding The encoding that the target file is in.
         #>>
         "FileRead" => lambda { |inst, name, **opts|
             opts[:encoding] ||= "UTF-8"
@@ -1505,9 +1506,11 @@ class AtState
         # @type content string
         # @return number
         # @genre IO/files
+        # @option encoding The encoding that the target file is in.
         #>>
-        "FileWrite" => lambda { |inst, name, content|
-            File.write(name.strip, content)
+        "FileWrite" => lambda { |inst, name, content, **opts|
+            opts[:encoding] ||= "UTF-8"
+            File.write(name.strip, content, encoding: opts[:encoding])
         },
         #<<
         # Returns <code>true</code> if <code>name</code> represents a valid file, <code>false</code> otherwise.
