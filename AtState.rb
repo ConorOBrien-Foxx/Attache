@@ -3,7 +3,7 @@ require_relative 'AtClass.rb'
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
-$WORD = /[[:alpha:]]+/
+$WORD = /[[:alpha:]]\w*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
 $REFERENCE = /\$#$WORD/
