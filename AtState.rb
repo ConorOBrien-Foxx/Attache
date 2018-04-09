@@ -755,11 +755,27 @@ class AtState
         "sp" => " ",
         "tab" => "\t",
         "inf" => Infinity,
+        "∞" => Infinity,
         "E" => Math::E,
         "PI" => Math::PI,
         "TAU" => Math::PI * 2,
         "PAU" => Math::PI * 1.5,
         "argv" => ARGV[1..-1],
+        "¼" => Rational(1, 4),
+        "½" => Rational(1, 2),
+        "¾" => Rational(3, 4),
+        "⅓" => Rational(1, 3),
+        "⅔" => Rational(2, 3),
+        "⅕" => Rational(1, 5),
+        "⅖" => Rational(2, 5),
+        "⅗" => Rational(3, 5),
+        "⅘" => Rational(4, 5),
+        "⅙" => Rational(1, 6),
+        "⅚" => Rational(5, 6),
+        "⅛" => Rational(1, 8),
+        "⅜" => Rational(3, 8),
+        "⅝" => Rational(5, 8),
+        "⅞" => Rational(7, 8),
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
@@ -3437,6 +3453,10 @@ class AtState
                     func[inst, x, y]
                 }
             end
+        },
+        "Shuffle" => lambda { |inst, list|
+            shuffled = force_list(list).shuffle
+            reform_list shuffled, list
         },
         "SortBy" => lambda { |inst, list, func|
             if String === list
