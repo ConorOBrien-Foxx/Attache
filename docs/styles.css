@@ -62,7 +62,7 @@ p {
     /* width: 1200px; */
 }
 
-.function:nth-child(even) {
+.function:nth-child(odd) {
     background-color: #E7E7E7;
 }
 
@@ -70,7 +70,7 @@ p {
 .function.focused {
     background-color: #DBFFFF;
 }
-.function.focused:nth-child(even) {
+.function.focused:nth-child(odd) {
     background-color: #C6EAEA;
 }
 

@@ -2440,7 +2440,8 @@ class AtState
         # @type cond fn[(*) -> number]
         # @param cond A function which produces an index by which to obtain a function from <code>flist</code>.
         # @example f := Agenda[ [Halve, {3 * _ + 1}], Odd]
-        # @example Print[f => [1, 2, 3, 4]]
+        # @example Print[Map[f, [1, 2, 3, 4]]]
+        # @example ?? [4, 1, 10, 2]
         # @genre functional
         #>>
         "Agenda" => lambda { |inst, flist, cond|
@@ -2454,7 +2455,9 @@ class AtState
         # @type func fn
         # @type arg_arr [(*)]
         # @return (*)
-        # @example Print[ Apply[Map, [ Square, 1:5 ]] ]
+        # @example args := [ Reverse, [ "hello", "world" ] ]
+        # @example Print[ Apply[Map, args] ]
+        # @example ?? ["olleh", "dlrow"]
         # @genre functional
         #>>
         "Apply" => lambda { |inst, func, arg_arr|
@@ -2621,6 +2624,9 @@ class AtState
         # @genre functional
         # @example Print[NestList[Double, 1, 3]]
         # @example ?? [1, 2, 4, 8]
+        # @example Print[NestList[Double, 1, 3, first->false]]
+        # @example ?? [2, 4, 8]
+        # @option first Specifies whether or not to include the first element. Default: <code>true</code>.
         #>>
         "NestList" => configurable { |inst, f, e, n, **opts|
             opts[:first] = opts.has_key?(:first) ? opts[:first] : true
@@ -4146,6 +4152,13 @@ class AtState
         "//" => vectorize_dyad { |inst, a, b|
             Rational(a, b)
         },
+        #<<
+        # Subtraction.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
         "-" => vectorize_dyad { |inst, a, b|
             if class_has? a, "sub"
                 a["$sub"][inst, b]
@@ -4155,6 +4168,13 @@ class AtState
                 a - b
             end
         },
+        #<<
+        # Addition.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
         "+" => vectorize_dyad { |inst, a, b|
             if class_has? a, "add"
                 a["$add"][inst, b]
@@ -4164,8 +4184,39 @@ class AtState
                 a + b
             end
         },
-        "±" => @@functions["PlusMinus"],
-        "^" => vectorize_dyad { |inst, a, b| a ** b },
+        #<<
+        # Returns <code><a href="#PlusMinus">PlusMinus</a>[a, b]</a></code>.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
+        "±" => vectorize_dyad { |inst, a, b|
+            @@functions["PlusMinus"][inst, a, b]
+        },
+        #<<
+        # Exponentiation.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
+        "^" => vectorize_dyad { |inst, a, b|
+            if class_has? a, "pow"
+                a["$pow"][inst, b]
+            elsif class_has? b, "rpow"
+                b["$rpow"][inst, a]
+            else
+                a + b
+            end
+        },
+        #<<
+        # Modulo.
+        # @type a (*)
+        # @type b (*)
+        # @return (*)
+        # @genre operator
+        #>>
         "%" => vectorize_dyad { |inst, a, b|
             if class_has? a, "mod"
                 a["$mod"][inst, b]
@@ -4175,6 +4226,14 @@ class AtState
                 a % b
             end
         },
+        #<<
+        # Returns <code>true</code> if <code>a</code> divides evenly into <code>b</code>.
+        # @type a (*)
+        # @type b fn|(*)
+        # @return (*)
+        # @genre operator/logic
+        # @paramtype fn b When <code>b</code> a function, calls <code>b[a]</code>.
+        #>>
         "|" => vectorize_dyad { |inst, a, b|
             if AtState.func_like? b
                 b[inst, a]
@@ -4182,36 +4241,118 @@ class AtState
                 @@operators["%"][inst, b, a] == 0
             end
         },
+        #<<
+        # Calls <code>y</code> with single parameter <code>x</code>.
+        # @type x (*)
+        # @type y fn
+        # @return (*)
+        # @genre operator
+        #>>
         "|>" => lambda { |inst, x, y|
             y[inst, x]
         },
+        #<<
+        # Calls <code>x</code> with single parameter <code>y</code>.
+        # @type x fn
+        # @type y (*)
+        # @return (*)
+        # @genre operator
+        #>>
         "<|" => lambda { |inst, x, y|
             x[inst, y]
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false<code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "=" => vectorize_dyad { |inst, x, y|
             x == y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "/=" => vectorize_dyad { |inst, x, y|
             x != y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "==" => lambda { |inst, x, y|
             x == y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "=/=" => lambda { |inst, x, y|
             x != y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is greater than <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         ">" => vectorize_dyad { |inst, x, y|
             x > y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is less than <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "<" => vectorize_dyad { |inst, x, y|
             x < y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is greater than or equal to <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         ">=" => vectorize_dyad { |inst, x, y|
             x >= y
         },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is less than or equal <code>y</code>, <code>false</code> otherwise.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "<=" => vectorize_dyad { |inst, x, y|
             x <= y
         },
+        #<<
+        # Returns a range from <code>x</code> up to <code>y</code>. If <code>x</code> and <code>y</code> are both functions, returns a function <code>f[...args]</code> which calls <code>x[...Map[y, args]]</code>.
+        # @type x number|fn
+        # @type y number|fn
+        # @return [number]|fn
+        # @genre operator
+        # @example Print[3:6]
+        # @example ?? [3, 4, 5, 6]
+        # @example add_rev := Add:Reverse
+        # @example Print[add_rev[23, 45]]
+        # @example ?? 86
+        #>>
         ":" => vectorize_dyad { |inst, x, y|
             if AtState.func_like?(x) && AtState.func_like?(y)
                 lambda { |inst, *args|
