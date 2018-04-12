@@ -4262,7 +4262,7 @@ class AtState
             x[inst, y]
         },
         #<<
-        # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false<code> otherwise.
+        # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false</code> otherwise.
         # @type x (*)
         # @type y (*)
         # @return bool
@@ -4487,7 +4487,11 @@ class AtState
             end
         },
         #<<
-        # Returns <code>
+        # Returns <code>false</code> if <code>b</code> is truthy, <code>a</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
         #>>
         "not" => lambda { |inst, a, b|
             # A && !B
@@ -4680,6 +4684,12 @@ class AtState
         "?" => vectorize_monad { |inst, n|
             AtState.truthy? n
         },
+        #<<
+        # Returns <code>false</code> if <code>b</code> is truthy, <code>true</code> otherwise.
+        # @type arg (*)
+        # @return bool
+        # @genre unary operator
+        #>>
         "not" => lambda { |inst, arg|
             AtState.falsey? inst.evaluate_node arg
         },

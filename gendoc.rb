@@ -68,7 +68,8 @@ def generate(title)
     
     groups = input.scan($COMMENT_GROUP)
     
-    final = {}
+    final = []
+    # final = {}
 
     groups.each { |group|
         group = group.lines
@@ -109,31 +110,38 @@ def generate(title)
         
         args.shift # remove inst
         
-        final[name] = {
+        # has_unary = info[:genre].index "unary" rescue false
+        # if has_unary
+            # name = "unary_#{name}"
+        # end
+        
+        final.push [name, {
             info: info,
             type: type,
             args: args,
             source: fit_least_indent(code_source),
-        }
+        }]
     }
 
     result = ""
     $toc = Hash.new { |h, k| h[k] = [] }
 
-    final.sort.each { |k, v|
+    final.sort_by { |k, v| k }.each { |k, v|
         genre = v[:info][:genre]
         
         is_operator = genre.index "operator"
         is_unary_operator = genre.index "unary"
         
         if genre.empty?
-            STDERR.puts "Warning: #{k} has no genre"
+            STDERR.puts "Warning: #{k} (#{id}) has no genre"
         end
         
         
         $toc[genre] << k
         
-        result += "<div class=\"function\" id=\"#{k}\">"
+        id = is_unary_operator ? "unary_#{k}" : k
+        
+        result += "<div class=\"function\" id=\"#{id}\">"
         args_types = {}
         
         # associate types with each argument
@@ -175,7 +183,7 @@ def generate(title)
         end
         
         header_plate = is_operator ? is_unary_operator ? :header_op_unary : :header_op : :header
-            
+        
         result += BOILERPLATES[header_plate] % {
             return_type:    v[:info][:return],
             name:           k,
@@ -240,8 +248,8 @@ def generate(title)
         end
         
         
-        result += "<button class=\"source-button\" id=\"#{k}-button\">toggle source</button>"
-        result += "<div id=\"#{k}-source\" class=\"code-source\"><pre>"
+        result += "<button class=\"source-button\" id=\"#{id}-button\">toggle source</button>"
+        result += "<div id=\"#{id}-source\" class=\"code-source\"><pre>"
         result += v[:source].join
         result += "</pre></div>"
         
