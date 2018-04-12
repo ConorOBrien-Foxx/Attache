@@ -2990,6 +2990,24 @@ class AtState
             [list[0...right_upper], list[left_lower..-1]]
         },
         #<<
+        # "Bounces" a list. That is, returns the list concatenated with itself reversed, where the last element of the original array is not duplicated in the concatenation. Inspiration: <a href="https://github.com/DennisMitchell/jellylanguage/wiki/Atoms#%C5%92-atoms-other-monads">Jelly's <code>ŒB</code> monadic atom</code></a>.
+        # @type list [(*)]
+        # @return [(*)]
+        # @reforms
+        # @genre list
+        # @example Print[Bounce[1:3]]
+        # @example ?? [1, 2, 3, 2, 1]
+        # @example Print[Bounce["Hello"]]
+        # @example ?? HellolleH
+        # @example Print[Bounce[942]]
+        # @example ?? 94249
+        #>>
+        "Bounce" => lambda { |inst, list|
+            listified = force_list(list)
+            bounced = listified[0..-2] + listified.reverse
+            reform_list bounced, list
+        },
+        #<<
         # Chops <code>list</code> into groups of length <code>size</code>.
         # @type list [(*)]
         # @return [[(*)]]
