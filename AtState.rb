@@ -4364,9 +4364,47 @@ class AtState
                 (x..y).to_a
             end
         },
-        ".." => vectorize_dyad { |inst, x, y| (x..y).to_a },
-        "..." => vectorize_dyad { |inst, x, y| (x...y).to_a },
-        "in" => lambda { |inst, x, y| @@functions["Has"][inst, y, x] },
+        #<<
+        # Returns a range from <code>x</code> to <code>y</code>, inclusive.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        ".." => vectorize_dyad { |inst, x, y|
+            (x..y).to_a
+        },
+        #<<
+        # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        "..." => vectorize_dyad { |inst, x, y|
+            (x...y).to_a
+        },
+        #<<
+        # Returns <code>true</code> if <code>y</code> contains <code>x</code>, otherwise <code>false</code>. See also: <code><a href="#Has">Has</a></code>.
+        # @return bool
+        # @type x (*)
+        # @type y [(*)]
+        # @genre operator/logic
+        # @example Print[3 in 1:5]
+        # @example ?? true
+        # @example Print[30 in 1:5]
+        # @example ?? false
+        #>>
+        "in" => lambda { |inst, x, y|
+            @@functions["Has"][inst, y, x]
+        },
+        #<<
+        # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
+        # @type a expr
+        # @type b expr
+        # @return (*)
+        # @genre operator/logic
+        #>>
         "or" => lambda { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
@@ -4375,10 +4413,24 @@ class AtState
                 inst.evaluate_node_safe b
             end
         },
-        # no short circuiting, since both values must be compared
+        #<<
+        # Returns <code>true</code> if exactly one of <code>a</code> and <code>b</code> is truthy, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "xor" => lambda { |inst, a, b|
+            # no short circuiting, since both values must be compared
             AtState.truthy?(a) ^ AtState.truthy?(b)
         },
+        #<<
+        # Returns <code>true</code> if one of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise. Short-circuits.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "nand" => lambda { |inst, a, b|
             if AtState.falsey? inst.evaluate_node_safe a
                 true
@@ -4388,6 +4440,13 @@ class AtState
                 false
             end
         },
+        #<<
+        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are truthy, <code>false</code> otherwise. Short-circuits.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "and" => lambda { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.falsey? lres
@@ -4396,6 +4455,13 @@ class AtState
                 inst.evaluate_node_safe b
             end
         },
+        #<<
+        # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "else" => lambda { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
@@ -4404,6 +4470,13 @@ class AtState
                 inst.evaluate_node_safe b
             end
         },
+        #<<
+        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
         "nor" => lambda { |inst, a, b|
             if AtState.truthy? inst.evaluate_node_safe a
                 false
@@ -4413,6 +4486,9 @@ class AtState
                 true
             end
         },
+        #<<
+        # Returns <code>
+        #>>
         "not" => lambda { |inst, a, b|
             # A && !B
             rres = inst.evaluate_node_safe b
