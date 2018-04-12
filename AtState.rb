@@ -420,9 +420,21 @@ def vectorize(&fn)
     }
 end
 
-Holder = Struct.new "Holder", :held, :fn
+class AtFunction
+    def initialize(fn, held: held=[], config: config=false)
+        @held = held
+        @config = config
+        @fn = fn
+    end
+    
+    attr_accessor :held, :config, :fn
+end
+
 def held(*held, &fn)
-    Holder.new(held, fn)
+    AtFunction.new(fn, held: held)
+end
+def configurable(&fn)
+    AtFunction.new(fn, config: true)
 end
 
 class Token
@@ -974,14 +986,18 @@ class AtState
         args = []
         
         func = get_value head
-        if Holder === func
+        if AtFunction === func
             held = func.held
+            configurable = func.config
             func = func.fn
         elsif head.is_a? Token
             held = @@held_arguments[head.raw] || []
+            configurable = @@configurable.include?(head.raw) rescue false
         else
             held = []
+            configurable = false
         end
+        
         
         children.map!.with_index { |child, i|
             raw, type = child
@@ -1009,7 +1025,6 @@ class AtState
             }
         end
         
-        configurable = @@configurable.include?(head.raw) rescue false
         # filter ConfigureValue
         if configurable
             split = args.group_by { |e| e.is_a? ConfigureValue }
@@ -1122,6 +1137,7 @@ class AtState
         "Chop",
         "Configure",
         "Print",
+        "NestList",
         "Option",
         "Safely",
         "Series",
@@ -2595,6 +2611,25 @@ class AtState
                 e = f[inst, e]
             }
             e
+        },
+        #<<
+        # Applies <code>f</code> to <code>e</code> <code>n</code> times, keeping the intermediate results.
+        # @type f fn
+        # @type e (*)
+        # @type n number
+        # @return (*)
+        # @genre functional
+        # @example Print[NestList[Double, 1, 3]]
+        # @example ?? [1, 2, 4, 8]
+        #>>
+        "NestList" => configurable { |inst, f, e, n, **opts|
+            opts[:first] = opts.has_key?(:first) ? opts[:first] : true
+            list = opts[:first] ? [e] : []
+            from_numlike(n).times {
+                e = f[inst, e]
+                list << e
+            }
+            list
         },
         #<<
         # Applies <code>f</code> to <code>init</code> until <code>cond[init]</code> is truthy.
