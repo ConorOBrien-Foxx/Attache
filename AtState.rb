@@ -3594,6 +3594,12 @@ class AtState
             
             pairs
         },
+        #<<
+        # Returns an array representing the union of all lists in <code>lists</code>.
+        # @type lists [(*)]
+        # @return [(*)]
+        # @genre list
+        #>>
         "Union" => lambda { |inst, *lists|
             lists.inject(&:|)
         },

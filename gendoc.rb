@@ -63,6 +63,8 @@ def fit_least_indent(lines)
     lines.map { |e| e[least_indent..-1] }
 end
 
+
+SYMBOL = /\W/
 def generate(title)
     input = File.read title
     
@@ -126,7 +128,15 @@ def generate(title)
     result = ""
     $toc = Hash.new { |h, k| h[k] = [] }
 
-    final.sort_by { |k, v| k }.each { |k, v|
+    final.sort { |(k1, v1), (k2, v2)|
+        k1 = k1.downcase
+        k2 = k2.downcase
+        if (SYMBOL === k1) ^ (SYMBOL === k2)
+            SYMBOL === k1 ? -1 : 1
+        else
+            k1 <=> k2
+        end
+    }.each { |k, v|
         genre = v[:info][:genre]
         
         is_operator = genre.index "operator"
