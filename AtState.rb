@@ -3603,13 +3603,23 @@ class AtState
         "Union" => lambda { |inst, *lists|
             lists.inject(&:|)
         },
-        "Unique" => lambda { |inst, a, arg=nil|
-            a = force_list a
-            if arg.nil?
-                a.uniq
+        #<<
+        # Returns the non-duplicated elements in <code>list</code>.
+        # @type list [(*)]
+        # @type func fn
+        # @optional func
+        # @return [(*)]
+        # @genre list
+        # @reforms
+        #>>
+        "Unique" => lambda { |inst, list, func=nil|
+            fl = force_list list
+            unique = if func.nil?
+                fl.uniq
             else
-                a.uniq { |e| arg[inst, e] }
+                fl.uniq { |e| arg[func, e] }
             end
+            reform_list unique, list
         },
         "Variance" => lambda { |inst, list|
             list.variance
