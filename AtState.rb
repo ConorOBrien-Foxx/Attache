@@ -3359,6 +3359,18 @@ class AtState
             list[-1]
         },
         #<<
+        # Forces <code>ent</code> into a list.
+        # @type ent (*)
+        # @return [(*)]
+        # @genre list
+        # @paramtype number ent Returns the digits of <code>ent</code>.
+        # @paramtype string ent Returns the characters of <code>ent</code>.
+        # @paramtype hash ent Returns an array of key-value pairs in <code>ent</code>.
+        #>>
+        "List" => lambda { |inst, ent|
+            force_list ent
+        },
+        #<<
         # Returns the largest element contained in any atom of <code>args</code>.
         # @type args (*)
         # @return (*)
@@ -4526,6 +4538,9 @@ class AtState
         # @type b (*)
         # @return bool
         # @genre operator/logic
+        # @example even_nonpos := { Even[_] not Positive[_] }
+        # @example Print[Select[even_nonpos, [-4, -3, -2, 0, 2, 3, 4]]]
+        # @example ?? [-4, -2, 0]
         #>>
         "not" => lambda { |inst, a, b|
             # A && !B
