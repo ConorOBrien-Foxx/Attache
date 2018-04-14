@@ -3675,20 +3675,23 @@ class AtState
         ## Combinatoric Functions ##
         ##------------------------##
         "Combinations" => lambda { |inst, list, count=nil|
+            inner = force_list list
             if count.nil?
-                count = (0..list.size).to_a
+                count = (0..inner.size).to_a
             end
             if count.is_a? Array
-                count.map { |e| list.combination(e).to_a }.flatten(1)
+                count.map { |e|
+                    reform_list inner.combination(e).to_a, list
+                }.flatten(1)
             else
-                list.combination(count).to_a
+                reform_list inner.combination(count).to_a, list
             end
         },
         "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
             if list.is_a? String
                 force_list(list).permutation(count).map(&:join).to_a
             else
-                list.permutation(count).to_a
+                reform_list force_list(list).permutation(count).to_a, list
             end
         },
         "Zip" => lambda { |inst, a, *b|
