@@ -421,13 +421,28 @@ def vectorize(&fn)
 end
 
 class AtFunction
-    def initialize(fn, held: held=[], config: config=false)
+    def initialize(fn, held: held=[], config: config=false, arity: 0)
         @held = held
         @config = config
         @fn = fn
+        # p "#{fn}"
+        # p "arity: #{arity.inspect}"
+        @arity = arity
     end
     
-    attr_accessor :held, :config, :fn
+    def AtFunction.from(**opts, &fn)
+        AtFunction.new(fn, **opts)
+    end
+    
+    def size
+        @arity
+    end
+    
+    def [](inst, *args)
+        @fn[inst, *args]
+    end
+    
+    attr_accessor :held, :config, :fn, :arity
 end
 
 def held(*held, &fn)
@@ -531,6 +546,12 @@ class AtLambda
             self[inst, *args]
         }
     end
+    
+    def size
+        @params.size
+    end
+    
+    alias :arity :size
     
     attr_accessor :params, :scope, :ascend, :descend, :ignore_other
     
@@ -2514,6 +2535,46 @@ class AtState
             f[inst, *args]
         },
         #<<
+        # Returns <code>fn</code>, fully curried according to <code>arity</code>.
+        # @type f fn
+        # @type arity number
+        # @optional arity
+        # @return fn
+        # @param arity Default: <code>#f</code>.
+        # @genre functional
+        # @example add_dy := [x, y] -> { x + y }
+        # @example adder := Curry[add_dy]
+        # @example add3 := adder[3]
+        # @example Print[add3[5]]
+        # @example ?? 8
+        # @example Print[adder[2][5]]
+        # @example ?? 7
+        # @example
+        # @example add_tri := Curry[Add/3]
+        # @example adder1 := add_tri[1]
+        # @example add6 := adder1[5]
+        # @example Print[add6[10]]
+        # @example ?? 16
+        #>>
+        "Curry" => lambda { |inst, f, arity=f.arity|
+            if arity.negative?
+                arity = ~arity
+            end
+            
+            arity += 1 if AtLambda === f || AtFunction === f
+            
+            rec = lambda { |fn, inst, *args|
+                if args.size >= arity - 1
+                    fn[inst, *args]
+                else
+                    lambda { |inst, *more|
+                        rec[fn, inst, *args, *more]
+                    }
+                end
+            }
+            rec[f, inst]
+        },
+        #<<
         # Applies <code>f</code> to <code>n</code> until <code>f[n]</code> converges.
         # @type f fn
         # @type n (*)
@@ -4183,10 +4244,15 @@ class AtState
         # @genre operator
         #>>
         "/" => vectorize_dyad { |inst, a, b|
+            # p 'div',a,b
             if class_has? a, "div"
                 a["$div"][inst, b]
             elsif class_has? b, "rdiv"
                 b["$rdiv"][inst, a]
+            elsif AtState.func_like? a
+                AtFunction.from(arity: b) { |inst, *args|
+                    a[inst, *args]
+                }
             else
                 simplify_number a * 1.0 / b
             end
