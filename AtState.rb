@@ -4197,8 +4197,15 @@ class AtState
                         e.raw
                     end
                 }
-                res = AtLambda.new [val], args
-                inst.define var.head.raw, res
+                if var.head.raw == "'"
+                    val = inst.evaluate_node val
+                    args.each_with_index { |arg, i|
+                        inst.define arg, val[i]
+                    }
+                else
+                    res = AtLambda.new [val], args
+                    inst.define var.head.raw, res
+                end
             else
                 name = var.raw
                 # dh "`:=` value", val.inspect
@@ -4211,8 +4218,14 @@ class AtState
             #todo: abstract `.=` and `:=` logic
             if Node === var
                 args = var.children.map(&:raw)
-                res = AtLambda.new [val], args
-                inst.define_local var.head.raw, res
+                if var.head.raw == "'"
+                    args.each_with_index { |arg, i|
+                        inst.define_local arg, val[i]
+                    }
+                else
+                    res = AtLambda.new [val], args
+                    inst.define_local var.head.raw, res
+                end
             else
                 name = var.raw
                 inst.define_local name, inst.evaluate_node(val)
