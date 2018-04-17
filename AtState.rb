@@ -4016,6 +4016,9 @@ class AtState
                     ent
             end
         },
+        "Center" => lambda { |inst, str, amt, n=" "|
+            str.center(amt, n)
+        },
         "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
             str.split sep
         },
