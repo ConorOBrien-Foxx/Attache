@@ -3,7 +3,7 @@ require_relative 'AtClass.rb'
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
-$WORD = /[[:alpha:]]\w*/
+$WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
 $REFERENCE = /\$#$WORD/
@@ -44,6 +44,12 @@ $PRECEDENCE = {
     "##"      => [19, :left],
     
     
+    
+    "∩"       => [18, :left],
+    "∪"       => [17, :left],
+    "∆"       => [17, :left],
+    "Ø"       => [17, :left],
+    
     "^"       => [15, :right],
     "!"       => [15, :right],
     "?"       => [15, :left],
@@ -59,11 +65,14 @@ $PRECEDENCE = {
     "="       => [9, :left],
     "=/="     => [9, :left],
     "/="      => [9, :left],
+    "≠"       => [9, :left],
     "=="      => [9, :left],
     "<"       => [9, :left],
     ">"       => [9, :left],
     "<="      => [9, :left],
+    "≤"       => [9, :left],
     ">="      => [9, :left],
+    "≥"       => [9, :left],
     "in"      => [8, :left],
     ".."      => [7, :left],
     "..."     => [7, :left],
@@ -4460,6 +4469,16 @@ class AtState
             x >= y
         },
         #<<
+        # Returns <code>true</code> if <code>x</code> is greater than or equal to <code>y</code>, <code>false</code> otherwise. See also: <a href="#>="><code>&gt;=</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "≥" => vectorize_dyad { |inst, x, y|
+            x >= y
+        },
+        #<<
         # Returns <code>true</code> if <code>x</code> is less than or equal <code>y</code>, <code>false</code> otherwise.
         # @type x (*)
         # @type y (*)
@@ -4467,6 +4486,16 @@ class AtState
         # @genre operator/logic
         #>>
         "<=" => vectorize_dyad { |inst, x, y|
+            x <= y
+        },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is less than or equal <code>y</code>, <code>false</code> otherwise. See also: <a href="#<="><code>&lt;=</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "≤" => vectorize_dyad { |inst, x, y|
             x <= y
         },
         #<<
@@ -4633,6 +4662,47 @@ class AtState
                 inst.evaluate_node_safe a
             end
         },
+        #<<
+        # Returns the intersection of <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∩" => lambda { |inst, a, b|
+            a & b
+        },
+        #<<
+        # Returns the union of <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∪" => lambda { |inst, a, b|
+            a | b
+        },
+        #<<
+        # Returns the symmetric difference between <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∆" => lambda { |inst, a, b|
+            (a | b) - (a & b)
+        },
+        #<<
+        # Returns the <code>a</code> without all elements of <code>b</code>. See also: <a href="#Complement"><code>Complement</code></a>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "Ø" => lambda { |inst, a, b|
+            a - b
+        },
+        
         
         ## -- functional -- #
         "@" => lambda { |inst, f, g|
