@@ -77,9 +77,13 @@ $PRECEDENCE = {
     "≥"       => [9, :left], # >= alias
     "in"      => [8, :left],
     ".."      => [7, :left],
+    "‥"       => [7, :left], # .. alias
     "..."     => [7, :left],
+    "…"       => [7, :left], # ... alias
     "|>"      => [6, :left],
+    "▷"      => [6, :left], # |> alias
     "<|"      => [6, :right],
+    "◁"      => [6, :left], # <| alias
     "and"     => [6, :left],
     "∧"       => [6, :left], # and alias
     "nor"     => [6, :left],
@@ -92,7 +96,7 @@ $PRECEDENCE = {
     "nand"    => [5, :left],
     "⊼"       => [5, :left], # nand alias
     "->"      => [4, :left],
-    "→"       => [4, :left],
+    "→"       => [4, :left], # -> alias
     "else"    => [3, :left],
     ":>"      => [3, :left],
     ":="      => [2, :right],
@@ -102,6 +106,7 @@ $PRECEDENCE = {
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
+$PRECEDENCE_UNARY["…"] = 0
 
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e|
@@ -4431,6 +4436,16 @@ class AtState
             y[inst, x]
         },
         #<<
+        # Calls <code>y</code> with single parameter <code>x</code>. See also: <a href="#|>"><code>|&gt;</code></a>.
+        # @type x (*)
+        # @type y fn
+        # @return (*)
+        # @genre operator
+        #>>
+        "▷" => lambda { |inst, x, y|
+            @@operators["|>"][inst, x, y]
+        },
+        #<<
         # Calls <code>x</code> with single parameter <code>y</code>.
         # @type x fn
         # @type y (*)
@@ -4439,6 +4454,16 @@ class AtState
         #>>
         "<|" => lambda { |inst, x, y|
             x[inst, y]
+        },
+        #<<
+        # Calls <code>x</code> with single parameter <code>y</code>. See also: <a href="#<|"><code>&lt;|</code></a>.
+        # @type x fn
+        # @type y (*)
+        # @return (*)
+        # @genre operator
+        #>>
+        "◁" => lambda { |inst, x, y|
+            @@operators["<|"][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false</code> otherwise.
@@ -4574,6 +4599,16 @@ class AtState
             (x..y).to_a
         },
         #<<
+        # Returns a range from <code>x</code> to <code>y</code>, inclusive. See also: <a href="#.."><code>..</code></a>.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        "‥" => vectorize_dyad { |inst, x, y|
+            @@operators[".."][inst, x, y]
+        },
+        #<<
         # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>.
         # @type x number
         # @type y number
@@ -4582,6 +4617,16 @@ class AtState
         #>>
         "..." => vectorize_dyad { |inst, x, y|
             (x...y).to_a
+        },
+        #<<
+        # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>. See also: <a href="#..."><code>...</code></a>.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        "…" => vectorize_dyad { |inst, x, y|
+            @@operators["..."][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>y</code> contains <code>x</code>, otherwise <code>false</code>. See also: <code><a href="#Has">Has</a></code>.
@@ -4989,6 +5034,9 @@ class AtState
         },
         "..." => lambda { |inst, arg|
             Applicator.new arg
+        },
+        "…" => lambda { |inst, arg|
+            @@unary_operators["..."][inst, arg]
         },
     }
 end
