@@ -198,6 +198,7 @@ def parse(code)
     # keep track of curries promoted to calls
     curry_mask = []
     last_token = Token.new nil, nil, nil
+    parens = []
     
     tokenize(code).each { |ent|
         raw, type, start = ent
@@ -301,7 +302,8 @@ def parse(code)
             
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
             
-            unless arities.last
+            if arities.last.nil?
+                parens[-1] = true
                 out.push Token.new "discard", :discard, nil
             end
 
@@ -338,12 +340,31 @@ def parse(code)
         
         elsif type == :paren_open
             stack.push ent
+            # dh "stack", stack
+            # dh "out", out
             arities.push nil
-            # out.push Token.new "pop", :pop, nil
+            parens.push nil
+            
         elsif type == :paren_close
             arities.pop
-            out.push stack.pop while stack.last.type != :paren_open
+            temp = []
+            temp.push stack.pop while stack.last.type != :paren_open
             stack.pop
+            
+            # if parens.pop
+                # # out.unshift Token.new "Last", :word, nil
+                # # stack.unshift Token.new "[", :bracket_open, nil
+                # # dh "stack", stack
+                # # dh "out", out
+            # else
+                # # dh "stack", stack
+                # # stack.pop
+            # end
+            
+            
+            # temp.unshift Token.new("Last",:word,nil) if parens.pop
+            
+            out.concat temp
             
         elsif type == :whitespace
             # do nothing
@@ -717,8 +738,8 @@ def ast(program)
         elsif $DATA.include? type
             stack.push ent
         
-        elsif type == :discard
-            stack.pop
+        # elsif type == :discard
+            # stack.push Node.new ent, [stack.pop]
         
         else
             STDERR.puts "Unhandled shunt type #{type}"
