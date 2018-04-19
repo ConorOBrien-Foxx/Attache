@@ -9,10 +9,16 @@ Output := Configure[Print, joiner->lf, after->es]@@Tie
 
 BaseRange := {
     base .= _1
-    arr .= ToBase[Range@@__2, base]
+    arr .= ToBase[Range[...__2], base]
     maxlen .= Max[Size => arr]
     PadLeft&maxlen => arr
 }
+BaseBelow[base, n] := BaseRange[base, base^n-1]
+
 BinRange := 2&BaseRange
 OctRange := 8&BaseRange
 HexRange := 16&BaseRange
+
+BinBelow := 2&BaseBelow
+OctBelow := 8&BaseBelow
+HexBelow := 16&BaseBelow
