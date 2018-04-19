@@ -99,6 +99,7 @@ $PRECEDENCE = {
     "→"       => [4, :left], # -> alias
     "else"    => [3, :left],
     ":>"      => [3, :left],
+    "↠"      => [3, :left], # :> alias
     ":="      => [2, :right],
     "≔"      => [2, :right],
     ".="      => [2, :right],
@@ -1395,9 +1396,11 @@ class AtState
             }
             res
         },
-        "Hold" => lambda { |inst, fn|
-            
-        },
+        # "Hold" => lambda { |inst, fn|
+        #     if AtState.func_like? fn
+        #         fn ;
+        #     end
+        # },
         #<<
         # Defines <code>name</code> in the local scope as <code>value</code>. Returns <code>value</code>.
         # @return (*)
@@ -4922,6 +4925,9 @@ class AtState
         "⇒" => @@functions["Map"],
         ":>" => lambda { |inst, source, func|
             source.map { |x| func[inst, x] }
+        },
+        "↠" => lambda { |inst, source, func|
+            @@operators[":>"][inst, source, func]
         },
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
