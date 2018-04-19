@@ -4419,7 +4419,7 @@ class AtState
             elsif class_has? b, "rpow"
                 b["$rpow"][inst, a]
             else
-                a + b
+                a ** b
             end
         },
         #<<
