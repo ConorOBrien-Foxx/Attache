@@ -4986,6 +4986,9 @@ class AtState
                 arr.map { |e| e[get] }
             end
         },
+        "↞" => lambda { |inst, arr, get|
+            @@operators["<:"][inst, arr, get]
+        },
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
         "->" => lambda { |inst, key, value|
