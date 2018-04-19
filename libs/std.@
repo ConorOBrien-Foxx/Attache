@@ -6,3 +6,13 @@ MapRight[f] := [l, r] -> { f&:l => r }
 PrimePi[n] := #Series[Prime, n, include->true]
 
 Output := Configure[Print, joiner->lf, after->es]@@Tie
+
+BaseRange := {
+    base .= _1
+    arr .= ToBase[Range@@__2, base]
+    maxlen .= Max[Size => arr]
+    PadLeft&maxlen => arr
+}
+BinRange := 2&BaseRange
+OctRange := 8&BaseRange
+HexRange := 16&BaseRange
