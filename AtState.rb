@@ -3,7 +3,7 @@ require_relative 'AtClass.rb'
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
-$WORD = /[[:alpha:]]\w*/
+$WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
 $REFERENCE = /\$#$WORD/
@@ -27,9 +27,9 @@ $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
     "."       => [99, :left],
-    
+
     ":"       => [30, :left],
-    
+
     "&"       => [26, :left],
     "&:"      => [26, :left],
     "~"       => [25, :left],
@@ -37,54 +37,77 @@ $PRECEDENCE = {
     "@@"      => [24, :left],
     "@%"      => [24, :left],
     "=>"      => [20, :right],
+    "⇒"      => [20, :right], # => alias
     "\\"      => [20, :right],
     "#"       => [20, :left],
     "''"      => [20, :left],
     "'"       => [20, :left],
     "##"      => [19, :left],
-    
-    
+
+
+
+    "∩"       => [18, :left], # Intersection alias
+    "∪"       => [17, :left], # Union alias
+    "∆"       => [17, :left], # symmetric difference
+    "Ø"       => [17, :left], # setwise difference
+
     "^"       => [15, :right],
     "!"       => [15, :right],
     "?"       => [15, :left],
     "*"       => [13, :left],
     "/"       => [13, :left],
     "//"      => [13, :left],
+    "⁄"       => [13, :left], # // alias (fraction slash)
     "%"       => [13, :left],
     "|"       => [12, :left],
     "+"       => [11, :left],
     "-"       => [11, :left],
     "±"       => [11, :left],
-    
+
     "="       => [9, :left],
     "=/="     => [9, :left],
     "/="      => [9, :left],
+    "≠"       => [9, :left], # /= alias
     "=="      => [9, :left],
     "<"       => [9, :left],
     ">"       => [9, :left],
     "<="      => [9, :left],
+    "≤"       => [9, :left], # <= alias
     ">="      => [9, :left],
+    "≥"       => [9, :left], # >= alias
     "in"      => [8, :left],
     ".."      => [7, :left],
+    "‥"       => [7, :left], # .. alias
     "..."     => [7, :left],
+    "…"       => [7, :left], # ... alias
     "|>"      => [6, :left],
+    "▷"      => [6, :left], # |> alias
     "<|"      => [6, :right],
+    "◁"      => [6, :left], # <| alias
     "and"     => [6, :left],
+    "∧"       => [6, :left], # and alias
     "nor"     => [6, :left],
+    "⊽"       => [6, :left], # nor alias
     "not"     => [6, :left],
     "xor"     => [5, :left],
+    "⊻"       => [5, :left], # xor alias
     "or"      => [5, :left],
+    "∨"       => [5, :left], # or alias
     "nand"    => [5, :left],
+    "⊼"       => [5, :left], # nand alias
     "->"      => [4, :left],
-    "→"       => [4, :left],
+    "→"       => [4, :left], # -> alias
     "else"    => [3, :left],
     ":>"      => [3, :left],
+    "↠"      => [3, :left], # :> alias
     ":="      => [2, :right],
+    "≔"      => [2, :right],
     ".="      => [2, :right],
     ";;"      => [1, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
+$PRECEDENCE_UNARY["…"] = 0
 
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e|
@@ -151,7 +174,7 @@ def tokenize(code)
         code.scan($TOKENIZER) { |part|
             $TYPES.each { |reg, type|
                 next unless /^#{reg}$/ === part
-                
+
                 if depth.nil?
                     if type == :comment_open
                         depth = 1
@@ -170,7 +193,7 @@ def tokenize(code)
                     end
                     i += part.size
                 end
-                
+
                 break
             }
         }
@@ -180,7 +203,7 @@ end
 def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
 end
-    
+
 def parse(code)
     # group expression
     stack = []
@@ -189,53 +212,54 @@ def parse(code)
     # keep track of curries promoted to calls
     curry_mask = []
     last_token = Token.new nil, nil, nil
-    
+    parens = []
+
     tokenize(code).each { |ent|
         raw, type, start = ent
-        
+
         next if type == :comment
-        
+
         is_data = $DATA.include?(type) || type == :func_start# || type == :curry_open
         last_was_data = $DATA_SIGNIFIER.include? last_token.type
-        
+
         # two adjacent datatypes mark a statement
         if is_data && last_was_data || type == :statement_sep
             flush(out, stack, [:func_start])
         end
-        
+
         if type == :statement_sep
             last_token = ent
             next
         end
-        
+
         if $DATA.include? type
             out.push ent
-        
+
         elsif type == :func_start
             stack.push ent
             out.push ent
-        
+
         elsif type == :func_end
             while stack.last && [:operator, :unary_operator].include?(stack.last.type)
                 out.push stack.pop
             end
-            
+
             collect = []
             until out.empty? || out.last.type == :func_start
                 collect.unshift out.pop
             end
-            
+
             next_start = stack.pop.start
             out.pop
-            
+
             # p collect
-            
+
             out.push Token.new collect, :make_lambda, next_start
-        
+
         elsif type == :operator
             if last_token.nil? || !$DATA_SIGNIFIER.include?(last_token.type)
                 ent.type = :unary_operator
-            
+
             else
                 cur_prec, cur_assoc = $PRECEDENCE[raw]
                 # NOTE: precedence determining
@@ -248,18 +272,18 @@ def parse(code)
                     if top_type == :unary_operator
                         top_prec = $PRECEDENCE_UNARY[top_raw]
                     end
-                    
+
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
                     out.push stack.pop
                 }
             end
             stack.push ent
-            
+
         elsif type == :bracket_open
             if !stack.empty? && stack.last.raw == "."
                 out.push stack.pop
             end
-            
+
             # determine if a function call
             unless $SEPARATOR.include? last_token.type
                 # the "V" function creates an array
@@ -267,12 +291,12 @@ def parse(code)
             end
             stack.push ent
             arities.push 1
-            
+
         elsif type == :curry_open
             if !stack.empty? && stack.last.raw == "."
                 out.push stack.pop
             end
-            
+
             # determine if a curry call
             unless $SEPARATOR.include? last_token.type
                 # the "Hash" function creates a hash
@@ -284,15 +308,16 @@ def parse(code)
                 curry_mask << false
             end
             arities.push 1
-        
+
         elsif type == :comma
             unless arities.last.nil?
                 arities[-1] += 1
             end
-            
+
             out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
-            
-            unless arities.last
+
+            if arities.last.nil?
+                parens[-1] = true
                 out.push Token.new "discard", :discard, nil
             end
 
@@ -300,7 +325,7 @@ def parse(code)
             if last_token.type == :bracket_open || last_token.type == :curry_open
                 arities[-1] = 0
             end
-            
+
             loop {
                 if stack.empty?
                     STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
@@ -309,45 +334,64 @@ def parse(code)
                 break if stack.last.type == :bracket_open
                 out.push stack.pop
             }
-            
+
             out.push Token.new arities.pop, :call_func, nil
-            
+
             stack.pop
-        
+
         elsif type == :curry_close
             if last_token.type == :curry_open
                 arities[-1] = 0
             end
-            
+
             while stack.last.type != :curry_open
                 out.push stack.pop
             end
-            
+
             out.push Token.new arities.pop, :curry_func, nil
-            
+
             stack.pop
-        
+
         elsif type == :paren_open
             stack.push ent
+            # dh "stack", stack
+            # dh "out", out
             arities.push nil
-            # out.push Token.new "pop", :pop, nil
+            parens.push nil
+
         elsif type == :paren_close
             arities.pop
-            out.push stack.pop while stack.last.type != :paren_open
+            temp = []
+            temp.push stack.pop while stack.last.type != :paren_open
             stack.pop
-            
+
+            # if parens.pop
+                # # out.unshift Token.new "Last", :word, nil
+                # # stack.unshift Token.new "[", :bracket_open, nil
+                # # dh "stack", stack
+                # # dh "out", out
+            # else
+                # # dh "stack", stack
+                # # stack.pop
+            # end
+
+
+            # temp.unshift Token.new("Last",:word,nil) if parens.pop
+
+            out.concat temp
+
         elsif type == :whitespace
             # do nothing
-            
+
         else
             STDERR.puts "Unknown type #{type.inspect} (#{raw.inspect}) during shunting"
             raise
         end
         last_token = ent if type != :whitespace
     }
-    
+
     flush out, stack
-    
+
     offender = out.find { |raw, type| type == :bracket_open }
     if offender
         STDERR.puts "Syntax Error: unmatched \"[\" (at token #{offender})"
@@ -421,27 +465,25 @@ def vectorize(&fn)
 end
 
 class AtFunction
-    def initialize(fn, held: held=[], config: config=false, arity: 0)
+    def initialize(fn, held: held=[], config: config=false, arity: nil)
         @held = held
         @config = config
         @fn = fn
-        # p "#{fn}"
-        # p "arity: #{arity.inspect}"
-        @arity = arity
+        @arity = arity || fn.arity rescue fn.size rescue 0
     end
-    
+
     def AtFunction.from(**opts, &fn)
         AtFunction.new(fn, **opts)
     end
-    
+
     def size
         @arity
     end
-    
+
     def [](inst, *args)
         @fn[inst, *args]
     end
-    
+
     attr_accessor :held, :config, :fn, :arity
 end
 
@@ -458,26 +500,26 @@ class Token
         @type = type
         @start = start
     end
-    
+
     attr_accessor :raw, :type, :start
     @@words = %w(raw type start)
-    
+
     def [](n)
         raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
     end
-    
+
     def []=(n, v)
         raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
     end
-    
+
     def to_ary
         [@raw, @type, @start]
     end
-    
+
     def to_s
         "#{@type} #{@raw.inspect} @ #{@start}"
     end
-    
+
     def inspect
         "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
     end
@@ -491,17 +533,17 @@ class Node
         @head = head
         @children = children
     end
-    
+
     attr_reader :head, :children
-    
+
     def add_child(children)
         @children.concat children
     end
-    
+
     def to_ary
         [@head.clone, @children.clone]
     end
-    
+
     def to_s(depth = 0)
         res = ""
         res += " " * DISP_WIDTH * depth
@@ -519,7 +561,7 @@ class Node
         depth -= 1
         res.chomp
     end
-    
+
     def inspect
         "#Node<#{@head}>{#{@children.inspect}}"
         # if @head.type == :operator
@@ -540,37 +582,37 @@ class AtLambda
         @descend = true
         @ignore_other = false
     end
-    
+
     def bind(inst)
         lambda { |*args|
             self[inst, *args]
         }
     end
-    
+
     def size
         @params.size
     end
-    
+
     alias :arity :size
-    
+
     attr_accessor :params, :scope, :ascend, :descend, :ignore_other
-    
+
     def [](inst, *args)
         inst.local_descend(@scope) if @descend
-        
+
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
         @params.each_with_index { |name, i|
             inst.define_local name, args[i]
         }
-        
+
         temp_scope = @scope.dup
-        
+
         res = @tokens.map.with_index { |token, i|
-            
+
             inner = inst.evaluate_node(token, args, @scope)
-            
+
             if @ascend && @descend
                 temp = inst.locals.last.dup
                 @params.each { |param|
@@ -578,21 +620,21 @@ class AtLambda
                 }
                 temp_scope.merge! temp
             end
-            
+
             AtState.traverse(inner) { |atom|
                 if atom.kind_of? AtLambda
                     atom.scope.merge! temp_scope
                 end
             }
-            
+
             inner
         }.last
-        
+
         inst.abstract_references.pop
         temp_scope = inst.local_ascend if @ascend
-        
+
         @scope = temp_scope unless @ignore_other
-        
+
         res
     end
 end
@@ -603,7 +645,7 @@ class AtError
         @message = message
         @origin = origin
     end
-    
+
     def to_s
         "#{@origin}: #{@name}: #{@message}"
     end
@@ -614,12 +656,12 @@ class ConfigureValue
         @key = key
         @value = value
     end
-    
+
     def to_a
         [@key, @value]
     end
     alias_method :to_ary, :to_a
-    
+
     attr_accessor :key, :value
 end
 
@@ -627,7 +669,7 @@ class Applicator
     def initialize(value = [])
         @value = [*value]
     end
-    
+
     attr_accessor :value
 end
 
@@ -635,7 +677,7 @@ def make_curry(args, func)
     lambda { |inst, *others|
         abstracts = []
         to_remove = []
-        
+
         args.each { |el|
             if Token === el && el.type == :abstract
                 n = get_abstract_number(el.raw)
@@ -643,12 +685,12 @@ def make_curry(args, func)
                 to_remove.push n
             end
         }
-        
+
         not_provided = to_remove - (0...others.size).to_a
-        
+
         if not_provided.empty?
             others.reject!.with_index { |e, i| to_remove.include? i }
-            
+
             inst.evaluate_node Node.new(func, args + others), abstracts
         else
             next_args = args.map { |el|
@@ -665,7 +707,7 @@ def make_curry(args, func)
                     el
                 end
             }
-            
+
             make_curry(next_args, func)
         end
     }
@@ -677,7 +719,7 @@ def ast(program)
     else
         parse program
     end
-    
+
     roots = []
     stack = []
     build = nil
@@ -689,28 +731,28 @@ def ast(program)
             func = stack.pop
             cur = Node.new func, args
             stack.push cur
-        
+
         elsif type == :curry_func
             args = stack.pop(raw)
             func = stack.pop
             stack.push Token.new make_curry(args, func), :function, start
-        
+
         elsif type == :operator
             args = stack.pop(2)
             cur = Node.new ent, args
             stack.push cur
-        
+
         elsif type == :unary_operator
             arg = stack.pop
             cur = Node.new ent, [arg]
             stack.push cur
-        
+
         elsif $DATA.include? type
             stack.push ent
-        
-        elsif type == :discard
-            stack.pop
-        
+
+        # elsif type == :discard
+            # stack.push Node.new ent, [stack.pop]
+
         else
             STDERR.puts "Unhandled shunt type #{type}"
             raise
@@ -749,19 +791,28 @@ class AtState
     def AtState.truthy?(ent)
         res = ent && ent != 0 && (ent.size != 0 rescue true)
     end
-    
+
+    def set_op_quote(token, res)
+        op = token.raw[1..-1]
+        hash = {
+            1 => @@unary_operators,
+            2 => @@operators,
+        }
+        hash[res.arity.negative? ? ~res.arity : res.arity][op] = res
+    end
+
     def AtState.falsey?(ent)
         !AtState.truthy?(ent)
     end
-    
+
     def AtState.func_like?(ent)
-        AtLambda === ent || Proc === ent || Train === ent || Tie === ent
+        AtLambda === ent || AtFunction === ent || Proc === ent || Train === ent || Tie === ent
     end
-    
+
     def AtState.execute(*args)
         AtState.new(*args).run
     end
-    
+
     def AtState.traverse(container, &fn)
         rec = lambda { |arg|
             if Hash === arg
@@ -776,7 +827,7 @@ class AtState
         }
         rec[container]
     end
-    
+
     @@default_variables = {
         "true" => true,
         "false" => false,
@@ -815,7 +866,7 @@ class AtState
         "ascii" => (32..126).map(&:chr).join,
     }
     @@extended_variables = {}
-    
+
     def initialize(program, input=STDIN, output=STDOUT)
         @trees = ast(program)
         if @trees.nil?
@@ -829,7 +880,7 @@ class AtState
         @out = output
         load_lib "std"
     end
-    
+
     def load_lib(name)
         loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
@@ -847,115 +898,115 @@ class AtState
             STDERR.puts "No such library #{name}"
         end
     end
-    
+
     attr_reader :stack
     attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references
-    
+
     def error(message)
         STDERR.puts message
         exit
         # raise
     end
-    
+
     def get_variable(name)
         if @@extended_variables.has_key? name
             @@extended_variables[name]
-        
+
         elsif @locals.last.has_key? name
             @locals.last[name]
-        
+
         elsif @variables.has_key? name
             @variables[name]
-        
+
         elsif @@functions.has_key? name
             @@functions[name]
-        
+
         else
             raise "no such variable #{name}"
-        
+
         end
     end
-    
+
     def get_value(obj)
         return obj unless obj.is_a? Token
-        
+
         raw, type = obj
-        
+
         if type == :reference
             raw[1..-1]
-            
+
         elsif type == :function
             raw
-        
+
         elsif type == :string
             raw[1..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
                 eval '"' + e + '"' rescue e
             }
-        
+
         elsif @@extended_variables.has_key? raw
             @@extended_variables[raw]
-        
+
         elsif @locals.last.has_key? raw
             @locals.last[raw]
-        
+
         elsif @variables.has_key? raw
             @variables[raw]
-        
+
         elsif @@functions.has_key? raw
             @@functions[raw]
-        
+
         elsif type == :operator
             @@operators[raw]
-        
+
         elsif type == :unary_operator
             @@unary_operators[raw]
-        
+
         elsif type == :op_quote
             ref = raw[1..-1]
-            lambda { |inst, *args|
+            AtFunction.new(lambda { |inst, *args|
                 source = args.size == 1 ? @@unary_operators : @@operators
                 source[ref][inst, *args]
-            }
-        
+            }, arity: 2)
+
         elsif type == :number
             # todo: fix this hack
             eval raw.gsub(/^\./, "0.")
-        
+
         elsif type == :make_lambda
             AtLambda.new(ast raw)
-        
+
         elsif type == :word
             error "Reference Error: Undefined variable #{raw.inspect}"
-        
+
         elsif type == :abstract_reference
             @abstract_references[-raw.size]
-        
+
         elsif type == :abstract
             get_blank(raw)
-        
+
         else
             puts "Unidentified get_value thing #{type.inspect}"
             p obj
             raise
         end
     end
-    
+
     def define(name, value)
         @variables[name] = value
     end
-    
+
     def clear(name)
         @variables.delete(name)
     end
-    
+
     def define_local(name, value)
         @locals.last[name] = value
     end
-    
+
     def clear_local(name)
         @locals.last.delete(name)
     end
-    
+
     def local_descend(arg={})
         res = @locals.last.dup
         adopt = arg.dup
@@ -963,19 +1014,19 @@ class AtState
         @locals.push adopt
         adopt
     end
-    
+
     def local_ascend
         @locals.pop
     end
-    
+
     def get_blank(blank, blank_args = nil)
         if blank_args.nil?
             blank_args = @locals.last[AtLambda::ARG_CONST] || []
         end
-        
+
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        
+
         # p "abstract type #{type}, #{blank}, #{blank_args}"
         case type
             when 1
@@ -986,26 +1037,26 @@ class AtState
                 STDERR.puts "Blank too long: #{type} of #{blank}"
         end
     end
-    
+
     def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
-            
+
             res = nil
             if node.type == :abstract
                 res = get_blank node.raw, blank_args
             else
                 res = get_value node
             end
-            
+
             return res
         end
-        
+
         head, children = node
-        
+
         # special cases
         args = []
-        
+
         func = get_value head
         if AtFunction === func
             held = func.held
@@ -1018,11 +1069,11 @@ class AtState
             held = []
             configurable = false
         end
-        
-        
+
+
         children.map!.with_index { |child, i|
             raw, type = child
-            
+
             if held[i]
                 child
             else
@@ -1036,7 +1087,7 @@ class AtState
             end
         }
         args.concat children
-        
+
         # check if error occured
         if check_error
             args.each { |arg|
@@ -1045,7 +1096,7 @@ class AtState
                 end
             }
         end
-        
+
         # filter ConfigureValue
         if configurable
             split = args.group_by { |e| e.is_a? ConfigureValue }
@@ -1053,7 +1104,7 @@ class AtState
             config = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
         end
-        
+
         args = args.flat_map { |e|
             Applicator === e ? e.value : [e]
         }
@@ -1061,13 +1112,13 @@ class AtState
         if func.is_a? Node
             func = evaluate_node func, blank_args, merge_with, check_error: check_error
         end
-        
+
         if func.nil?
             STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
         end
-        
-        
+
+
         if func.kind_of?(AtLambda) && !merge_with.nil?
             # di "func infusion"
             # dh "func", func.inspect
@@ -1075,7 +1126,7 @@ class AtState
             func.scope.merge! merge_with
             # dd "func infused"
         end
-        
+
         res = if head.is_a?(Token) && configurable
             func[self, *args, **config]
         else
@@ -1094,7 +1145,7 @@ class AtState
                     end
             end
         end
-        
+
         if res.kind_of?(AtLambda) && !merge_with.nil?
             # di "res infusion"
             # dh "func", func.inspect
@@ -1102,10 +1153,10 @@ class AtState
             res.scope.merge! merge_with
             # dd "res infused"
         end
-        
+
         res
     end
-    
+
     def evaluate_node_safe(node_maybe)
         if Node === node_maybe || Token === node_maybe
             evaluate_node node_maybe
@@ -1113,7 +1164,7 @@ class AtState
             node_maybe
         end
     end
-    
+
     def run
         @trees.map { |tree|
             res = evaluate_node tree#, [], @locals.last.dup
@@ -1124,26 +1175,26 @@ class AtState
             res
         }
     end
-    
+
     def AtState.function(name, aliases: [], configurable: false, hold: nil, &body)
         @@functions[name] = convert_to_lambda(&body)
         if configurable
             @@configurable << name
         end
-        
+
         aliases.each { |ali|
             @@functions[ali] = ali
         }
-        
+
         unless hold.nil?
             @@held_arguments[name] = hold
         end
     end
-    
+
     def AtState.variable(name, value)
         @@extended_variables[name] = value
     end
-    
+
     def cast_string(value)
         if AtClassInstance === value && value.methods["$string"]
             value.methods["$string"][self]
@@ -1151,7 +1202,7 @@ class AtState
             value.to_s rescue "#{value}"
         end
     end
-    
+
     # functions which can receive key things
     @@configurable = [
         "Bisect",
@@ -1180,7 +1231,7 @@ class AtState
         "." => [false, true],
         "DoSafe" => [true],
         "TryCatch" => [true, true],
-        
+
         "and" => [true, true],
         "nand" => [true, true],
         "else" => [true, true],
@@ -1188,7 +1239,7 @@ class AtState
         "nor" => [true, true],
         "not" => [true, true],
     }
-    
+
     # All builtins
     @@functions = {
         ###########################
@@ -1199,7 +1250,7 @@ class AtState
         ## - memory manipulation
         ## - i/o
         ## - functions that are necessary
-        
+
         #<<
         # Reads all input from the instance's source input.
         # @return string
@@ -1208,7 +1259,7 @@ class AtState
         "AllInput" => lambda { |inst|
             inst.in.read
         },
-        
+
         #<<
         # Returns the <code>n</code>th argument given to the program.
         # @return string
@@ -1246,7 +1297,7 @@ class AtState
         # @example     before->"{",
         # @example     after->"}\n"
         # @example ]
-        # @example 
+        # @example
         # @example print_weird[3, 4, 5]
         # @example ?? {3, 4, 5}
         # @genre functional
@@ -1343,6 +1394,11 @@ class AtState
             }
             res
         },
+        # "Hold" => lambda { |inst, fn|
+        #     if AtState.func_like? fn
+        #         fn ;
+        #     end
+        # },
         #<<
         # Defines <code>name</code> in the local scope as <code>value</code>. Returns <code>value</code>.
         # @return (*)
@@ -1522,7 +1578,7 @@ class AtState
         "V" => lambda { |inst, *args|
             args
         },
-        
+
         ##---------##
         ## File IO ##
         ##---------##
@@ -1558,8 +1614,8 @@ class AtState
         "FileExists" => lambda { |inst, name|
             File.exists? name.strip
         },
-        
-        
+
+
         #################
         #### CLASSES ####
         #################
@@ -1583,7 +1639,7 @@ class AtState
         "New" => lambda { |inst, ac, *args|
             ac.create(*args)
         },
-        
+
         #############################
         #### UNIVERSAL FUNCTIONS ####
         #############################
@@ -1614,7 +1670,7 @@ class AtState
         "Reverse" => lambda { |inst, ent|
             reverse ent
         },
-        
+
         ##########################
         #### HYBRID FUNCTIONS ####
         ##########################
@@ -1689,12 +1745,12 @@ class AtState
         #>>
         "TakeWhile" => lambda { |inst, cond, list|
             collect = []
-            
+
             force_list(list).each { |el|
                 break unless cond[inst, el]
                 collect << el
             }
-            
+
             reform_list collect, list
         },
         #<<
@@ -1744,7 +1800,7 @@ class AtState
             end
             collect
         },
-        
+
         ###########################
         #### NUMERIC FUNCTIONS ####
         ###########################
@@ -1998,7 +2054,7 @@ class AtState
         # @example ?? [0, 1, 3, 6, 10, 15]
         # @example Print[Polygonal[0:5]]
         # @example ?? [0, 1, 3, 6, 10, 15]
-        # @example 
+        # @example
         # @example (* The square numbers *)
         # @example Print[Polygonal[0:5, 4]]
         # @example ?? [0, 1, 4, 9, 16, 25]
@@ -2137,7 +2193,7 @@ class AtState
         # @return number
         # @example Print[Triangular[0:5]]
         # @example Print[Polygonal[0:5, 3]]
-        # @example 
+        # @example
         # @example ?? [0, 1, 3, 6, 10, 15]
         # @genre numeric/series
         #>>
@@ -2171,7 +2227,7 @@ class AtState
         "UnOct" => lambda { |inst, n|
             @@functions["FromBase"][inst, n, 8]
         },
-        
+
         ##-------------------------##
         ## Trigonometric Functions ##
         ##-------------------------##
@@ -2239,7 +2295,7 @@ class AtState
         "Tan" => vectorize_monad { |inst, n|
             Math::tan n
         },
-        
+
         ##-----------------##
         ## Prime Functions ##
         ##-----------------##
@@ -2336,7 +2392,7 @@ class AtState
             Prime.first n
         },
         # "PrimePi" => vectorize_monad { |inst, n|
-            
+
         # },
         #<<
         # Returns the number of unique prime factors of <code>n</code>.
@@ -2356,7 +2412,7 @@ class AtState
         "PrimeOmega" => vectorize_monad { |inst, n|
             prime_factors(n).size
         },
-        
+
         ##------------------------##
         ## Number Logic Functions ##
         ##------------------------##
@@ -2449,7 +2505,7 @@ class AtState
         "Numeric" => lambda { |inst, n|
             Numeric === n
         },
-        
+
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
         ##############################
@@ -2560,9 +2616,9 @@ class AtState
             if arity.negative?
                 arity = ~arity
             end
-            
+
             arity += 1 if AtLambda === f || AtFunction === f
-            
+
             rec = lambda { |fn, inst, *args|
                 if args.size >= arity - 1
                     fn[inst, *args]
@@ -2601,7 +2657,7 @@ class AtState
             }
         },
         # "Group" => lambda { |inst, arr|
-            
+
         # },
         #<<
         # Composes the functions <code>f</code> and <code>g</code> into a hook. When called with arguments <code>args</code> this is equivalent to calling <code>f[First[args], g[...args]]</code>.
@@ -2632,7 +2688,7 @@ class AtState
         # Ties <code>args</code> together.
         # @type args (*)|fn
         # @return (*)|fn
-        # @paramtype (*) args Concatenates all <code>args</code> together. 
+        # @paramtype (*) args Concatenates all <code>args</code> together.
         # @paramtype fn args Creates a tie between all of <code>args</code>.
         # @genre functional
         # @example Print[Tie[1:3, 5:7]]
@@ -2756,8 +2812,8 @@ class AtState
                 func[inst, *args, rarg]
             }
         },
-        
-        
+
+
         #########################
         #### LOGIC FUNCTIONS ####
         #########################
@@ -2949,15 +3005,15 @@ class AtState
         #>>
         "ForEach" => lambda { |inst, ent, body|
             arr = force_list(ent)
-            
+
             arr.each_with_index { |x, i|
                 inst.evaluate_node body, [x, i]
             }
-            
+
             nil
         },
-        
-        
+
+
         ########################
         #### LIST FUNCTIONS ####
         ########################
@@ -2985,7 +3041,7 @@ class AtState
         #>>
         "ArrayFlatten" => lambda { |inst, list|
             inner = list.flatten(1).first { |e| Array === e }
-            
+
             size = [*dim(inner)]
             if size.size < 2
                 list
@@ -3030,24 +3086,24 @@ class AtState
             opts[:bias] ||= "none"
             right_upper = list.size / 2.0
             left_lower = list.size / 2.0
-            
+
             case opts[:bias]
                 when "none"
                     right_upper = right_upper.floor
                     left_lower = left_lower.ceil
-                    
+
                 when "left"
                     right_upper = right_upper.ceil
                     left_lower = left_lower.ceil
-                    
+
                 when "right"
                     right_upper = right_upper.floor
                     left_lower = left_lower.floor
-                    
+
                 else
                     STDERR.puts "Invalid option to `Bisect`: #{opts[:bias].inspect}"
             end
-            
+
             [list[0...right_upper], list[left_lower..-1]]
         },
         #<<
@@ -3562,6 +3618,10 @@ class AtState
                 list.abs.to_s.size
             elsif class_has? list, "size"
                 list["$size"][inst]
+            elsif Proc === list
+                list.arity.abs - 1
+            elsif AtState.func_like? list
+                list.arity rescue list.size - 1 rescue nil
             else
                 list.size
             end
@@ -3666,13 +3726,13 @@ class AtState
         #>>
         "TriangleRange" => lambda { |inst, a, b|
             pairs = []
-            
+
             (a..b).each { |y|
                 (a...y).each { |x|
                     pairs << [x, y]
                 }
             }
-            
+
             pairs
         },
         #<<
@@ -3685,13 +3745,13 @@ class AtState
         #>>
         "TriangleSelect" => lambda { |inst, cond, a, b|
             pairs = []
-            
+
             (a..b).each { |y|
                 (a...y).each { |x|
                     pairs << [x, y] if cond[inst, x, y]
                 }
             }
-            
+
             pairs
         },
         #<<
@@ -3724,7 +3784,7 @@ class AtState
         "Variance" => lambda { |inst, list|
             list.variance
         },
-        
+
         ##------------------##
         ## Matrix Functions ##
         ##------------------##
@@ -3758,7 +3818,7 @@ class AtState
         "UpperTriangle" => lambda { |inst, mat, strict=false|
             upper_triangle mat, AtState.truthy?(strict)
         },
-        
+
         ##------------------------##
         ## Combinatoric Functions ##
         ##------------------------##
@@ -3795,7 +3855,7 @@ class AtState
                 l[inst, a, b]
             end
         },
-        
+
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
@@ -3813,7 +3873,7 @@ class AtState
                 if start.nil?
                     start = list.shift
                 end
-                
+
                 list.fold(inst, f, start)
             end
         },
@@ -3894,8 +3954,8 @@ class AtState
                 list.reject { |e| AtState.truthy? f[inst, e] }
             end
         },
-        
-        
+
+
         ##########################
         #### STRING FUNCTIONS ####
         ##########################
@@ -3927,7 +3987,7 @@ class AtState
             if Hash === opts
                 opts = opts.keys
             end
-            
+
             opts.sort.select { |e|
                 e.start_with? val
             }.first
@@ -4003,7 +4063,7 @@ class AtState
                 when String
                     fill = fill == NOT_PROVIDED ? " " : fill
                     ent.rjust(amt, fill)
-                    
+
                 else
                     fill = fill == NOT_PROVIDED ? 0 : fill
                     ent = force_list ent
@@ -4033,7 +4093,7 @@ class AtState
                 when String
                     fill = fill == NOT_PROVIDED ? " " : fill
                     ent.ljust(amt, fill)
-                    
+
                 else
                     fill = fill == NOT_PROVIDED ? 0 : fill
                     ent = force_list ent
@@ -4102,7 +4162,7 @@ class AtState
         "IsDowncase" => vectorize_monad { |inst, str|
             str.downcase == str
         },
-        
+
         ########################
         #### DATE FUNCTIONS ####
         ########################
@@ -4135,7 +4195,7 @@ class AtState
         "Day" => vectorize_monad { |inst, date=Time.now|
             date.day
         },
-        
+
         ##################
         #### UNSORTED ####
         ##################
@@ -4181,7 +4241,7 @@ class AtState
             }
         },
     }
-    
+
     # operators with two arguments
     @@operators = {
         #<<
@@ -4198,7 +4258,7 @@ class AtState
         # @example ~>
         # @example Print[ages.john]
         # @example ?? 32
-        # @example 
+        # @example
         # @example Person := Class! {
         # @example     name .= _1
         # @example     age .= _2
@@ -4219,6 +4279,7 @@ class AtState
         ":=" => lambda { |inst, var, val|
             if Node === var
                 #todo: pattern matching++
+
                 args = var.children.map { |e|
                     if Node === e
                         e.children[0].raw
@@ -4234,14 +4295,27 @@ class AtState
                     }
                 else
                     res = AtLambda.new [val], args
-                    inst.define var.head.raw, res
+                    if var.head.type == :op_quote
+                        inst.set_op_quote var.head, res
+                    else
+                        inst.define var.head.raw, res
+                    end
                 end
             else
-                name = var.raw
-                # dh "`:=` value", val.inspect
-                # dh "locals: ", inst.locals.last
-                inst.define name, inst.evaluate_node(val)
+                res = inst.evaluate_node(val)
+                if var.type == :op_quote
+                    unless AtState.func_like? res
+                        res = lambda { |*discard| res }
+                    end
+                    inst.set_op_quote var, res
+                else
+                    name = var.raw
+                end
+                inst.define name, res
             end
+        },
+        "≔" => held(true, true) { |inst, var, val|
+            @@operators[":="][inst, var, val]
         },
         ".=" => lambda { |inst, var, val|
             #todo: expand like :=
@@ -4311,6 +4385,16 @@ class AtState
             Rational(a, b)
         },
         #<<
+        # Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code> and <code><a href="#//">//</a></code>.
+        # @type a number
+        # @type b number
+        # @return rational
+        # @genre operator
+        #>>
+        "⁄" => vectorize_dyad { |inst, a, b|
+            Rational(a, b)
+        },
+        #<<
         # Subtraction.
         # @type a (*)
         # @type b (*)
@@ -4365,7 +4449,7 @@ class AtState
             elsif class_has? b, "rpow"
                 b["$rpow"][inst, a]
             else
-                a + b
+                a ** b
             end
         },
         #<<
@@ -4410,6 +4494,16 @@ class AtState
             y[inst, x]
         },
         #<<
+        # Calls <code>y</code> with single parameter <code>x</code>. See also: <a href="#|>"><code>|&gt;</code></a>.
+        # @type x (*)
+        # @type y fn
+        # @return (*)
+        # @genre operator
+        #>>
+        "▷" => lambda { |inst, x, y|
+            @@operators["|>"][inst, x, y]
+        },
+        #<<
         # Calls <code>x</code> with single parameter <code>y</code>.
         # @type x fn
         # @type y (*)
@@ -4418,6 +4512,16 @@ class AtState
         #>>
         "<|" => lambda { |inst, x, y|
             x[inst, y]
+        },
+        #<<
+        # Calls <code>x</code> with single parameter <code>y</code>. See also: <a href="#<|"><code>&lt;|</code></a>.
+        # @type x fn
+        # @type y (*)
+        # @return (*)
+        # @genre operator
+        #>>
+        "◁" => lambda { |inst, x, y|
+            @@operators["<|"][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false</code> otherwise.
@@ -4490,6 +4594,16 @@ class AtState
             x >= y
         },
         #<<
+        # Returns <code>true</code> if <code>x</code> is greater than or equal to <code>y</code>, <code>false</code> otherwise. See also: <a href="#>="><code>&gt;=</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "≥" => vectorize_dyad { |inst, x, y|
+            x >= y
+        },
+        #<<
         # Returns <code>true</code> if <code>x</code> is less than or equal <code>y</code>, <code>false</code> otherwise.
         # @type x (*)
         # @type y (*)
@@ -4497,6 +4611,16 @@ class AtState
         # @genre operator/logic
         #>>
         "<=" => vectorize_dyad { |inst, x, y|
+            x <= y
+        },
+        #<<
+        # Returns <code>true</code> if <code>x</code> is less than or equal <code>y</code>, <code>false</code> otherwise. See also: <a href="#<="><code>&lt;=</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "≤" => vectorize_dyad { |inst, x, y|
             x <= y
         },
         #<<
@@ -4533,6 +4657,16 @@ class AtState
             (x..y).to_a
         },
         #<<
+        # Returns a range from <code>x</code> to <code>y</code>, inclusive. See also: <a href="#.."><code>..</code></a>.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        "‥" => vectorize_dyad { |inst, x, y|
+            @@operators[".."][inst, x, y]
+        },
+        #<<
         # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>.
         # @type x number
         # @type y number
@@ -4541,6 +4675,16 @@ class AtState
         #>>
         "..." => vectorize_dyad { |inst, x, y|
             (x...y).to_a
+        },
+        #<<
+        # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>. See also: <a href="#..."><code>...</code></a>.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        #>>
+        "…" => vectorize_dyad { |inst, x, y|
+            @@operators["..."][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>y</code> contains <code>x</code>, otherwise <code>false</code>. See also: <code><a href="#Has">Has</a></code>.
@@ -4572,6 +4716,16 @@ class AtState
             end
         },
         #<<
+        # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits. See also: <a href="#or"><code>or</code></a>.
+        # @type a expr
+        # @type b expr
+        # @return (*)
+        # @genre operator/logic
+        #>>
+        "∨" => held(true, true) { |inst, a, b|
+            @@operators["or"][inst, a, b]
+        },
+        #<<
         # Returns <code>true</code> if exactly one of <code>a</code> and <code>b</code> is truthy, <code>false</code> otherwise.
         # @type a (*)
         # @type b (*)
@@ -4581,6 +4735,16 @@ class AtState
         "xor" => lambda { |inst, a, b|
             # no short circuiting, since both values must be compared
             AtState.truthy?(a) ^ AtState.truthy?(b)
+        },
+        #<<
+        # Returns <code>true</code> if exactly one of <code>a</code> and <code>b</code> is truthy, <code>false</code> otherwise. See also: <a href="#xor"><code>xor</code></a>.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "⊻" => lambda { |inst, a, b|
+            @@operators["xor"][inst, a, b]
         },
         #<<
         # Returns <code>true</code> if one of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise. Short-circuits.
@@ -4599,6 +4763,16 @@ class AtState
             end
         },
         #<<
+        # Returns <code>true</code> if one of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise. Short-circuits. See also: <a href="#nand"><code>nand</code></a>.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "⊼" => held(true, true) { |inst, a, b|
+            @@operators["nand"][inst, a, b]
+        },
+        #<<
         # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are truthy, <code>false</code> otherwise. Short-circuits.
         # @type a (*)
         # @type b (*)
@@ -4612,6 +4786,16 @@ class AtState
             else
                 inst.evaluate_node_safe b
             end
+        },
+        #<<
+        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are truthy, <code>false</code> otherwise. Short-circuits. See also: <a href="#and"><code>and</code></a>.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "∧" => held(true, true) { |inst, a, b|
+            @@operators["and"][inst, a, b]
         },
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
@@ -4629,7 +4813,7 @@ class AtState
             end
         },
         #<<
-        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise.
+        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise. Short-circuits.
         # @type a (*)
         # @type b (*)
         # @return bool
@@ -4643,6 +4827,16 @@ class AtState
             else
                 true
             end
+        },
+        #<<
+        # Returns <code>true</code> if both of <code>a</code> and <code>b</code> are falsey, <code>false</code> otherwise. Short-circuits. See also: <a href="#nor"><code>nor</code></a>.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "⊽" => held(true, true) { |inst, a, b|
+            @@operators["nor"][inst, a, b]
         },
         #<<
         # Returns <code>false</code> if <code>b</code> is truthy, <code>a</code> otherwise.
@@ -4663,7 +4857,48 @@ class AtState
                 inst.evaluate_node_safe a
             end
         },
-        
+        #<<
+        # Returns the intersection of <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∩" => lambda { |inst, a, b|
+            a & b
+        },
+        #<<
+        # Returns the union of <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∪" => lambda { |inst, a, b|
+            a | b
+        },
+        #<<
+        # Returns the symmetric difference between <code>a</code> and <code>b</code>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "∆" => lambda { |inst, a, b|
+            (a | b) - (a & b)
+        },
+        #<<
+        # Returns the <code>a</code> without all elements of <code>b</code>. See also: <a href="#Complement"><code>Complement</code></a>.
+        # @type a [(*)]
+        # @type b [(*)]
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "Ø" => lambda { |inst, a, b|
+            a - b
+        },
+
+
         ## -- functional -- #
         "@" => lambda { |inst, f, g|
             if AtState.func_like? g
@@ -4719,8 +4954,12 @@ class AtState
             end
         },
         "=>" => @@functions["Map"],
+        "⇒" => @@functions["Map"],
         ":>" => lambda { |inst, source, func|
             source.map { |x| func[inst, x] }
+        },
+        "↠" => lambda { |inst, source, func|
+            @@operators[":>"][inst, source, func]
         },
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
@@ -4752,7 +4991,7 @@ class AtState
             end
         },
     }
-    
+
     @@unary_operators = {
         "-" => vectorize_monad { |inst, n| -n },
         "#" => lambda { |inst, n|
@@ -4856,6 +5095,9 @@ class AtState
         },
         "..." => lambda { |inst, arg|
             Applicator.new arg
+        },
+        "…" => lambda { |inst, arg|
+            @@unary_operators["..."][inst, arg]
         },
     }
 end
