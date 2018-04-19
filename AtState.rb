@@ -465,13 +465,11 @@ def vectorize(&fn)
 end
 
 class AtFunction
-    def initialize(fn, held: held=[], config: config=false, arity: 0)
+    def initialize(fn, held: held=[], config: config=false, arity: nil)
         @held = held
         @config = config
         @fn = fn
-        # p "#{fn}"
-        # p "arity: #{arity.inspect}"
-        @arity = arity
+        @arity = arity || fn.arity rescue fn.size rescue 0
     end
 
     def AtFunction.from(**opts, &fn)
@@ -800,7 +798,7 @@ class AtState
             1 => @@unary_operators,
             2 => @@operators,
         }
-        hash[res.arity][op] = res
+        hash[res.arity.negative? ? ~res.arity : res.arity][op] = res
     end
 
     def AtState.falsey?(ent)
@@ -965,10 +963,10 @@ class AtState
 
         elsif type == :op_quote
             ref = raw[1..-1]
-            lambda { |inst, *args|
+            AtFunction.new(lambda { |inst, *args|
                 source = args.size == 1 ? @@unary_operators : @@operators
                 source[ref][inst, *args]
-            }
+            }, arity: 2)
 
         elsif type == :number
             # todo: fix this hack
@@ -3620,6 +3618,10 @@ class AtState
                 list.abs.to_s.size
             elsif class_has? list, "size"
                 list["$size"][inst]
+            elsif Proc === list
+                list.arity.abs - 1
+            elsif AtState.func_like? list
+                list.arity rescue list.size - 1 rescue nil
             else
                 list.size
             end
