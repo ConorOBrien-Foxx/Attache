@@ -95,7 +95,7 @@ def generate(title)
                 info[:description] += line + " "
             else
                 key, value = data.first
-                if $PUSH_COLLECT.has_key? key
+                if $PUSH_COLLECT.has_k  ey? key
                     source, arity = $PUSH_COLLECT[key]
                     name, *other = value.split(/\b\s*/, arity)
                     info[source][name] = other

@@ -1019,3 +1019,15 @@ def outer(a, *bs)
     list = a.product(*bs)
     chop list, list.size / a.size
 end
+
+def get_default(hash, key, other)
+    hash.has_key?(key) ? hash[key] : other
+end
+
+def slices_fill(list, skew, first, last, n=nil)
+    (n || skew - 1).times {
+        list.unshift first
+        list.push last
+    }
+    slices list, skew
+end

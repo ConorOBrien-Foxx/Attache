@@ -5,4 +5,4 @@ MapRight[f] := [l, r] -> { f&:l => r }
 
 PrimePi[n] := #Series[Prime, n, include->true]
 
-Output := Configure[Print, joiner->lf]@@Tie
+Output := Configure[Print, joiner->lf, after->es]@@Tie

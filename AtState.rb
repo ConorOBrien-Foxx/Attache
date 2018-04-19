@@ -3575,6 +3575,33 @@ class AtState
                 slices list, skew
             end
         },
+        "SlicesFill" => configurable { |inst, list, skew=(1..list.size).to_a, **opts|
+            
+            fill = get_default(opts, :fill, 0)
+            compact = get_default(opts, :compact, false)
+            repeat = get_default(opts, :repeat, nil)
+            
+            list = list.dup
+            
+            if compact
+                first = last = :none
+            elsif AtState.func_like? fill
+                first, last = [list.first, list.last].map { |e|
+                    fill[inst, e]
+                }
+            else
+                first = last = fill
+            end
+            
+            res = if skew.is_a? Array
+                skew.flat_map { |e|
+                    slices_fill list, e, first, last, repeat
+                }
+            else
+                slices_fill list, skew, first, last, repeat
+            end
+            res.map { |e| e - [:none] }
+        },
         "Smaller" => vectorize_dyad { |inst, *args|
             args.min
         },
