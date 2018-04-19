@@ -808,7 +808,7 @@ class AtState
     end
 
     def AtState.func_like?(ent)
-        AtLambda === ent || Proc === ent || Train === ent || Tie === ent
+        AtLambda === ent || AtFunction === ent || Proc === ent || Train === ent || Tie === ent
     end
 
     def AtState.execute(*args)
