@@ -793,6 +793,15 @@ class AtState
         res = ent && ent != 0 && (ent.size != 0 rescue true)
     end
 
+    def set_op_quote(token, res)
+        op = token.raw[1..-1]
+        hash = {
+            1 => @@unary_operators,
+            2 => @@operators,
+        }
+        hash[res.arity][op] = res
+    end
+
     def AtState.falsey?(ent)
         !AtState.truthy?(ent)
     end
@@ -1385,6 +1394,9 @@ class AtState
                 res[k] = v
             }
             res
+        },
+        "Hold" => lambda { |inst, fn|
+            
         },
         #<<
         # Defines <code>name</code> in the local scope as <code>value</code>. Returns <code>value</code>.
@@ -4232,6 +4244,7 @@ class AtState
         ":=" => lambda { |inst, var, val|
             if Node === var
                 #todo: pattern matching++
+
                 args = var.children.map { |e|
                     if Node === e
                         e.children[0].raw
@@ -4247,13 +4260,23 @@ class AtState
                     }
                 else
                     res = AtLambda.new [val], args
-                    inst.define var.head.raw, res
+                    if var.head.type == :op_quote
+                        inst.set_op_quote var.head, res
+                    else
+                        inst.define var.head.raw, res
+                    end
                 end
             else
-                name = var.raw
-                # dh "`:=` value", val.inspect
-                # dh "locals: ", inst.locals.last
-                inst.define name, inst.evaluate_node(val)
+                res = inst.evaluate_node(val)
+                if var.type == :op_quote
+                    unless AtState.func_like? res
+                        res = lambda { |*discard| res }
+                    end
+                    inst.set_op_quote var, res
+                else
+                    name = var.raw
+                end
+                inst.define name, res
             end
         },
         "≔" => held(true, true) { |inst, var, val|
