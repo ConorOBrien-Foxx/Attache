@@ -63,6 +63,8 @@ $PRECEDENCE = {
     "+"       => [11, :left],
     "-"       => [11, :left],
     "±"       => [11, :left],
+    "<:"      => [10, :left],
+    "↞"      => [10, :left],
 
     "="       => [9, :left],
     "=/="     => [9, :left],
@@ -4960,6 +4962,29 @@ class AtState
         },
         "↠" => lambda { |inst, source, func|
             @@operators[":>"][inst, source, func]
+        },
+        
+        "<:" => lambda { |inst, arr, get|
+            # Basically a <: b  <===>  ZipWith[Get, a, b]
+            if Array === get
+                transposed = true
+                inds = begin
+                    get.transpose
+                rescue
+                    transposed = false
+                    get
+                end
+                res = arr.zip(inds).map { |e, i|
+                    @@functions["Get"][inst, e, i]
+                }
+                if transposed
+                    res.transpose
+                else
+                    res
+                end
+            else
+                arr.map { |e| e[get] }
+            end
         },
         "\\" => @@functions["Select"],
         "~" => @@functions["Count"],
