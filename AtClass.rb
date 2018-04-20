@@ -8,17 +8,17 @@ class AtClassInstance
         @vars = vars
         @privates = privates
     end
-    
+
     attr_accessor :vars, :methods
-    
+
     def to_s
         inspect
     end
-    
+
     def [](prop)
         @vars[prop] || @methods[prop]
     end
-    
+
     def inspect
         @vars.delete AtLambda::ARG_CONST
         # p @vars.keys
@@ -29,13 +29,13 @@ class AtClassInstance
                 "#{k} = #{v.inspect}"
             end
         }
-        
+
         inner.concat @privates.map { |k, v|
             "Private[#{k}]"
         }
-        
+
         inner = inner.join ", "
-        
+
         "Class[#{inner}]"
     end
 end
@@ -47,28 +47,30 @@ class AtClass
         @body.ascend = @body.descend = false
         @inst = inst
     end
-    
+
     def create(*params)
         @inst.locals << {}
         privates = {}
-        
+
         @inst.define_local "Private", held(true) { |inst, name|
             privates[name.raw] = true
         }
-        
+
         @body[@inst, *params]
         scope = @inst.locals.pop
         scope.delete AtLambda::ARG_CONST
-        
+
         scope.delete "Private"
-        
+
         methods = {}
         vars = {}
         all = {}
         scope.each { |name, val|
             if AtState.func_like? val
-                val.scope = all
-                val.ignore_other = true
+                if AtLambda === val
+                    val.scope = all
+                    val.ignore_other = true
+                end
                 if privates[name]
                     privates[name] = val
                     methods[name] = lambda { |inst, *ignore|
@@ -83,11 +85,11 @@ class AtClass
                 vars[name] = val
             end
         }
-        
+
         all.merge! vars
         all.merge! methods
         all.merge! privates
-        
+
         AtClassInstance.new self, methods, vars, privates
     end
 end

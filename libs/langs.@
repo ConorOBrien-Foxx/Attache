@@ -2,8 +2,50 @@
 ?? code is a list of fractions
 ?? E.g.:
 ?? FRACTRAN[ [ 17//91, 78//85, 19//51, 23//38, 29//33, 77//29, 95//23, 77//19, 1//17, 11//13, 13//11, 15//14, 15//2, 55//1 ], 2]
-FRACTRAN := [code, n] -> {
-    NestWhile[{
-        Find[{ Integral[_1 * _2] }&_, code]
-    }, n, {_ /= nil}]
+FRACTRAN := [code, n, iter] -> {
+    iter ..= inf
+    result .= NestListWhile[{
+        Find[Integral, _ * code]
+    }, n, InvocationIndex[{
+        _ /= nil and _2 < iter
+    }]]
+    N => RemoveAll[result, nil]
 }
+
+FractranExample := Class! {
+    code .= _1
+    encode .= _2
+    decode .= _3
+
+    run[input, n] .= FRACTRAN[code, encode[input], n] |> decode
+    $call .= run@V
+}
+
+DecodeLast[n] := N@Round&10@LogBase&n@Last
+PrimePower := { Prod@__&`^}
+
+FRACTRAN_EXAMPLES := <~
+    prime -> New[
+        FractranExample,
+        [17//91, 78//85, 19//51, 23//38, 29//33, 77//29, 95//23, 77//19, 1//17, 11//13, 13//11, 15//14, 15//2, 55//1],
+        Id, Id
+    ],
+    add -> New[
+        FractranExample,
+        [3//2],
+        PrimePower[2, 3],
+        DecodeLast[3]
+    ],
+    multiply -> New[
+        FractranExample,
+        [455//33, 11//13, 1//11, 3//7, 11//2, 1//3],
+        PrimePower[2, 3],
+        DecodeLast[5]
+    ],
+    divmod -> New[
+        FractranExample,
+        [91//66, 11//13, 1//33, 85//11, 57//119, 17//19, 11//17, 1//3],
+        PrimePower[2, 3] # `* # C[11],
+        Last => PrimeDivision ## Last
+    ]
+~>

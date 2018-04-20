@@ -103,8 +103,10 @@ $PRECEDENCE = {
     ":>"      => [3, :left],
     "↠"      => [3, :left], # :> alias
     ":="      => [2, :right],
+    "::="     => [2, :right],
     "≔"      => [2, :right],
     ".="      => [2, :right],
+    "..="     => [2, :right],
     ";;"      => [1, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
@@ -1133,18 +1135,19 @@ class AtState
             func[self, *args, **config]
         else
             # special call function overloading
-            case func
-                when Array, Hash, String
-                    # func[*args]
-                    @@functions["Get"][self, func, *args]
-                else
-                    begin
-                        # p func
+            if Array === func || Hash === func || String === func || class_has?(func, "get")
+                @@functions["Get"][self, func, *args]
+            else
+                begin
+                    if class_has? func, "call"
+                        func["$call"][self, *args]
+                    else
                         func[self, *args]
-                    rescue ArgumentError => e
-                        STDERR.puts "Argument error: #{head}"
-                        raise e
                     end
+                rescue ArgumentError => e
+                    STDERR.puts "Argument error: #{head}"
+                    raise e
+                end
             end
         end
 
@@ -1211,7 +1214,6 @@ class AtState
         "Chop",
         "Configure",
         "Print",
-        "NestList",
         "Option",
         "Safely",
         "Series",
@@ -1992,7 +1994,7 @@ class AtState
         # @return number
         # @genre numeric
         #>>
-        "Log" => lambda { |inst, n|
+        "Log" => vectorize_monad { |inst, n|
             Math::log10 n
         },
         #<<
@@ -2001,8 +2003,17 @@ class AtState
         # @type n number
         # @genre numeric
         #>>
-        "Ln" => lambda { |inst, n|
+        "Ln" => vectorize_monad { |inst, n|
             Math::log n
+        },
+        #<<
+        # Takes the base-<code>b</code> logarithm of <code>n</code>.
+        # @return number
+        # @type n number
+        # @genre numeric
+        #>>
+        "LogBase" => vectorize_monad { |inst, n, b|
+            Math::log n, b
         },
         #<<
         # Takes the product of the elements of <code>args</code>.
@@ -2719,7 +2730,7 @@ class AtState
             Tie.new funcs, true
         },
         #<<
-        # Applies <code>f</code> to <code>e</code> <code>n</code> times.
+        # Applies <code>f</code> to <code>init</code> <code>n</code> times.
         # @type f fn
         # @type e (*)
         # @type n number
@@ -2728,14 +2739,15 @@ class AtState
         # @example Print[Nest[Double, 1, 3]]
         # @example ?? 8 (= 2 ^ 3)
         #>>
-        "Nest" => lambda { |inst, f, e, n|
+        "Nest" => lambda { |inst, f, init, n|
+            iter = init
             from_numlike(n).times {
-                e = f[inst, e]
+                iter = f[inst, iter]
             }
-            e
+            iter
         },
         #<<
-        # Applies <code>f</code> to <code>e</code> <code>n</code> times, keeping the intermediate results.
+        # Applies <code>f</code> to <code>init</code> <code>n</code> times, keeping the intermediate results.
         # @type f fn
         # @type e (*)
         # @type n number
@@ -2747,12 +2759,13 @@ class AtState
         # @example ?? [2, 4, 8]
         # @option first Specifies whether or not to include the first element. Default: <code>true</code>.
         #>>
-        "NestList" => configurable { |inst, f, e, n, **opts|
-            opts[:first] = opts.has_key?(:first) ? opts[:first] : true
-            list = opts[:first] ? [e] : []
+        "NestList" => configurable { |inst, f, init, n, **opts|
+            first = get_default opts, :first, true
+            iter = init
+            list = first ? [iter] : []
             from_numlike(n).times {
-                e = f[inst, e]
-                list << e
+                iter = f[inst, iter]
+                list << iter
             }
             list
         },
@@ -2772,6 +2785,27 @@ class AtState
                 iter = f[inst, iter]
             end
             iter
+        },
+        #<<
+        # Applies <code>f</code> to <code>init</code> until <code>cond[init]</code> is truthy.
+        # @type f fn
+        # @type cond fn
+        # @type init (*)
+        # @return (*)
+        # @genre functional
+        # @example Print[NestListWhile[Halve, 100, Even]]
+        # @example ?? [100, 50, 25]
+        # @option first whether or not the input element <code>init</code> is included as the first element in the results. Default: <code>true</code>.
+        #>>
+        "NestListWhile" => configurable { |inst, f, init, cond, **opts|
+            first = get_default opts, :first, true
+            iter = init
+            list = first ? [iter] : []
+            while cond[inst, iter]
+                iter = f[inst, iter]
+                list << iter
+            end
+            list
         },
         #<<
         # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the list of intermediate steps.
@@ -3315,6 +3349,8 @@ class AtState
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
             if ConfigureValue === ind
                 list[ind.key..ind.value]
+            elsif class_has? list, "get"
+                list["$get"][inst, list, ind]
             else
                 list[ind]
             end
@@ -3572,7 +3608,7 @@ class AtState
             list
         },
         "RemoveAll" => lambda { |inst, list, ents|
-            ents = [*ents]
+            ents = ents.nil? ? [ents] : [*ents]
             list.reject { |e| ents.include? e }
         },
         #<<
@@ -3638,13 +3674,13 @@ class AtState
             end
         },
         "SlicesFill" => configurable { |inst, list, skew=(1..list.size).to_a, **opts|
-            
+
             fill = get_default(opts, :fill, 0)
             compact = get_default(opts, :compact, false)
             repeat = get_default(opts, :repeat, nil)
-            
+
             list = list.dup
-            
+
             if compact
                 first = last = :none
             elsif AtState.func_like? fill
@@ -3654,7 +3690,7 @@ class AtState
             else
                 first = last = fill
             end
-            
+
             res = if skew.is_a? Array
                 skew.flat_map { |e|
                     slices_fill list, e, first, last, repeat
@@ -4319,6 +4355,21 @@ class AtState
         "≔" => held(true, true) { |inst, var, val|
             @@operators[":="][inst, var, val]
         },
+        # only overwrite if nil/undefined
+        "::=" => held(true, true) { |inst, var, val|
+            if Token === var
+                update = begin
+                    res = get_variable var.raw
+                    res.nil?
+                rescue
+                    true
+                end
+                @@operators[":="][inst, var, val] if update
+            else
+                p 'idek'
+                raise
+            end
+        },
         ".=" => lambda { |inst, var, val|
             #todo: expand like :=
             #todo: abstract `.=` and `:=` logic
@@ -4335,6 +4386,21 @@ class AtState
             else
                 name = var.raw
                 inst.define_local name, inst.evaluate_node(val)
+            end
+        },
+        # only overwrite if nil/undefined
+        "..=" => held(true, true) { |inst, var, val|
+            if Token === var
+                update = begin
+                    res = inst.get_variable var.raw
+                    res.nil?
+                rescue
+                    true
+                end
+                @@operators[".="][inst, var, val] if update
+            else
+                p 'idek'
+                raise
             end
         },
         #<<
@@ -4963,7 +5029,7 @@ class AtState
         "↠" => lambda { |inst, source, func|
             @@operators[":>"][inst, source, func]
         },
-        
+
         "<:" => lambda { |inst, arr, get|
             # Basically a <: b  <===>  ZipWith[Get, a, b]
             if Array === get
