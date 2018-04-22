@@ -3,13 +3,14 @@
 require_relative 'AtState.rb'
 
 class AtClassInstance
-    def initialize(inherit, methods, vars, privates)
+    def initialize(parent, methods, vars, privates)
         @methods = methods
         @vars = vars
         @privates = privates
+        @parent = parent
     end
 
-    attr_accessor :vars, :methods
+    attr_accessor :vars, :methods, :parent
 
     def to_s
         inspect
@@ -42,10 +43,11 @@ end
 
 # todo: template
 class AtClass
-    def initialize(inst, body, parent=nil)
+    def initialize(inst, body, parent=nil, name: "anon")
         @body = body
         @body.ascend = @body.descend = false
         @inst = inst
+        @name = name
     end
 
     def create(*params)
@@ -56,7 +58,9 @@ class AtClass
             privates[name.raw] = true
         }
 
+        @inst.saved = []
         @body[@inst, *params]
+
         scope = @inst.locals.pop
         scope.delete AtLambda::ARG_CONST
 
@@ -91,5 +95,9 @@ class AtClass
         all.merge! privates
 
         AtClassInstance.new self, methods, vars, privates
+    end
+
+    def inspect
+        "Class #{@name.inspect}"
     end
 end

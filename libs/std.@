@@ -5,6 +5,8 @@ MapRight[f] := [l, r] -> { f&:l => r }
 
 PrimePi[n] := #Series[Prime, n, include->true]
 
+Printf := Print@Format
+
 Output := Configure[Print, joiner->lf, after->es]@@Tie
 
 BaseRange := {
@@ -22,3 +24,12 @@ HexRange := 16&BaseRange
 BinBelow := 2&BaseBelow
 OctBelow := 8&BaseBelow
 HexBelow := 16&BaseBelow
+
+ClassNamed[Point]! {
+    x .= _1
+    y .= _2
+
+    $add[other] .= other
+
+    $string[] .= Format["(%s, %s)", x, y]
+}

@@ -51,8 +51,8 @@ $PRECEDENCE = {
     "∆"       => [17, :left], # symmetric difference
     "Ø"       => [17, :left], # setwise difference
 
+    "!"       => [16, :right],
     "^"       => [15, :right],
-    "!"       => [15, :right],
     "?"       => [15, :left],
     "*"       => [13, :left],
     "/"       => [13, :left],
@@ -77,15 +77,20 @@ $PRECEDENCE = {
     "≤"       => [9, :left], # <= alias
     ">="      => [9, :left],
     "≥"       => [9, :left], # >= alias
+
     "in"      => [8, :left],
+    # "isa"     => [8, :left],
+
     ".."      => [7, :left],
     "‥"       => [7, :left], # .. alias
     "..."     => [7, :left],
     "…"       => [7, :left], # ... alias
+
     "|>"      => [6, :left],
     "▷"      => [6, :left], # |> alias
     "<|"      => [6, :right],
     "◁"      => [6, :left], # <| alias
+
     "and"     => [6, :left],
     "∧"       => [6, :left], # and alias
     "nor"     => [6, :left],
@@ -97,16 +102,21 @@ $PRECEDENCE = {
     "∨"       => [5, :left], # or alias
     "nand"    => [5, :left],
     "⊼"       => [5, :left], # nand alias
+
     "->"      => [4, :left],
     "→"       => [4, :left], # -> alias
+
     "else"    => [3, :left],
     ":>"      => [3, :left],
     "↠"      => [3, :left], # :> alias
+    "typeof"  => [3, :left],
+
     ":="      => [2, :right],
     "::="     => [2, :right],
     "≔"      => [2, :right],
     ".="      => [2, :right],
     "..="     => [2, :right],
+
     ";;"      => [1, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
@@ -1625,13 +1635,25 @@ class AtState
         #################
         #<<
         # Creates an anonymous class.
-        # @type body fn[nil -> (*)]
+        # @type body fn
         # @param body Any local definition made within constitutes a method or instance variable decleration.
         # @return class
         # @genre class
         #>>
         "Class" => lambda { |inst, body|
             AtClass.new inst, body
+        },
+        #<<
+        # Creates a named class. Returns a function which acts similarly to <a href="#Class"><code>Class</code></a>.
+        # @type name string
+        # @return fn
+        # @genre class
+        #>>
+        "ClassNamed" => held(true) { |inst, name|
+            #p name
+            lambda { |inst, body|
+                inst.define name.raw, AtClass.new(inst, body, name: name.raw)
+            }
         },
         #<<
         # Instantiates a class with parameters <code>args</code>.
@@ -3755,6 +3777,9 @@ class AtState
                 @@operators["+"][inst, a, e]
             }
         },
+        "UnSlices" => lambda { |inst, list|
+            list[0...-1].map(&:first) + list[-1]
+        },
         #<<
         # Returns an array of lists representing all pairs <code>(x, y)</code> such that <code>a <= y <= b</code> and <code>a <= x < y</code>.
         # @genre list
@@ -4768,6 +4793,17 @@ class AtState
         "in" => lambda { |inst, x, y|
             @@functions["Has"][inst, y, x]
         },
+        # #<<
+        # # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
+        # # @return bool
+        # # @type el (*)
+        # # @type klass class
+        # # @genre operator/logic
+        # #>>
+        # "isa" => lambda { |inst, el, klass|
+        #     # https://www.strawpoll.me/15544904/r
+        #     el.parent == klass rescue false
+        # },
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
         # @type a expr
@@ -5056,7 +5092,9 @@ class AtState
             @@operators["<:"][inst, arr, get]
         },
         "\\" => @@functions["Select"],
-        "~" => @@functions["Count"],
+        "~" => lambda { |inst, left, right|
+            @@functions["Count"][inst, left, right]
+        },
         "->" => lambda { |inst, key, value|
             if key.is_a?(Node) && key.head.raw == "V"
                 # p key
@@ -5177,6 +5215,15 @@ class AtState
         },
         "?" => vectorize_monad { |inst, n|
             AtState.truthy? n
+        },
+        #<<
+        # Returns the parent class of <code>el</code>, or <code>nil</code> if it doesn't exist.
+        # @type el (*)
+        # @return class|nil
+        # @genre unary operator
+        #>>
+        "typeof" => lambda { |inst, el|
+            el.parent rescue nil
         },
         #<<
         # Returns <code>false</code> if <code>b</code> is truthy, <code>true</code> otherwise.

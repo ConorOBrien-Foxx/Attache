@@ -13,7 +13,7 @@ end
 
 
 $AFTER_COMMENT = /(?<=#).+/
-$COMMENT_GROUP = /#<<[\s\S]+?#>>\s+.+?\r?\n[\s\S]+?\},/
+$COMMENT_GROUP = /#<<[\s\S]+?#>>\s+[^#].*?\r?\n[\s\S]+?\},\s*$/
 $SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
@@ -67,35 +67,42 @@ end
 SYMBOL = /\W/
 def generate(title)
     input = File.read title
-    
+
     groups = input.scan($COMMENT_GROUP)
-    
+
     final = []
     # final = {}
 
     groups.each { |group|
         group = group.lines
-        
-        last = group.index { |e| e.strip == "#>>" } + 1
-        
+
+        begin
+            last = group.index { |e| e.strip == "#>>" } + 1
+        rescue NoMethodError => e
+            STDERR.puts "NoMethodError: #{e}"
+            puts group
+            next
+            # exit
+        end
+
         head, *body, tail, signature = group[0..last]
         code_source = group[last..-1]
-        
+
         body.map! { |e|
             e.scan($AFTER_COMMENT).first.strip
         }
-        
+
         info = Hash.new("")
         $PUSH_COLLECT.values.each { |k| info[k[0]] = {} }
         $APPEND.each { |k| info[k.to_sym] = [] }
-        
+
         body.each { |line|
             data = line.scan($DATA_LINE)
             if data.empty?
                 info[:description] += line + " "
             else
                 key, value = data.first
-                if $PUSH_COLLECT.has_k  ey? key
+                if $PUSH_COLLECT.has_key? key
                     source, arity = $PUSH_COLLECT[key]
                     name, *other = value.split(/\b\s*/, arity)
                     info[source][name] = other
@@ -106,17 +113,12 @@ def generate(title)
                 end
             end
         }
-        
+
         name, type, args = signature.scan($SIGNATURE_PARSE).first
         args = args.split(/,\s*/)
-        
+
         args.shift # remove inst
-        
-        # has_unary = info[:genre].index "unary" rescue false
-        # if has_unary
-            # name = "unary_#{name}"
-        # end
-        
+
         final.push [name, {
             info: info,
             type: type,
@@ -138,36 +140,36 @@ def generate(title)
         end
     }.each { |k, v|
         genre = v[:info][:genre]
-        
+
         is_operator = genre.index "operator"
         is_unary_operator = genre.index "unary"
-        
+
+        id = is_unary_operator ? "unary_#{k}" : k
+
         if genre.empty?
             STDERR.puts "Warning: #{k} (#{id}) has no genre"
         end
-        
-        
+
+
         $toc[genre] << k
-        
-        id = is_unary_operator ? "unary_#{k}" : k
-        
+
         result += "<div class=\"function\" id=\"#{id}\">"
         args_types = {}
-        
+
         # associate types with each argument
         v[:args].map! { |e|
             # e = e[0]
             name, default = e.split("=")
             decoration = name.scan(/\W+/).first
             name.gsub!(/\W/, "")
-            
+
             pref, * = v[:info][:types][name]
-            
+
             disp_name = name
-            
+
             disp_name = "..." + disp_name if decoration == "*"
             disp_name = "**" + disp_name if decoration == "**"
-            
+
             head = unless pref.nil?
                 BOILERPLATES[:argument] % {
                     type: pref,
@@ -176,7 +178,7 @@ def generate(title)
             else
                 disp_name
             end
-            
+
             unless default.nil?
                 if v[:info][:optional].include? name
                     head += "?"
@@ -184,16 +186,16 @@ def generate(title)
                     head += "=" + default
                 end
             end
-            
+
             args_types[name] = head
         }
-        
+
         if v[:info][:return].empty?
             STDERR.puts "Warning: no return type given for #{k.inspect}"
         end
-        
+
         header_plate = is_operator ? is_unary_operator ? :header_op_unary : :header_op : :header
-        
+
         result += BOILERPLATES[header_plate] % {
             return_type:    v[:info][:return],
             name:           k,
@@ -202,30 +204,30 @@ def generate(title)
             right:          v[:args][1],
             genre:          genre,
         }
-        
+
         sig = []
         sig.push vector_from_signature v[:type]
         sig.push reform_from_signature v[:info][:reforms] if v[:info].has_key? :reforms
-        
+
         sig.reject!(&:empty?)
-        
+
         unless sig.empty?
             result += "<p><em>#{sig.join " "}</em></p>"
         end
-        
+
         result += v[:info][:description].gsub(/\s+/, " ")
-        
+
         unless v[:info][:params].empty? && v[:info][:paramtype].empty?
-            result += "<h3>Arguments</h3>" 
+            result += "<h3>Arguments</h3>"
         end
-        
+
         v[:info][:params].each { |var, (val, *)|
             result += BOILERPLATES[:param] % {
                 name: args_types[var],
                 description: val,
             }
         }
-        
+
         v[:info][:paramtype].each { |line|
             type, name, desc = line.split(" ", 3)
             result += BOILERPLATES[:param] % {
@@ -236,7 +238,7 @@ def generate(title)
                 description: desc,
             }
         }
-        
+
         unless v[:info][:options].empty?
             result += "<h3>Options</h3>"
             result += v[:info][:options].map { |name, (description, *)|
@@ -246,26 +248,26 @@ def generate(title)
                 }
             }.join("\n")
         end
-        
+
         unless v[:info][:example].empty?
             code = v[:info][:example].join("\n")
-            
+
             result += BOILERPLATES[:example] % {
                 code: highlight_html(code),
             }
-            
+
             result += "<a href=\"#{tio_encode code}\">Try it online!</a>"
         end
-        
-        
+
+
         result += "<button class=\"source-button\" id=\"#{id}-button\">toggle source</button>"
         result += "<div id=\"#{id}-source\" class=\"code-source\"><pre>"
         result += v[:source].join
         result += "</pre></div>"
-        
+
         result += "</div>"
     }
-    
+
     toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><p>Click on genres to show all functions in that genre.</p><table id=\"toc\">"
     $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
         # emphasize genre
@@ -281,9 +283,9 @@ def generate(title)
     }
 
     toc_result += "</table>"
-    
+
     preamble = "<p><a href=\"./index.html\">Return to the index.</a><p>"
-    
+
     result = preamble + toc_result + "<div id=\"functions\">#{result}</div>"
 
     BOILERPLATES[:html] % {
@@ -303,9 +305,9 @@ index += "<ul>"
 sources.each { |source|
     base = File.basename source, ".*"
     dest = "docs/#{base}.html"
-    
+
     File.write dest, generate(source)
-    
+
     index += "<li><a href=\"./#{base}.html\">#{base}</a></li>"
 }
 index += "</ul>"

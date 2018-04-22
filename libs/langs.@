@@ -1,3 +1,5 @@
+?? FRACTRAN
+?? https://en.wikipedia.org/wiki/FRACTRAN
 
 ?? code is a list of fractions
 ?? E.g.:
@@ -49,3 +51,26 @@ FRACTRAN_EXAMPLES := <~
         Last => PrimeDivision ## Last
     ]
 ~>
+
+?? D2
+?? A language of my own creation
+
+D2State := Class! {
+    grid .= Grid[_1]
+    x .= 0
+    y .= 0
+
+    step .= {
+
+    }
+
+    $string .= {
+        Format["ip: (%s, %s)\n[[GRID]]\n%s\n[[/GRID]]", x, y, UnGrid[grid]]
+    }
+}
+
+d2 := New[D2State, "> v\n^ <"]
+Print[d2]
+
+
+??
