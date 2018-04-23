@@ -79,7 +79,7 @@ $PRECEDENCE = {
     "≥"       => [9, :left], # >= alias
 
     "in"      => [8, :left],
-    # "isa"     => [8, :left],
+    "is_a"    => [8, :left],
 
     ".."      => [7, :left],
     "‥"       => [7, :left], # .. alias
@@ -420,11 +420,40 @@ def get_abstract_number(abstract, default=0)
     $& ? $&.to_i - 1 : default
 end
 
+def vectorizes?(ent)
+    Array === ent || class_has?(ent, "$map")
+end
+
+def map_vector(inst, vec, with_index: false, &fn)
+    if fn.nil?
+        res = []
+        map_vector(inst, vec, with_index: with_index) { |inst, e, *|
+            res << e
+        }
+        return res
+    end
+
+    if with_index
+        i = 0
+        old_fn = fn
+        fn = lambda { |inst, e|
+            res = old_fn[inst, e, i]
+            i += 1
+            res
+        }
+    end
+    if class_has? vec, "$map"
+        vec["$map"][inst, fn, vec]
+    else
+        vec.map(&fn)
+    end
+end
+
 def vectorize_monad(&fn)
     res = lambda { |inst, *args|
         x , * = args
-        if x.is_a? Array
-            x.map { |e| res[inst, e] }
+        if vectorizes? x
+            map_vector(inst, x) { |inst, e| res[inst, e] }
         else
             if args.size != fn.arity - 1 && !fn.arity.negative?
                 raise ArgumentError.new
@@ -444,22 +473,31 @@ def vectorize_dyad(lr = LEFT | RIGHT, &fn)
     res = lambda { |inst, *args|
         x, y = args
         rest = args[2..-1]
-        use_left = x.is_a?(Array) && left
-        use_right = y.is_a?(Array) && right
+        use_left = vectorizes?(x) && left
+        use_right = vectorizes?(y) && right
         if args.size == 1
             if use_left
-                x.map { |e| res[inst, e, *rest] }
+                map_vector(inst, x) { |inst, e| res[inst, e, *rest] }
             else
                 fn[inst, x, *rest]
             end
         elsif use_left
             if use_right
-                x.map.with_index { |e, i| res[inst, e, y[i], *rest] }
+                ys = y
+                if class_has? y, "$map"
+                    # because `map` doesn't have to return an array, this
+                    # step is necessary to procure an array.
+                    # TODO: array cast overload?
+                    ys = map_vector(inst, y)
+                end
+                map_vector(inst, x, with_index: true) { |inst, e, i|
+                    res[inst, e, ys[i], *rest]
+                }
             else
-                x.map { |e| res[inst, e, y, *rest] }
+                map_vector(inst, x) { |inst, e| res[inst, e, y, *rest] }
             end
         elsif use_right
-            y.map { |e| res[inst, x, e, *rest] }
+            map_vector(inst, y) { |inst, e| res[inst, x, e, *rest] }
         else
             fn[inst, *args]
         end
@@ -796,7 +834,7 @@ end
 # used for property overloading
 def class_has?(klass, prop)
     return false unless AtClassInstance === klass
-    klass.methods.has_key? "$#{prop}"
+    klass.methods.has_key? "#{prop}"
 end
 
 class AtState
@@ -1145,11 +1183,11 @@ class AtState
             func[self, *args, **config]
         else
             # special call function overloading
-            if Array === func || Hash === func || String === func || class_has?(func, "get")
+            if Array === func || Hash === func || String === func || class_has?(func, "$get")
                 @@functions["Get"][self, func, *args]
             else
                 begin
-                    if class_has? func, "call"
+                    if class_has? func, "$call"
                         func["$call"][self, *args]
                     else
                         func[self, *args]
@@ -1215,6 +1253,14 @@ class AtState
             value.methods["$string"][self]
         else
             value.to_s rescue "#{value}"
+        end
+    end
+
+    def cast_list(value)
+        if class_has? value, "$map"
+            map_vector(self, value)
+        else
+            force_list value
         end
     end
 
@@ -3364,14 +3410,14 @@ class AtState
         "Flip" => lambda { |inst, list|
             is_string = String === list
             inner = is_string ? @@functions["Grid"][inst, list] : force_list(list)
-            
-            
+
+
             result = begin
                 inner.transpose.reverse
             rescue
                 inner.reverse
             end
-            
+
             is_string ? @@functions["UnGrid"][inst, result] : reform_list(result, list)
         },
         #<<
@@ -3390,7 +3436,7 @@ class AtState
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
             if ConfigureValue === ind
                 list[ind.key..ind.value]
-            elsif class_has? list, "get"
+            elsif class_has? list, "$get"
                 list["$get"][inst, list, ind]
             else
                 list[ind]
@@ -3495,11 +3541,11 @@ class AtState
             size = args.prod
             iter = args[1..-1]
             res = (0...size).to_a
-            
+
             until iter.empty?
                 res = @@functions["Chop"][inst, res, iter.pop]
             end
-            
+
             res
         },
         #<<
@@ -3578,7 +3624,7 @@ class AtState
         # @paramtype hash ent Returns an array of key-value pairs in <code>ent</code>.
         #>>
         "List" => lambda { |inst, ent|
-            force_list ent
+            inst.cast_list ent
         },
         #<<
         # Returns the largest element contained in any atom of <code>args</code>.
@@ -3712,7 +3758,7 @@ class AtState
         "Size" => lambda { |inst, list|
             if Numeric === list
                 list.abs.to_s.size
-            elsif class_has? list, "size"
+            elsif class_has? list, "$size"
                 list["$size"][inst]
             elsif Proc === list
                 list.arity.abs - 1
@@ -3986,7 +4032,11 @@ class AtState
                 }
             elsif list.nil?
                 lambda { |inst, list|
-                    list.map { |e| f[inst, e] }
+                    @@functions["Map"][inst, f, list]
+                }
+            elsif class_has? list, "$map"
+                map_vector(inst, list) { |inst, e|
+                    f[inst, e]
                 }
             else
                 list.map { |e| f[inst, e] }
@@ -4472,9 +4522,9 @@ class AtState
         # @genre operator
         #>>
         "*" => vectorize_dyad { |inst, a, b|
-            if class_has? a, "mul"
+            if class_has? a, "$mul"
                 a["$mul"][inst, b]
-            elsif class_has? b, "rmul"
+            elsif class_has? b, "$rmul"
                 b["$rmul"][inst, a]
             elsif String === b
                 b * a
@@ -4491,9 +4541,9 @@ class AtState
         #>>
         "/" => vectorize_dyad { |inst, a, b|
             # p 'div',a,b
-            if class_has? a, "div"
+            if class_has? a, "$div"
                 a["$div"][inst, b]
-            elsif class_has? b, "rdiv"
+            elsif class_has? b, "$rdiv"
                 b["$rdiv"][inst, a]
             elsif AtState.func_like? a
                 AtFunction.from(arity: b) { |inst, *args|
@@ -4531,9 +4581,9 @@ class AtState
         # @genre operator
         #>>
         "-" => vectorize_dyad { |inst, a, b|
-            if class_has? a, "sub"
+            if class_has? a, "$sub"
                 a["$sub"][inst, b]
-            elsif class_has? b, "rsub"
+            elsif class_has? b, "$rsub"
                 b["$rsub"][inst, a]
             else
                 a - b
@@ -4547,9 +4597,9 @@ class AtState
         # @genre operator
         #>>
         "+" => vectorize_dyad { |inst, a, b|
-            if class_has? a, "add"
+            if class_has? a, "$add"
                 a["$add"][inst, b]
-            elsif class_has? b, "radd"
+            elsif class_has? b, "$radd"
                 b["$radd"][inst, a]
             else
                 a + b
@@ -4573,9 +4623,9 @@ class AtState
         # @genre operator
         #>>
         "^" => vectorize_dyad { |inst, a, b|
-            if class_has? a, "pow"
+            if class_has? a, "$pow"
                 a["$pow"][inst, b]
-            elsif class_has? b, "rpow"
+            elsif class_has? b, "$rpow"
                 b["$rpow"][inst, a]
             else
                 a ** b
@@ -4589,9 +4639,9 @@ class AtState
         # @genre operator
         #>>
         "%" => vectorize_dyad { |inst, a, b|
-            if class_has? a, "mod"
+            if class_has? a, "$mod"
                 a["$mod"][inst, b]
-            elsif class_has? b, "rmod"
+            elsif class_has? b, "$rmod"
                 b["$rmod"][inst, a]
             else
                 a % b
@@ -4829,17 +4879,17 @@ class AtState
         "in" => lambda { |inst, x, y|
             @@functions["Has"][inst, y, x]
         },
-        # #<<
-        # # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
-        # # @return bool
-        # # @type el (*)
-        # # @type klass class
-        # # @genre operator/logic
-        # #>>
-        # "isa" => lambda { |inst, el, klass|
-        #     # https://www.strawpoll.me/15544904/r
-        #     el.parent == klass rescue false
-        # },
+        #<<
+        # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type el (*)
+        # @type klass class
+        # @genre operator/logic
+        #>>
+        "is_a" => lambda { |inst, el, klass|
+            # https://www.strawpoll.me/15544904/r
+            el.parent == klass rescue false
+        },
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
         # @type a expr

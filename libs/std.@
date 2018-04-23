@@ -31,9 +31,11 @@ ClassNamed[Point]! {
     x .= _1
     y .= _2
 
-    $add[other] .= other
+    $map[f, vec] .= New[Point, f[x], f[y]]
 
     $string[] .= Format["(%s, %s)", x, y]
 }
 
 OverGrid[f] := UnGrid@f@Grid
+
+MinMax := Min # V # Max

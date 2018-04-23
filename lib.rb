@@ -25,20 +25,20 @@ class Train
         @train = a
         @frozen = false
     end
-    
+
     def append(*args)
         Train.new *@tran, *args
     end
-    
+
     def freeze
         @frozen = true
         self
     end
-    
+
     def <<(arg)
         @train.concat arg
     end
-    
+
     def get_func
         lambda { |inst, *args|
             case @train.size
@@ -55,15 +55,15 @@ class Train
             end
         }
     end
-    
+
     def [](inst, *args)
         get_func[inst, *args]
     end
-    
+
     def to_a
         @train
     end
-    
+
     def to_ary
         if @frozen
             yield [@train]
@@ -82,20 +82,20 @@ class Tie
             @array ||= f.array if Tie === f
         }
     end
-    
+
     attr_reader :array
-    
+
     def [](inst, *args)
         args = args.first if @array
         args.map.with_index { |e, i|
             get(i)[inst, e]
         }
     end
-    
+
     def get(i)
         @funcs[i % @funcs.size]
     end
-    
+
     def fold(inst, list, start=nil)
         i = 0
         list.inject(start) { |acc, e|
@@ -103,15 +103,15 @@ class Tie
             i += 1
         }
     end
-    
+
     def to_a
         @funcs.dup
     end
-    
+
     def to_ary
         to_a
     end
-    
+
     def to_s
         "Tie(#{@array ? "" : "no "}array)[#{@funcs * "'"}]"
     end
@@ -121,7 +121,7 @@ class Array
     def fold(inst, f, start)
         inject(start) { |x, y| f[inst, x, y] }
     end
-    
+
     def sum
         inject(0, :+)
     end
@@ -129,11 +129,11 @@ class Array
     def prod
         inject(1, :*)
     end
-    
+
     def average
         sum.to_f / size
     end
-    
+
     # sample variance
     def variance
         m = average
@@ -151,7 +151,7 @@ class Array
 
     # modified from https://github.com/sagivo/powerset/blob/master/powerset.rb
     def powerset
-        a = [[]] 
+        a = [[]]
         (0...size).each { |i|
             len = a.size; j = 0;
             while j < len
@@ -173,7 +173,7 @@ class Array
     def delta
         each_cons(2).map { |(x, y)| y - x }
     end
-    
+
     def indices(ent=nil, &fn)
         if fn.nil?
             each_index.select { |i| self[i] == ent }
@@ -188,15 +188,15 @@ module TruthExtension
     def to_i
         self ? 1 : 0
     end
-    
+
     def coerce(other)
         [other, self.to_i]
     end
-    
+
     def ~@
         not self
     end
-    
+
     [:+, :*, :/, :-, :<, :>, :<=, :>=, :<<, :>>, :>, :<, :>=, :<=, :-@].each { |prop|
         define_method(prop) { |*args| to_i.send(prop, *args) }
     }
@@ -256,26 +256,26 @@ module TimeExtension
     def self.included(base)
         base.extend(ClassMethods)
     end
-    
+
     def self.from_h(hash)
         args = %w(year month day hour minute second).map { |s|
             hash[s] || hash[s.to_sym] || 0
         }
         Time.new *args
     end
-    
+
     module ClassMethods
         def from_h(*args)
             TimeExtension.from_h *args
         end
-        
+
         def iterate(start_time, end_time, step, &block)
             begin
                 yield start_time
             end while (start_time += step) <= end_time
         end
     end
-    
+
     ## INSTANCE METHODS ##
     @@WEEKDAYS = %w(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)
     def to_h
@@ -289,7 +289,7 @@ module TimeExtension
             microsecond: usec
         }
     end
-    
+
     def change(**opts)
         mod = to_h
         opts.each { |opt, by|
@@ -347,11 +347,11 @@ module ReadableArrays
         repr = to_a.map { |row|
             row.map(&:inspect)
         }
-        
+
         column_widths = repr.transpose.map { |col|
             col.map(&:size).max + factor
         }
-        
+
         res = ""
         repr.each { |row|
             row.each_with_index { |el, j|
@@ -374,11 +374,11 @@ class Complex
     def Complex.from((re, im))
         re + 1i*im
     end
-    
+
     def components
         [real, imaginary]
     end
-    
+
     [:round, :floor, :ceil].each { |prop|
         define_method(prop) { |*args|
             Complex.from components.map { |e| e.send prop, *args }
@@ -706,7 +706,7 @@ $flags = {
 }
 def make_regex(str, flags="")
     return str if str.is_a? Regexp
-    
+
     build = ""
     i = 0
     while i < str.size
@@ -737,7 +737,7 @@ def make_regex(str, flags="")
         end
         i += 1
     end
-    
+
     Regexp.new build, flags.chars.map { |c| $flags[c] }.inject(0, :|)
 end
 
@@ -853,18 +853,18 @@ end
 def diagonal(mat, n=0)
     res = []
     i = 0
-    
+
     while i < 0 || n < 0
         i += 1
         n += 1
     end
-    
+
     while i < mat.size && n < mat[i].size
         res << mat[i][n]
         i += 1
         n += 1
     end
-    
+
     res
 end
 
@@ -943,7 +943,7 @@ end
 
 def overlap(source, inner)
     return false if inner.size > source.size
-    
+
     source.each_cons(inner.size).any? { |e| e == inner }
 end
 
@@ -968,7 +968,7 @@ end
 def chop(array, size, extra=true)
     array = array.dup
     size = [*size]
-    
+
     collect = []
     i = -1
     until array.empty?
@@ -976,11 +976,11 @@ def chop(array, size, extra=true)
         i = i % size.size rescue 0
         collect << array.shift(size[i])
     end
-    
+
     unless extra
         collect.pop if collect.last.size != size[i]
     end
-    
+
     collect
 end
 
