@@ -2034,8 +2034,8 @@ class AtState
         # @type n number
         # @genre numeric
         #>>
-        "LogBase" => vectorize_monad { |inst, n, b|
-            Math::log n, b
+        "LogBase" => vectorize_dyad { |inst, n, b|
+            force_number Math::log n, b
         },
         #<<
         # Takes the product of the elements of <code>args</code>.
