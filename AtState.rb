@@ -3199,7 +3199,7 @@ class AtState
         # @reforms elements
         #>>
         "Chop" => lambda { |inst, list, size, **opts|
-            extra = opts.has_key?(:extra) ? opts[:extra] : true
+            extra = get_default opts, :extra, true
             res = chop force_list(list), size, extra
             res.map { |e|
                 reform_list e, list
@@ -3356,6 +3356,25 @@ class AtState
             list.flatten(n)
         },
         #<<
+        # Reverses and transposes a list, or, if the list has only one dimension, reverses it.
+        # @type list [(*)]
+        # @return [(*)]
+        # @reforms
+        #>>
+        "Flip" => lambda { |inst, list|
+            is_string = String === list
+            inner = is_string ? @@functions["Grid"][inst, list] : force_list(list)
+            
+            
+            result = begin
+                inner.transpose.reverse
+            rescue
+                inner.reverse
+            end
+            
+            is_string ? @@functions["UnGrid"][inst, result] : reform_list(result, list)
+        },
+        #<<
         # Gets all members at indices <code>inds</code> from list.
         # @type list [(*)]
         # @type ind number|ConfigureValue
@@ -3468,6 +3487,20 @@ class AtState
         #>>
         "IndexFlat" => lambda { |inst, list, ind|
             force_list(list).index ind
+        },
+        #<<
+        # Returns the first <code>Prod[Size => args]</code> non-negative integers.
+        #>>
+        "Integers" => lambda { |inst, *args|
+            size = args.prod
+            iter = args[1..-1]
+            res = (0...size).to_a
+            
+            until iter.empty?
+                res = @@functions["Chop"][inst, res, iter.pop]
+            end
+            
+            res
         },
         #<<
         # Returns the intersection of the arguments.
@@ -3632,6 +3665,9 @@ class AtState
         "RemoveAll" => lambda { |inst, list, ents|
             ents = ents.nil? ? [ents] : [*ents]
             list.reject { |e| ents.include? e }
+        },
+        "Repeat" => vectorize_dyad(RIGHT) { |inst, list, amt|
+            Array.new(amt) { list }
         },
         #<<
         # Returns an array representing the run-length encoded version of <code>list</code>.
@@ -4082,7 +4118,7 @@ class AtState
         #>>
         "Grid" => lambda { |inst, str, inner=" "|
             str = str.lines rescue str
-            grid = str.map(&:chomp).map(&:chars)
+            grid = str.map(&:chomp).map(&:chars) rescue str
             pad_grid grid, inner
         },
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|

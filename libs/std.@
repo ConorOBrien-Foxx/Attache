@@ -25,6 +25,8 @@ BinBelow := 2&BaseBelow
 OctBelow := 8&BaseBelow
 HexBelow := 16&BaseBelow
 
+ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
+
 ClassNamed[Point]! {
     x .= _1
     y .= _2
@@ -33,3 +35,5 @@ ClassNamed[Point]! {
 
     $string[] .= Format["(%s, %s)", x, y]
 }
+
+OverGrid[f] := UnGrid@f@Grid
