@@ -1,0 +1,3 @@
+Needs[$langs]
+
+Arg[0] |> FileRead |> D2
