@@ -60,6 +60,8 @@ ClassNamed[D2State]! {
     ip .= Point[0, 0]
     dip .= Point[1, 0]
     stack .= []
+    mode .= 0
+    string .= ""
     running .= true
     
     exec[cell] .= (
@@ -77,7 +79,11 @@ ClassNamed[D2State]! {
         "v" -> { dip .= Point[0, 1] },
         "p" -> { Print! pop[] },
         "P" -> { Print! last[] },
+        "o" -> { Print[Char! pop[], after->es] },
+        "O" -> { Print[Char! last[], after->es] },
         "s" -> { Push[stack, #stack] },
+        "[" -> { Push[stack, 1]; exec["-"] },
+        "]" -> { Push[stack, 1]; exec["+"] },
         ";" -> { running .= false },
         ":" -> { Push[stack, last[]] },
         "." -> { pop[] },
@@ -85,6 +91,9 @@ ClassNamed[D2State]! {
             res .= -1
             DoSafe[res .= ReadInt[]]
             Push[stack, res]
+        },
+        "j" -> {
+            Push[stack, ReadChar[]]
         },
         "|" -> {
             If[last[], "^", "v"] |> exec
@@ -108,7 +117,7 @@ ClassNamed[D2State]! {
             advance[]
         },
         "@" -> {
-            Print["stack", stack]
+            Print[stack]
         },
         "+" -> {
             Push[stack, &~`+ <| CallN[pop, 2]]
@@ -133,6 +142,22 @@ ClassNamed[D2State]! {
         },
         "~" -> {
             Push[stack, ...CallN[pop, 2]]
+        },
+        "r" -> {
+            stack .= Reverse[stack]
+        },
+        "$" -> {
+            advance[]
+            next .= grid[ip.y][ip.x]
+            amount .= pop[]
+            CallN[{exec[next]}, amount]
+        },
+        "'" -> {
+            advance[]
+            Push[stack, grid[ip.y][ip.x] |> Ord]
+        },
+        """" -> {
+            mode .= 1
         }
     ~>
     
@@ -153,7 +178,14 @@ ClassNamed[D2State]! {
     
     step .= {
         cell .= grid[ip.y][ip.x]
-        exec[cell]
+        If[mode = 0,
+            exec[cell],
+            
+            If[cell = """",
+                mode .= 0,
+                Push[stack, Ord[cell]]
+            ]
+        ]
         advance[]
     }
 
