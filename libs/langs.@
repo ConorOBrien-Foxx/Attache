@@ -61,9 +61,8 @@ ClassNamed[D2State]! {
     dip .= Point[1, 0]
     stack .= []
     mode .= 0
-    string .= ""
     running .= true
-    
+
     exec[cell] .= (
         cmd .= cmds[cell];;
         If[IsNumeric[cell],
@@ -71,7 +70,7 @@ ClassNamed[D2State]! {
             If[cmd, ('cmd)[]]
         ]
     )
-    
+
     cmds .= <~
         ">" -> { dip .= Point[1, 0] },
         "<" -> { dip .= Point[-1, 0] },
@@ -160,27 +159,27 @@ ClassNamed[D2State]! {
             mode .= 1
         }
     ~>
-    
+
     advance .= {
         ip .= ip + dip
         ip .= ip % Reverse[##grid]
     }
-    
+
     pop .= {
         If[#stack, Pop[stack], 0]
     }
-    
+
     last .= {
         res .= pop[]
         Push[stack, res]
         res
     }
-    
+
     step .= {
         cell .= grid[ip.y][ip.x]
         If[mode = 0,
             exec[cell],
-            
+
             If[cell = """",
                 mode .= 0,
                 Push[stack, Ord[cell]]
