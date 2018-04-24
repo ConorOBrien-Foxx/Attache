@@ -1,5 +1,6 @@
 require_relative 'lib.rb'
-require_relative 'AtClass.rb'
+# require_relative 'AtClass.rb'
+# later in file
 
 FOLDER_LOCATION = File.dirname(__FILE__)
 
@@ -626,16 +627,24 @@ class Node
     end
 end
 
+def token_join(toks)
+    return toks if String === toks
+    toks.map { |e|
+        res = e.type == :call_func ? "Call<#{e.raw}>" :  e.raw
+        Array === res ? "[" + token_join(res) + "]" : res
+    }.join(" ")
+end
+
 class AtLambda
     ARG_CONST = "ARGUMENTS"
-    def initialize(inner_ast, params=[])
+    def initialize(inner_ast, params=[], raw: [])
         @tokens = [*inner_ast]
         @params = params
         @scope = {}
-        @class_lambda = false
         @ascend = true
         @descend = true
         @ignore_other = false
+        @raw = token_join raw
     end
 
     def bind(inst)
@@ -648,13 +657,16 @@ class AtLambda
         @params.size
     end
 
+    def inspect
+        "AtLambda(#{@raw})"
+    end
+
     alias :arity :size
 
-    attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :class_lambda
+    attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw
 
     def [](inst, *args)
         inst.local_descend(@scope) if @descend
-
         # define locals
         inst.define_local ARG_CONST, args
         inst.abstract_references << self
@@ -687,14 +699,9 @@ class AtLambda
 
         inst.abstract_references.pop
         temp_scope = inst.local_ascend if @ascend
-        #p @scope
-        @scope.merge! temp_scope
-        # unless @ignore_other
-        #     p @ignore_other
-        #     @scope.clear
-        #     @scope.merge! temp_scope
-        # end
 
+        @scope.merge! temp_scope
+        
         res
     end
 end
@@ -849,6 +856,7 @@ class AtState
     NOT_PROVIDED = :not_provided
 
     def AtState.truthy?(ent)
+        return true if AtState.func_like? ent
         res = ent && ent != 0 && (ent.size != 0 rescue true)
     end
 
@@ -1033,7 +1041,7 @@ class AtState
             eval raw.gsub(/^\./, "0.")
 
         elsif type == :make_lambda
-            AtLambda.new(ast raw)
+            AtLambda.new(ast(raw), raw: raw)
 
         elsif type == :word
             error "Reference Error: Undefined variable #{raw.inspect}"
@@ -3074,13 +3082,22 @@ class AtState
         "While" => lambda { |inst, cond, body|
             res = nil
             loop {
+                # dhash "while scope", inst.locals.last
                 c = inst.evaluate_node cond
                 unless AtState.truthy? c
                     break
                 end
                 res = inst.evaluate_node body
+                # p body
+                # dhash "after scope", inst.locals.last
+                # STDIN.gets
             }
             res
+        },
+        "FWhile" => lambda { |inst, cond, body|
+            while cond[inst]
+                body[inst]
+            end
         },
         #<<
         # Evaluates <code>body</code>, then stops only if <code>cond</code> evaluates as falsey.
@@ -5336,3 +5353,6 @@ class AtState
         },
     }
 end
+
+# aha
+require_relative 'AtClass.rb'

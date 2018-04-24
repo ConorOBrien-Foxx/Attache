@@ -2,15 +2,59 @@
 
 require_relative 'AtState.rb'
 
+class AtClassMethod < AtLambda
+    def initialize(inner_ast, params=[], raw: [])
+        super(inner_ast, params, raw: raw)
+        @parent = nil
+    end
+
+    attr_accessor :parent
+
+    def AtClassMethod.from(lam)
+        AtClassMethod.new lam.tokens, lam.params, raw: lam.raw
+    end
+
+    def [](inst, *args)
+        inst.locals.push @scope
+
+        @tokens.each { |group|
+            inst.evaluate_node group
+        }
+
+        update_scope @scope
+    end
+
+    def update_scope(scope)
+        scope.each { |key, value|
+            if @parent.vars.has_key? key
+                @parent.vars[key] = value
+            else
+                @parent.scope[key] = value
+            end
+        }
+    end
+
+    def inspect
+        "AtClassMethod(#{@raw})"
+    end
+end
+
 class AtClassInstance
-    def initialize(parent, methods, vars, privates)
+    def initialize(parent, methods, vars, privates, scope)
         @methods = methods
+
+        @methods.each { |name, value|
+            value.scope = scope
+            value.parent = self
+        }
+
         @vars = vars
         @privates = privates
         @parent = parent
+        @scope = scope
     end
 
-    attr_accessor :vars, :methods, :parent
+    attr_accessor :vars, :methods, :parent, :scope
 
     def to_s
         inspect
@@ -74,9 +118,7 @@ class AtClass
         scope.each { |name, val|
             if AtState.func_like? val
                 if AtLambda === val
-                    val.scope = all
-                    val.ignore_other = true
-                    val.class_lambda = true
+                    val = AtClassMethod.from val
                 end
                 if privates[name]
                     privates[name] = val
@@ -101,7 +143,7 @@ class AtClass
             # methods["step"].scope["ip"] = 1000
         # end
 
-        AtClassInstance.new self, methods, vars, privates
+        AtClassInstance.new self, methods, vars, privates, all
     end
 
     def [](inst, *args)

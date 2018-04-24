@@ -59,21 +59,37 @@ ClassNamed[D2State]! {
     grid .= Grid[_1]
     ip .= Point[0, 0]
     dip .= Point[1, 0]
+    stack .= [0]
+    running .= true
+
+    cmds .= <~
+        ">" -> { dip .= Point[1, 0] },
+        "<" -> { dip .= Point[-1, 0] },
+        "^" -> { dip .= Point[0, -1] },
+        "v" -> { dip .= Point[0, 1] },
+        "p" -> { Print! Last[stack] },
+        ";" -> { running .= false }
+    ~>
+    ??cur .= grid[ip.y][ip.x]
+    ??cmd .= cmds[cur]
 
     step .= {
-        Print["ip =", ip]
+
+        Print["Executing step"]
         ip .= ip + dip
-        Print["ip =", ip]
+        Print[ip, dip]
+    }
+
+    run .= {
+        step[]
+        step[]
+        step[]
     }
 
     $string .= {
-        Format["ip: %s\n[[GRID]]\n%s\n[[/GRID]]", ip, UnGrid[grid]]
+        Format["ip: %s\ndip: %s\n[[GRID]]\n%s\n[[/GRID]]", ip, dip, UnGrid[grid]]
     }
 }
-
-d2 := New[D2State, "> v\n^ <"]
-d2.step[]
-Print[d2]
 
 
 ??
