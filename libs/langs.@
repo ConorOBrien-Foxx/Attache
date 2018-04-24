@@ -59,31 +59,102 @@ ClassNamed[D2State]! {
     grid .= Grid[_1]
     ip .= Point[0, 0]
     dip .= Point[1, 0]
-    stack .= [0]
+    stack .= []
     running .= true
-
+    
+    exec[cell] .= (
+        cmd .= cmds[cell];;
+        If[IsNumeric[cell],
+            Push[stack, N[cell]],
+            If[cmd, ('cmd)[]]
+        ]
+    )
+    
     cmds .= <~
         ">" -> { dip .= Point[1, 0] },
         "<" -> { dip .= Point[-1, 0] },
         "^" -> { dip .= Point[0, -1] },
         "v" -> { dip .= Point[0, 1] },
-        "p" -> { Print! Last[stack] },
+        "p" -> { Print! pop[] },
+        "P" -> { Print! last[] },
+        "s" -> { Push[stack, #stack] },
         ";" -> { running .= false },
-        "1" -> { stack .= stack ' 1 },
+        ":" -> { Push[stack, last[]] },
+        "." -> { pop[] },
+        "i" -> {
+            res .= -1
+            DoSafe[res .= ReadInt[]]
+            Push[stack, res]
+        },
+        "|" -> {
+            If[last[], "^", "v"] |> exec
+        },
+        "V" -> {
+            If[pop[], "^", "v"] |> exec
+        },
+        "_" -> {
+            If[last[], "<", ">"] |> exec
+        },
+        "L" -> {
+            If[pop[], "<", ">"] |> exec
+        },
+        "?" -> {
+            If[last[], exec["v"]]
+        },
+        "C" -> {
+            If[pop[], exec["v"]]
+        },
+        "#" -> {
+            advance[]
+        },
+        "@" -> {
+            Print["stack", stack]
+        },
         "+" -> {
-            split .= SplitAt[stack, #stack - 2]
-            stack .= split[0]
-            ops .= split[1]
-            stack .= stack ' Sum[ops]
+            Push[stack, &~`+ <| CallN[pop, 2]]
+        },
+        "-" -> {
+            Push[stack, &~`- <| CallN[pop, 2]]
+        },
+        "*" -> {
+            Push[stack, &~`* <| CallN[pop, 2]]
+        },
+        "/" -> {
+            Push[stack, &~`/ <| CallN[pop, 2]]
+        },
+        "(" -> {
+            Push[stack, N <| &~`< <| CallN[pop, 2]]
+        },
+        ")" -> {
+            Push[stack, N <| &~`> <| CallN[pop, 2]]
+        },
+        "=" -> {
+            Push[stack, N <| &~`= <| CallN[pop, 2]]
+        },
+        "~" -> {
+            Push[stack, ...CallN[pop, 2]]
         }
     ~>
-    ??cur .= grid[ip.y][ip.x]
-    ??cmd .= cmds[cur]
-
-    step .= {
+    
+    advance .= {
         ip .= ip + dip
-        cur .= cmds[grid[ip.y][ip.x]]
-        If[cur, ('cur)[]]
+        ip .= ip % Reverse[##grid]
+    }
+    
+    pop .= {
+        If[#stack, Pop[stack], 0]
+    }
+    
+    last .= {
+        res .= pop[]
+        Push[stack, res]
+        res
+    }
+    
+    step .= {
+        cell .= grid[ip.y][ip.x]
+        exec[cell]
+        advance[]
     }
 
     run .= {
@@ -95,5 +166,10 @@ ClassNamed[D2State]! {
     }
 }
 
+D2[code] := (
+    inst .= D2State[code];;
+    inst.run[];;
+    inst.stack
+)
 
 ??

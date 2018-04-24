@@ -1742,6 +1742,25 @@ class AtState
             a
         },
         #<<
+        # Pops a member from the end of <code>list</code>, modifying it. Returns that element.
+        # @type list [(*)]
+        # @return (*)
+        # @genre list
+        #>>
+        "Pop" => lambda { |inst, list|
+            list.pop
+        },
+        #<<
+        # Pushes <code>args</code> to the end of <code>list</code>, modifying it. Returns <code>list</code>.
+        # @type list [(*)]
+        # @type args (*)
+        # @return [(*)]
+        # @genre list
+        #>>
+        "Push" => lambda { |inst, list, *args|
+            list.push *args
+        },
+        #<<
         # Determines if <code>ent</code> is palindromic, that is, if it is itself reversed.
         # @type ent [(*)]|string
         # @return bool
@@ -2689,6 +2708,25 @@ class AtState
             f[inst, *args]
         },
         #<<
+        # Calls <code>f</code> <code>n</code> times over <code>args</code>, storing the results in a list.
+        # @type args (*)
+        # @type f fn
+        # @type n number
+        # @return (*)
+        # @genre functional
+        # @example Print[CallN[Random, 4, 3, 10]]
+        # @example ?? 4 random integers between 3 and 10
+        # @example ?? e.g.:
+        # @example ?? [5, 8, 10, 9]
+        #>>
+        "CallN" => lambda { |inst, f, n, *args|
+            res = []
+            n.times {
+                res << f[inst, *args]
+            }
+            res
+        },
+        #<<
         # Returns <code>fn</code>, fully curried according to <code>arity</code>.
         # @type f fn
         # @type arity number
@@ -3432,6 +3470,7 @@ class AtState
         # @type list [(*)]
         # @return [(*)]
         # @reforms
+        # @genre list
         #>>
         "Flip" => lambda { |inst, list|
             is_string = String === list
@@ -3562,6 +3601,9 @@ class AtState
         },
         #<<
         # Returns the first <code>Prod[Size => args]</code> non-negative integers.
+        # @type number args
+        # @return [(*)]
+        # @genre list
         #>>
         "Integers" => lambda { |inst, *args|
             size = args.prod
@@ -4337,6 +4379,16 @@ class AtState
         "IsDowncase" => vectorize_monad { |inst, str|
             str.downcase == str
         },
+        "IsAlpha" => vectorize_monad { |inst, str|
+            /^[[:alpha:]]*$/ === str
+        },
+        "IsAlphaNumeric" => vectorize_monad { |inst, str|
+            /^[[:alnum:]]*$/ === str
+        },
+        "IsNumeric" => vectorize_monad { |inst, str|
+            /^[[:digit:]]*$/ === str
+        },
+        
 
         ########################
         #### DATE FUNCTIONS ####
@@ -4746,6 +4798,16 @@ class AtState
         # @genre operator/logic
         #>>
         "/=" => vectorize_dyad { |inst, x, y|
+            x != y
+        },
+        #<<
+        # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise. See also: <a href="#/="><code>/=</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "≠" => vectorize_dyad { |inst, x, y|
             x != y
         },
         #<<
