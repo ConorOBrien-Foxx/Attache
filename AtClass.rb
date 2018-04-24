@@ -16,12 +16,20 @@ class AtClassMethod < AtLambda
 
     def [](inst, *args)
         inst.locals.push @scope
-
-        @tokens.each { |group|
-            inst.evaluate_node group
+        inst.abstract_references << self
+        inst.define_local ARG_CONST, args
+        @params.each_with_index { |name, i|
+            inst.define_local name, args[i]
         }
 
-        update_scope @scope
+        res = nil
+        @tokens.each { |group|
+            res = inst.evaluate_node group, args
+            update_scope inst.locals.last
+        }
+
+        update_scope inst.locals.pop
+        res
     end
 
     def update_scope(scope)
@@ -44,6 +52,7 @@ class AtClassInstance
         @methods = methods
 
         @methods.each { |name, value|
+            next unless AtClassMethod === value
             value.scope = scope
             value.parent = self
         }

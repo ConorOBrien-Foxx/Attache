@@ -701,7 +701,7 @@ class AtLambda
         temp_scope = inst.local_ascend if @ascend
 
         @scope.merge! temp_scope
-        
+
         res
     end
 end
@@ -874,7 +874,8 @@ class AtState
     end
 
     def AtState.func_like?(ent)
-        AtLambda === ent || AtFunction === ent || Proc === ent || Train === ent || Tie === ent
+        AtLambda === ent || AtFunction === ent || AtClassMethod === ent ||
+        Proc === ent || Train === ent || Tie === ent
     end
 
     def AtState.execute(*args)

@@ -68,22 +68,26 @@ ClassNamed[D2State]! {
         "^" -> { dip .= Point[0, -1] },
         "v" -> { dip .= Point[0, 1] },
         "p" -> { Print! Last[stack] },
-        ";" -> { running .= false }
+        ";" -> { running .= false },
+        "1" -> { stack .= stack ' 1 },
+        "+" -> {
+            split .= SplitAt[stack, #stack - 2]
+            stack .= split[0]
+            ops .= split[1]
+            stack .= stack ' Sum[ops]
+        }
     ~>
     ??cur .= grid[ip.y][ip.x]
     ??cmd .= cmds[cur]
 
     step .= {
-
-        Print["Executing step"]
         ip .= ip + dip
-        Print[ip, dip]
+        cur .= cmds[grid[ip.y][ip.x]]
+        If[cur, ('cur)[]]
     }
 
     run .= {
-        step[]
-        step[]
-        step[]
+        While[running, step[]]
     }
 
     $string .= {
