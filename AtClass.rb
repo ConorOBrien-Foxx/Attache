@@ -37,7 +37,7 @@ class AtClassInstance
 
         inner = inner.join ", "
 
-        "Class[#{inner}]"
+        "#{@parent.name rescue "Class"}[#{inner}]"
     end
 end
 
@@ -49,6 +49,8 @@ class AtClass
         @inst = inst
         @name = name
     end
+
+    attr_reader :name
 
     def create(*params)
         @inst.locals << {}
@@ -74,6 +76,7 @@ class AtClass
                 if AtLambda === val
                     val.scope = all
                     val.ignore_other = true
+                    val.class_lambda = true
                 end
                 if privates[name]
                     privates[name] = val
@@ -94,7 +97,15 @@ class AtClass
         all.merge! methods
         all.merge! privates
 
+        # if @name == "D2State"
+            # methods["step"].scope["ip"] = 1000
+        # end
+
         AtClassInstance.new self, methods, vars, privates
+    end
+
+    def [](inst, *args)
+        create *args
     end
 
     def inspect

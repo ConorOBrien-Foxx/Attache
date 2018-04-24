@@ -445,7 +445,7 @@ def map_vector(inst, vec, with_index: false, &fn)
     if class_has? vec, "$map"
         vec["$map"][inst, fn, vec]
     else
-        vec.map(&fn)
+        vec.map { |e| fn[inst, e] }
     end
 end
 
@@ -497,7 +497,9 @@ def vectorize_dyad(lr = LEFT | RIGHT, &fn)
                 map_vector(inst, x) { |inst, e| res[inst, e, y, *rest] }
             end
         elsif use_right
-            map_vector(inst, y) { |inst, e| res[inst, x, e, *rest] }
+            map_vector(inst, y) { |inst, e|
+                res[inst, x, e, *rest]
+            }
         else
             fn[inst, *args]
         end
@@ -630,6 +632,7 @@ class AtLambda
         @tokens = [*inner_ast]
         @params = params
         @scope = {}
+        @class_lambda = false
         @ascend = true
         @descend = true
         @ignore_other = false
@@ -647,7 +650,7 @@ class AtLambda
 
     alias :arity :size
 
-    attr_accessor :params, :scope, :ascend, :descend, :ignore_other
+    attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :class_lambda
 
     def [](inst, *args)
         inst.local_descend(@scope) if @descend
@@ -684,8 +687,13 @@ class AtLambda
 
         inst.abstract_references.pop
         temp_scope = inst.local_ascend if @ascend
-
-        @scope = temp_scope unless @ignore_other
+        #p @scope
+        @scope.merge! temp_scope
+        # unless @ignore_other
+        #     p @ignore_other
+        #     @scope.clear
+        #     @scope.merge! temp_scope
+        # end
 
         res
     end

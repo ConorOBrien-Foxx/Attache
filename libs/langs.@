@@ -55,21 +55,24 @@ FRACTRAN_EXAMPLES := <~
 ?? D2
 ?? A language of my own creation
 
-D2State := Class! {
+ClassNamed[D2State]! {
     grid .= Grid[_1]
-    x .= 0
-    y .= 0
+    ip .= Point[0, 0]
+    dip .= Point[1, 0]
 
     step .= {
-
+        Print["ip =", ip]
+        ip .= ip + dip
+        Print["ip =", ip]
     }
 
     $string .= {
-        Format["ip: (%s, %s)\n[[GRID]]\n%s\n[[/GRID]]", x, y, UnGrid[grid]]
+        Format["ip: %s\n[[GRID]]\n%s\n[[/GRID]]", ip, UnGrid[grid]]
     }
 }
 
 d2 := New[D2State, "> v\n^ <"]
+d2.step[]
 Print[d2]
 
 
