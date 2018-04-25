@@ -2978,7 +2978,7 @@ class AtState
                 old = [*cond]
                 cond = lambda { |inst, e| old.include? e }
             end
-            
+
             map_vector(inst, arr, with_index: true) { |inst, e, i|
                 cond[inst, i] ? f[inst, e] : e
             }
@@ -3185,11 +3185,6 @@ class AtState
                 # STDIN.gets
             }
             res
-        },
-        "FWhile" => lambda { |inst, cond, body|
-            while cond[inst]
-                body[inst]
-            end
         },
         #<<
         # Evaluates <code>body</code>, then stops only if <code>cond</code> evaluates as falsey.
