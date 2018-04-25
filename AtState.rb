@@ -3246,7 +3246,7 @@ class AtState
         # Flattens the matrices held in the matrix-like <code>list</code>.
         # @type list [[list]]
         # @return [list]
-        # @genre list
+        # @genre list/matrix
         # @example m1 := [[1, 2], [3, 4]]
         # @example m2 := [[0, 0], [7, 7]]
         # @example Display[ArrayFlatten[ [[m1, m2, m1], [m2, m1, m2]] ]]
@@ -3960,6 +3960,15 @@ class AtState
                 list.size
             end
         },
+        #<<
+        # Returns all slices of <code>list</code> of length <code>skew</code>.
+        # @type list [(*)]
+        # @type skew number|[number]
+        # @return [[(*)]]
+        # @genre list
+        # @example Print[Slices[1:6, 2]]
+        # @example ?? [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]
+        #>>
         "Slices" => lambda { |inst, list, skew=(1..list.size).to_a|
             if skew.is_a? Array
                 skew.flat_map { |e|
@@ -3969,6 +3978,24 @@ class AtState
                 slices list, skew
             end
         },
+        #<<
+        # Returns all slices of <code>list</code> of length <code>skew</code>, including an implied threshold of entities to the left and right of <code>list</code>.
+        # @type list [(*)]
+        # @type skew number|[number]
+        # @return [[(*)]]
+        # @genre list
+        # @option fill The entity to fill the threshold. Default: <code>0</code>.
+        # @option compact If <code>true</code>, removes the treshold after the slices are generated. Default: <code>false</code>.
+        # @option repeat 
+        # @example Print[SlicesFill[1:6, 2]]
+        # @example ?? [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0]]
+        # @example Print[SlicesFill["a":"f", 2, fill->" "]]
+        # @example [[" ", "a"], ["a", "b"], ["b", "c"], ["c", "d"], ["d", "e"], ["e", "f"], ["f", " "]]
+        # @example Print[SlicesFill[1:3, 2, compact->true]]
+        # @example ?? [[1], [1, 2], [2, 3], [3]]
+        # @example Print[SlicesFill[1:3, 2, repeat->3]]
+        # @example ?? [[0, 0], [0, 0], [0, 1], [1, 2], [2, 3], [3, 0], [0, 0], [0, 0]]
+        #>>
         "SlicesFill" => configurable { |inst, list, skew=(1..list.size).to_a, **opts|
 
             fill = get_default(opts, :fill, 0)
@@ -4030,6 +4057,12 @@ class AtState
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
             split_at force_list(str), inds
         },
+        #<<
+        # Calculates the standard deviation of <code>list</code>.
+        # @type list [number]
+        # @return number
+        # @genre list
+        #>>
         "StdDev" => lambda { |inst, list|
             list.stddev
         },
@@ -4131,6 +4164,28 @@ class AtState
         "Identity" => vectorize_monad { |inst, size|
             Matrix.identity(size).to_a
         },
+        #<<
+        # Returns the lower triangle of <code>mat</code>, where the remaining values are replaced with zeroes.
+        # @type mat [[(*)]]
+        # @type strict bool
+        # @optional strict
+        # @param strict If <code>true</code>, includes the diagonal. Default: <code>true</code>.
+        # @return [[(*)]]
+        # @example mat := Integers[3, 3] + 1
+        # @example Display[mat]
+        # @example ??  1 2 3
+        # @example ??  4 5 6
+        # @example ??  7 8 9
+        # @example Display[LowerTriangle[mat]]
+        # @example ??  1 0 0
+        # @example ??  4 5 0
+        # @example ??  7 8 9
+        # @example Display[LowerTriangle[mat, true]]
+        # @example ??  0 0 0
+        # @example ??  4 0 0
+        # @example ??  7 8 0
+        # @genre list/matrix
+        #>>
         "LowerTriangle" => lambda { |inst, mat, strict=false|
             lower_triangle mat, AtState.truthy?(strict)
         },
@@ -4149,9 +4204,28 @@ class AtState
         "Transpose" => lambda { |inst, list|
             list.transpose
         },
-        "Translate" => lambda { |inst, str, source, repl|
-            str.tr source, repl
-        },
+        #<<
+        # Returns the upper triangle of <code>mat</code>, where the remaining values are replaced with zeroes.
+        # @type mat [[(*)]]
+        # @type strict bool
+        # @optional strict
+        # @param strict If <code>true</code>, includes the diagonal. Default: <code>true</code>.
+        # @return [[(*)]]
+        # @example mat := Integers[3, 3] + 1
+        # @example Display[mat]
+        # @example ??  1 2 3
+        # @example ??  4 5 6
+        # @example ??  7 8 9
+        # @example Display[UpperTriangle[mat]]
+        # @example ??  1 2 3
+        # @example ??  0 5 6
+        # @example ??  0 0 9
+        # @example Display[UpperTriangle[mat, true]]
+        # @example ??  0 2 3
+        # @example ??  0 0 6
+        # @example ??  0 0 0
+        # @genre list/matrix
+        #>>
         "UpperTriangle" => lambda { |inst, mat, strict=false|
             upper_triangle mat, AtState.truthy?(strict)
         },
@@ -4450,12 +4524,39 @@ class AtState
         "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
             str.split sep
         },
+        "Translate" => lambda { |inst, str, source, repl|
+            str.tr source, repl
+        },
         "Lines" => vectorize_monad { |inst, str|
             str.split(/\r?\n/)
         },
+        #<<
+        # Replaces all occurrences of <code>search</code> in <code>str</code> with <code>replace</code>.
+        # @type str string
+        # @type search string|regex
+        # @type replace string
+        # @return string
+        # @optional replace
+        # @param Default: <code>""</code>.
+        # @genre string
+        #>>
         "Replace" => lambda { |inst, str, search, replace=""|
             replace str, search, replace
         },
+        #<<
+        # For each ConfigureValue <code>search -&gt; replace</code> in <code>args</code>, replaces all occurrences of <code>search</code> in <code>str</code> with <code>replace</code>. Works iteratively, starting with the first replacement.
+        # @type str string
+        # @type args ConfigureValue
+        # @return string
+        # @genre string
+        # @example Print[ReplaceMultiple[
+        # @example     "Hello, World!",
+        # @example     ll -> "no",
+        # @example     oo -> "",
+        # @example     l -> "q"
+        # @example ]]
+        # @example ?? Hen, Worqd!
+        #>>
         "ReplaceMultiple" => lambda { |inst, str, *args|
             str = str.dup
             args.map(&:to_a).each { |k, v|
@@ -4463,6 +4564,16 @@ class AtState
             }
             str
         },
+        #<<
+        # For each <code>e</code> matching <code>search</code> found in <code>str</code>, replaces it with <code>func[e]</code>.
+        # @type str string
+        # @type search string|regex
+        # @type func fn
+        # @return string
+        # @genre string
+        # @example Print[ReplaceF["Student 9234-B hsa received a 97.03% on their test.", /"\\d+", Reverse]]
+        # @example ?? Student 4329-B hsa received a 79.30% on their test.
+        #>>
         "ReplaceF" => lambda { |inst, str, search, func|
             str.gsub(search) { |e|
                 func[inst, e]
@@ -4471,9 +4582,28 @@ class AtState
         "Repr" => lambda { |inst, ent|
             ent.inspect
         },
+        #<<
+        # Translates every alphabetic character in <code>str</code> <code>amount</code> character to the right, wrapping around.
+        # @type str string
+        # @type amount number
+        # @return str
+        # @example Print[Rot["Hello, World!"]]
+        # @example ?? Uryyb, Jbeyq!
+        # @example Print[Rot["Hello, World!", 1]]
+        # @example ?? Ifmmp, Xpsme!
+        # @example Print[Rot["Ifmmp, Xpsme!", -1]]
+        # @example ?? Hello, World!
+        # @genre string
+        #>>
         "Rot" => vectorize_dyad(RIGHT) { |inst, str, amount=13|
             rotN(str, amount)
         },
+        #<<
+        # Converts <code>ent</code> to a string.
+        # @type ent (*)
+        # @return string
+        # @genre conversion
+        #>>
         "String" => lambda { |inst, ent|
             inst.cast_string ent
         },
@@ -4488,12 +4618,36 @@ class AtState
                 end
             }.join
         },
+        #<<
+        # Replaces all lowercase letters in <code>str</code> with the respective uppercase one.
+        # @type str string
+        # @return string
+        # @example Print[Upcase["Hello, World!"]]
+        # @example ?? HELLO, WORLD!
+        # @example Print[Upcase[">>> NO ONE"]]
+        # @example ?? >>> NO ONE
+        # @example Print[Upcase["le monde"]]
+        # @example ?? LE MONDE
+        # @genre string
+        #>>
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
         },
         "UnGrid" => lambda { |inst, str|
             str.map(&:join).join "\n"
         },
+        #<<
+        # Replaces all uppercase letters in <code>str</code> with the respective lowercase one.
+        # @type str string
+        # @return string
+        # @example Print[Downcase["Hello, World!"]]
+        # @example ?? hello, world!
+        # @example Print[Downcase[">>> NO ONE"]]
+        # @example ?? >>> no one
+        # @example Print[Downcase["le monde"]]
+        # @example ?? le monde
+        # @genre string
+        #>>
         "Downcase" => vectorize_monad { |inst, str|
             str.downcase
         },
@@ -4553,6 +4707,12 @@ class AtState
         "Error" => lambda { |inst, name, msg="An error has occured."|
             AtError.new name, msg
         },
+        #<<
+        # Escapes <code>str</code> such that it is safe to be passed to an HTML document. (Escapes the following: <code>&<>"</code>.)
+        # @type str string
+        # @return string
+        # @genre string/HTML
+        #>>
         "HTMLEscape" => lambda { |inst, str|
             str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
         },
@@ -5104,8 +5264,8 @@ class AtState
         },
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
-        # @type a expr
-        # @type b expr
+        # @type a (*)
+        # @type b (*)
         # @return (*)
         # @genre operator/logic
         #>>
@@ -5119,8 +5279,8 @@ class AtState
         },
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits. See also: <a href="#or"><code>or</code></a>.
-        # @type a expr
-        # @type b expr
+        # @type a (*)
+        # @type b (*)
         # @return (*)
         # @genre operator/logic
         #>>
@@ -5393,9 +5553,15 @@ class AtState
         "~" => lambda { |inst, left, right|
             @@functions["Count"][inst, left, right]
         },
+        #<<
+        # Returns a ConfigureValue key-value pair of <code>key</code> and <code>value</code>. Used for configurable functions and hashes.
+        # @type key expr
+        # @type value (*)
+        # @return ConfigureValue
+        # @genre operator
+        #>>
         "->" => lambda { |inst, key, value|
             if key.is_a?(Node) && key.head.raw == "V"
-                # p key
                 params = key.children.map(&:raw)
                 value.params = params
                 value
@@ -5409,6 +5575,13 @@ class AtState
                 ConfigureValue.new keyval, value
             end
         },
+        #<<
+        # Returns a ConfigureValue key-value pair of <code>key</code> and <code>value</code>. See also: <a href="#->"><code>-&gt;</code></a>.
+        # @type key expr
+        # @type value (*)
+        # @return ConfigureValue
+        # @genre operator
+        #>>
         "→" => lambda { |inst, key, value|
             @@operators["->"][inst, key, value]
         },
