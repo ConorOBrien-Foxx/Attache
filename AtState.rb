@@ -2093,6 +2093,16 @@ class AtState
             lcm args.flatten
         },
         #<<
+        # Calculates the discrete logarithm of <code>n</code> mod <code>base</code>.
+        # @type n number
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "IntLog" => vectorize_dyad { |inst, n, base|
+            discrete_log n, base
+        },
+        #<<
         # Takes the base-<code>10</code> logarithm of <code>n</code>.
         # @type n number
         # @return number
@@ -3192,7 +3202,7 @@ class AtState
         # @genre list
         #>>
         "Accumulate" => lambda { |inst, list|
-            list.prefixes.map { |e| e.sum }
+            list.prefixes.map { |e| @@functions["Sum"][inst, e] }
         },
         #<<
         # Flattens the matrices held in the matrix-like <code>list</code>.
@@ -4388,7 +4398,7 @@ class AtState
         "IsNumeric" => vectorize_monad { |inst, str|
             /^[[:digit:]]*$/ === str
         },
-        
+
 
         ########################
         #### DATE FUNCTIONS ####
@@ -5375,7 +5385,7 @@ class AtState
             end
         },
         # reverses arguments
-        "~" => lambda { |inst, f|
+        "~" => vectorize_monad { |inst, f|
             if AtState.func_like? f
                 lambda { |inst, *args|
                     f[inst, *args.reverse]

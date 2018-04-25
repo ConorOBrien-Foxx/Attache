@@ -1031,3 +1031,25 @@ def slices_fill(list, skew, first, last, n=nil)
     }
     slices list, skew
 end
+
+# TODO: more research!
+# trial multiplication
+# credit: https://codegolf.stackexchange.com/a/162749/31957
+def discrete_log(n, base)
+    (0..n).find { |el|
+        base ** el > n
+    } - 1
+end
+
+
+#TODO: investigate correctness of below two methods combined
+def pseudo_ilog(n, base)
+    Math::log(n, base).to_i
+end
+
+
+def assume_fit(n, base)
+    apx = pseudo_ilog n, base
+    apx += 1 until base**apx > n
+    apx - 1
+end
