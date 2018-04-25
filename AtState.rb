@@ -3986,7 +3986,7 @@ class AtState
         # @genre list
         # @option fill The entity to fill the threshold. Default: <code>0</code>.
         # @option compact If <code>true</code>, removes the treshold after the slices are generated. Default: <code>false</code>.
-        # @option repeat 
+        # @option repeat
         # @example Print[SlicesFill[1:6, 2]]
         # @example ?? [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0]]
         # @example Print[SlicesFill["a":"f", 2, fill->" "]]
