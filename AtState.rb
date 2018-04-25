@@ -780,6 +780,20 @@ def make_curry(args, func)
     }
 end
 
+def curry(arity=nil, &fn)
+    arity ||= fn.arity - 1
+    rec = lambda { |inst, *args|
+        if args.size < arity
+            lambda { |inst, *more|
+                rec[inst, *args, *more]
+            }
+        else
+            fn[inst, *args]
+        end
+    }
+    rec
+end
+
 def ast(program)
     shunted = if program.is_a? Array
         program
@@ -2939,6 +2953,35 @@ class AtState
                 list << iter
             end
             list
+        },
+        #<<
+        # Applies <code>f</code> to indices of <code>arr</code>, selected by <code>cond</code>.
+        # @type cond fn|[number]
+        # @type f fn
+        # @type arr [(*)]
+        # @paramtype fn cond If the given index yields true over <code>cond</code>, then the respective element is mapped to <code>f</code>.
+        # @paramtype [number] cond If the given index is a member of <code>cond</code>.
+        # @genre functional
+        # @return [number]
+        # @example on_second := On[Odd]
+        # @example rev_second := on_second[Reverse]
+        # @example Print[rev_second[[
+        # @example     [1, 2, 3],
+        # @example     [4, 5, 6],
+        # @example     ["a", "b", "c"],
+        # @example     ["d", "e", "f"]
+        # @example ]]]
+        # @example ?? [[1, 2, 3], [6, 5, 4], ["a", "b", "c"], ["f", "e", "d"]]
+        #>>
+        "On" => curry { |inst, cond, f, arr|
+            unless AtState.func_like? cond
+                old = [*cond]
+                cond = lambda { |inst, e| old.include? e }
+            end
+            
+            map_vector(inst, arr, with_index: true) { |inst, e, i|
+                cond[inst, i] ? f[inst, e] : e
+            }
         },
         #<<
         # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the list of intermediate steps.

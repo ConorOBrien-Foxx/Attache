@@ -48,6 +48,14 @@ def vector_from_signature(sig)
     end
 end
 
+def curry_from_signature(sig)
+    if sig.index "curry"
+        "Curries."
+    else
+        ""
+    end
+end
+
 def reform_from_signature(sig)
     inner = case sig
         when /element|member/
@@ -208,6 +216,7 @@ def generate(title)
 
         sig = []
         sig.push vector_from_signature v[:type]
+        sig.push curry_from_signature v[:type]
         sig.push reform_from_signature v[:info][:reforms] if v[:info].has_key? :reforms
 
         sig.reject!(&:empty?)

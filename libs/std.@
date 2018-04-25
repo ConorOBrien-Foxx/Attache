@@ -39,3 +39,5 @@ ClassNamed[Point]! {
 OverGrid[f] := UnGrid@f@Grid
 
 MinMax := Min # V # Max
+Divisors[x] := `|&x \ 1:x
+
