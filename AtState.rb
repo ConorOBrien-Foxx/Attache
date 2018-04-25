@@ -3817,15 +3817,69 @@ class AtState
                 reform_list e, list
             }
         },
+        #<<
+        # Returns a list of lists of the form <code>[id, inds]</code>, where <code>id</code> corresponds to a unique element of <code>els</code>.
+        # <code>inds</code> is a narray of indices where <code>id</code> occurs.
+        # @type arr [(*)]
+        # @type els [(*)]
+        # @return [(*), [(*)]]
+        # @optional els
+        # @param els Default: <code>arr</code>.
+        # @genre list
+        # @example Display[Positions[ [1, 2, 3, 2, 4, 1] ]]
+        # @example  1 [0, 5]
+        # @example  2 [1, 3]
+        # @example  3    [2]
+        # @example  4    [4]
+        # @example Display[Positions["Hello!", ["l", "!"]]]
+        # @example "l" [2, 3]
+        # @example "!"    [5]
+        #>>
         "Positions" => lambda { |inst, arr, els=arr|
-            positions(arr, els)
+            arr = force_list arr
+            els = force_list els
+            positions arr, els
         },
+        #<<
+        # Returns the powerset of <code>list</code>.
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @genre list
+        # @reforms elements
+        # @example Print[Powerset[ [9,4,6] ]]
+        # @example ?? [[], [9], [4], [9, 4], [6], [9, 6], [4, 6], [9, 4, 6]]
+        # @example Print[Powerset[123]]
+        # @example ?? [0, 1, 2, 12, 3, 13, 23, 123]
+        #>>
         "Powerset" => lambda { |inst, list|
-            list.powerset
+            force_list(list).powerset.map { |e|
+                reform_list e, list
+            }
         },
+        #<<
+        # Returns the product of all members of <code>list</code>.
+        # @type list [number]
+        # @return number
+        # @genre list
+        #>>
         "Prod" => lambda { |inst, list|
-            list.prod
+            list.inject(1) { |a, c|
+                @@operators["*"][inst, a, c]
+            }
         },
+        #<<
+        # Returns a range from <code>min</code> to <code>max</code> inclusive.
+        # @type min number|string
+        # @type max number|string
+        # @return [number|string]
+        # @genre list
+        # @optional max
+        # @param max If omitted, returns <code>Range[0, min]</code>.
+        # @example Print[Range[1, 5]]
+        # @example ?? [1, 2, 3, 4, 5]
+        # @example Print[Range["a", "d"]]
+        # @example ?? ["a", "b", "c", "d"]
+        #>>
         "Range" => vectorize_dyad { |inst, min, max=nil|
             if max.nil?
                 (0..min).to_a
