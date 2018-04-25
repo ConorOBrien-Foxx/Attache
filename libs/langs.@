@@ -157,6 +157,25 @@ ClassNamed[D2State]! {
         },
         """" -> {
             mode .= 1
+        },
+        "`" -> {
+            amount .= pop[]
+            str .= Char[Reverse[CallN[pop, amount]]]
+            If[IsAlphaNumeric[str],
+                fn .= Eval[str];;
+                args .= Reverse! CallN[pop, #fn];;
+                Push[stack, Apply[fn, args]]
+            ]
+        },
+        "!" -> {
+            arity .= pop[]
+            amount .= pop[]
+            str .= Char[Reverse[CallN[pop, amount]]]
+            If[IsAlphaNumeric[str],
+                fn .= Eval[str];;
+                args .= Reverse! CallN[pop, arity];;
+                Push[stack, Apply[fn, args]]
+            ]
         }
     ~>
 
