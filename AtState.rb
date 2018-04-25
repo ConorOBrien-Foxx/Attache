@@ -3789,11 +3789,33 @@ class AtState
         "Outers" => vectorize_dyad(RIGHT) { |inst, list, n=1|
             list[0...n] + list[-n..-1]
         },
-        "Overlap" => lambda { |inst, list, arr|
-            overlap list, arr
+        #<<
+        # Returns <code>true</code> if <code>search</code> exists as a contiguous subset in <code>list</code>, otherwise <code>false</code>.
+        # @type list [(*)]
+        # @type search [(*)]
+        # @return bool
+        # @genre list/logic
+        #>>
+        "Overlap" => lambda { |inst, list, search|
+            overlap list, search
         },
+        #<<
+        # Returns the non-empty prefixes of <code>list</code>.
+        # @reforms elements
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @genre list
+        # @example Print[Prefixes[1:5]]
+        # @example ?? [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]]
+        # @example Print[Prefixes["hi?"]]
+        # @example ?? ["h", "hi", "hi?"]
+        # @example Print[Prefixes[901]]
+        # @example ?? [9, 90, 901]
+        #>>
         "Prefixes" => lambda { |inst, list|
-            force_list(list).prefixes
+            force_list(list).prefixes.map { |e|
+                reform_list e, list
+            }
         },
         "Positions" => lambda { |inst, arr, els=arr|
             positions(arr, els)
