@@ -2978,7 +2978,7 @@ class AtState
                 old = [*cond]
                 cond = lambda { |inst, e| old.include? e }
             end
-            
+
             map_vector(inst, arr, with_index: true) { |inst, e, i|
                 cond[inst, i] ? f[inst, e] : e
             }
@@ -3185,11 +3185,6 @@ class AtState
                 # STDIN.gets
             }
             res
-        },
-        "FWhile" => lambda { |inst, cond, body|
-            while cond[inst]
-                body[inst]
-            end
         },
         #<<
         # Evaluates <code>body</code>, then stops only if <code>cond</code> evaluates as falsey.
@@ -3794,21 +3789,97 @@ class AtState
         "Outers" => vectorize_dyad(RIGHT) { |inst, list, n=1|
             list[0...n] + list[-n..-1]
         },
-        "Overlap" => lambda { |inst, list, arr|
-            overlap list, arr
+        #<<
+        # Returns <code>true</code> if <code>search</code> exists as a contiguous subset in <code>list</code>, otherwise <code>false</code>.
+        # @type list [(*)]
+        # @type search [(*)]
+        # @return bool
+        # @genre list/logic
+        #>>
+        "Overlap" => lambda { |inst, list, search|
+            overlap list, search
         },
+        #<<
+        # Returns the non-empty prefixes of <code>list</code>.
+        # @reforms elements
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @genre list
+        # @example Print[Prefixes[1:5]]
+        # @example ?? [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]]
+        # @example Print[Prefixes["hi?"]]
+        # @example ?? ["h", "hi", "hi?"]
+        # @example Print[Prefixes[901]]
+        # @example ?? [9, 90, 901]
+        #>>
         "Prefixes" => lambda { |inst, list|
-            force_list(list).prefixes
+            force_list(list).prefixes.map { |e|
+                reform_list e, list
+            }
         },
+        #<<
+        # Returns a list of lists of the form <code>[id, inds]</code>, where <code>id</code> corresponds to a unique element of <code>els</code>.
+        # <code>inds</code> is a narray of indices where <code>id</code> occurs.
+        # @type arr [(*)]
+        # @type els [(*)]
+        # @return [(*), [(*)]]
+        # @optional els
+        # @param els Default: <code>arr</code>.
+        # @genre list
+        # @example Display[Positions[ [1, 2, 3, 2, 4, 1] ]]
+        # @example  1 [0, 5]
+        # @example  2 [1, 3]
+        # @example  3    [2]
+        # @example  4    [4]
+        # @example Display[Positions["Hello!", ["l", "!"]]]
+        # @example "l" [2, 3]
+        # @example "!"    [5]
+        #>>
         "Positions" => lambda { |inst, arr, els=arr|
-            positions(arr, els)
+            arr = force_list arr
+            els = force_list els
+            positions arr, els
         },
+        #<<
+        # Returns the powerset of <code>list</code>.
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @genre list
+        # @reforms elements
+        # @example Print[Powerset[ [9,4,6] ]]
+        # @example ?? [[], [9], [4], [9, 4], [6], [9, 6], [4, 6], [9, 4, 6]]
+        # @example Print[Powerset[123]]
+        # @example ?? [0, 1, 2, 12, 3, 13, 23, 123]
+        #>>
         "Powerset" => lambda { |inst, list|
-            list.powerset
+            force_list(list).powerset.map { |e|
+                reform_list e, list
+            }
         },
+        #<<
+        # Returns the product of all members of <code>list</code>.
+        # @type list [number]
+        # @return number
+        # @genre list
+        #>>
         "Prod" => lambda { |inst, list|
-            list.prod
+            list.inject(1) { |a, c|
+                @@operators["*"][inst, a, c]
+            }
         },
+        #<<
+        # Returns a range from <code>min</code> to <code>max</code> inclusive.
+        # @type min number|string
+        # @type max number|string
+        # @return [number|string]
+        # @genre list
+        # @optional max
+        # @param max If omitted, returns <code>Range[0, min]</code>.
+        # @example Print[Range[1, 5]]
+        # @example ?? [1, 2, 3, 4, 5]
+        # @example Print[Range["a", "d"]]
+        # @example ?? ["a", "b", "c", "d"]
+        #>>
         "Range" => vectorize_dyad { |inst, min, max=nil|
             if max.nil?
                 (0..min).to_a
