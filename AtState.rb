@@ -3887,8 +3887,21 @@ class AtState
                 (min..max).to_a
             end
         },
+        #<<
+        # Resizes <code>list</code> to be of length <code>size</code>, cyclically repeating elements if <code>size</code> exceeds <code>#list</code>.
+        # @reforms
+        # @type list [(*)]
+        # @type size number
+        # @genre list
+        # @return [(*)]
+        # @example Print[Resize["Hello!", 2]]
+        # @example ?? He
+        # @example Print[Resize[[1, 2], 7]]
+        # @example ?? [1, 2, 1, 2, 1, 2, 1]
+        #>>
         "Resize" => lambda { |inst, list, size|
-            resize [*list], size
+            res = resize force_list(list), size
+            reform_list res, list
         },
         "Remove" => lambda { |inst, list, ent|
             list = list.clone
