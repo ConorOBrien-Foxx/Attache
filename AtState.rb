@@ -3595,6 +3595,15 @@ class AtState
             list
         },
         #<<
+        # Returns a list of indices such that, when <code>list</code> is indexed by that list, the result is <code>list</code> sorted.
+        # @type list [(*)]
+        # @return [number]
+        # @genre list
+        #>>
+        "Grade" => lambda { |inst, list|
+            grade force_list list
+        },
+        #<<
         # Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>.
         # @type list [(*)]
         # @return bool
@@ -4930,13 +4939,20 @@ class AtState
         },
         #<<
         # Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code>
-        # @type a number
+        # @type a number|fn
         # @type b number
         # @return rational
+        # @paramtype fn a Returns a function which, given <code>e</code>, returns <code>Nest[a, e, b]</code>.
         # @genre operator
         #>>
         "//" => vectorize_dyad { |inst, a, b|
-            Rational(a, b)
+            if AtState.func_like? a
+                lambda { |inst, e|
+                    @@functions["Nest"][inst, a, e, b]
+                }
+            else
+                Rational(a, b)
+            end
         },
         #<<
         # Creates a fraction <code>a / b</code>. See also: <code><a href="#Rational">Rational</a></code> and <code><a href="#//">//</a></code>.

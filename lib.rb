@@ -1053,3 +1053,17 @@ def assume_fit(n, base)
     apx += 1 until base**apx > n
     apx - 1
 end
+
+def grade(list)
+    list = list.dup
+    res = []
+    sorted = list.sort
+
+    sorted.each { |e|
+        i = list.index e
+        res << i
+        list[i] = nil
+    }
+
+    res
+end
