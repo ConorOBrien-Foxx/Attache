@@ -1188,7 +1188,7 @@ class AtState
             args = split[false]
         end
 
-        args = args.flat_map { |e|
+        args = (args || []).flat_map { |e|
             Applicator === e ? e.value : [e]
         }
 
