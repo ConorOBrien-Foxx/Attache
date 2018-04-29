@@ -1,3 +1,5 @@
+# assumes included at a certain position in `AtState.rb`
+# TODO: fix that
 module AtFunctionCatalog
     # functions which can receive key things
     @@configurable = [
