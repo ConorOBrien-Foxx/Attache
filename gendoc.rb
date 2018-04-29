@@ -123,9 +123,9 @@ def generate(title)
         }
 
         name, type, args = signature.scan($SIGNATURE_PARSE).first
-        
+
         args = args.split(/,\s*/)
-        
+
         args.shift # remove inst
 
         final.push [name, {
@@ -304,7 +304,7 @@ def generate(title)
     }
 end
 
-sources = ["AtState.rb"]
+sources = ["AtFunctions.rb"]
 
 index = ""
 
