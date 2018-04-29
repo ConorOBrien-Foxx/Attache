@@ -223,3 +223,16 @@ D2[code] := (
 )
 
 ??
+
+deadfish[code, acc] .= (
+    acc ..= 0;;
+    ForEach[code,
+        If[_ = "i", acc .= acc + 1];;
+        If[_ = "d", acc .= acc - 1];;
+        If[_ = "s", acc .= acc ^ 2];;
+        If[_ = "o", Print[acc]];;
+
+        If[acc = -1 or acc = 256, acc .= 0]
+    ];;
+    acc
+)
