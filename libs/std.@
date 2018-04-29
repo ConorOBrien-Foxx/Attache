@@ -1,9 +1,33 @@
 ?? core library
 
+??<<
+??? Returns a function with arguments <code>l</code> and <code>r</code> which
+??? calls <code>f[e, r]</code> for each element <code>e</code> in <code>l</code>.
+??? @type f fn
+??? @return fn
+??? @genre functional
 MapLeft[f] := [l, r] -> { f&r => l }
-MapRight[f] := [l, r] -> { f&:l => r }
+??>>
 
-PrimePi[n] := #Series[Prime, n, include->true]
+??<<
+??? Returns a function with arguments <code>l</code> and <code>r</code> which
+??? calls <code>f[l, e]</code> for each element <code>e</code> in <code>r</code>.
+??? @type f fn
+??? @return fn
+??? @genre functional
+MapRight[f] := [l, r] -> { f&:l => r }
+??>>
+
+??<<
+??? Returns the number of prime numbers less than or equal to <code>n</code>.
+??? @type n number
+??? @return number
+??? @genre numeric/prime
+??? @example Print[PrimePi[0:10]]
+??? @example ?? [0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4]
+PrimePi := @{#Series[Prime, _, include->true]}
+??>>
+
 
 ??<<
 ??? Calls <code>Format[...args]</code>, which is passed then to <code>Print</code>.
