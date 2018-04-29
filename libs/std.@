@@ -5,17 +5,51 @@ MapRight[f] := [l, r] -> { f&:l => r }
 
 PrimePi[n] := #Series[Prime, n, include->true]
 
+??<<
+??? Calls <code>Format[...args]</code>, which is passed then to <code>Print</code>.
+??? @type args (*)...
+??? @return [string]
+??? @genre IO
 Printf := Print@Format
+??>>
 
 Output := Configure[Print, joiner->lf, after->es]@@Tie
 
+??<<
+??? Returns an array of base <code>base</code> digits of the numbers found in
+??? <code>Range[...args]</code>
+??? @type base number
+??? @type args number...
+??? @return [number]
+??? @genre numeric/bases
+??? @example Print => BaseRange[2, 0, 10]
+??? @example ?? [0, 0, 0, 1]
+??? @example ?? [0, 0, 1, 0]
+??? @example ?? [0, 0, 1, 1]
+??? @example ?? [0, 1, 0, 0]
+??? @example ?? [0, 1, 0, 1]
+??? @example ?? [0, 1, 1, 0]
+??? @example ?? [0, 1, 1, 1]
+??? @example ?? [1, 0, 0, 0]
+??? @example ?? [1, 0, 0, 1]
+??? @example ?? [1, 0, 1, 0]
 BaseRange := {
     base .= _1
     arr .= ToBase[Range[...__2], base]
     maxlen .= Max[Size => arr]
     PadLeft&maxlen => arr
 }
+??>>
+
+??<<
+??? Returns an array of base <code>base</code> digits less than
+??? <code>base ^ n</code>.
+??? @type base number
+??? @type n number
+??? @return [number]
+??? @genre numeric/bases
 BaseBelow[base, n] := BaseRange[base, base^n-1]
+??>>
 
 BinRange := 2&BaseRange
 OctRange := 8&BaseRange

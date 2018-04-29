@@ -1,6 +1,8 @@
 # assumes included at a certain position in `AtState.rb`
 # TODO: fix that
 module AtFunctionCatalog
+    NOT_PROVIDED = :not_provided
+    
     # functions which can receive key things
     @@configurable = [
         "Bisect",

@@ -869,8 +869,6 @@ end
 
 require_relative 'AtFunctions.rb'
 class AtState
-    NOT_PROVIDED = :not_provided
-
     def AtState.truthy?(ent)
         return true if AtState.func_like? ent
         res = ent && ent != 0 && (ent.size != 0 rescue true)

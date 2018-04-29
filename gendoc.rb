@@ -12,10 +12,6 @@ def highlight_html(str)
 end
 
 
-$AFTER_COMMENT = /(?<=#).+/
-$COMMENT_GROUP = /#<<[\s\S]+?#>>\s+[^#].*?\r?\n[\s\S]+?\},\s*$/
-$SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
-$DATA_LINE = /@(\w+)(?:\s?(.+))?/
 
 $PUSH_COLLECT = {
     "type" => [:types, 2],
@@ -67,16 +63,43 @@ def reform_from_signature(sig)
 end
 
 def fit_least_indent(lines)
-    least_indent = lines.map { |e| e.scan(/\s+/)[0].size }.min
+    least_indent = lines.map { |e| e.scan(/\s*/)[0].size }.min
     lines.map { |e| e[least_indent..-1] }
 end
 
 
-SYMBOL = /\W/
-def generate(title)
-    input = File.read title
+$RB_AFTER_COMMENT = /(?<=#).+/
+$RB_COMMENT_GROUP = /#<<[\s\S]+?#>>\s+[^#].*?\r?\n[\s\S]+?\},\s*$/
+$RB_SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
+$DATA_LINE = /@(\w+)(?:\s?(.+))?/
+def create_info(body)
+    info = Hash.new("")
+    $PUSH_COLLECT.values.each { |k| info[k[0]] = {} }
+    $APPEND.each { |k| info[k.to_sym] = [] }
 
-    groups = input.scan($COMMENT_GROUP)
+    body.each { |line|
+        data = line.scan($DATA_LINE)
+        if data.empty?
+            info[:description] += line + " "
+        else
+            key, value = data.first
+            if $PUSH_COLLECT.has_key? key
+                source, arity = $PUSH_COLLECT[key]
+                name, *other = value.split(/\b\s*/, arity)
+                info[source][name] = other
+            elsif $APPEND.include? key
+                info[key.to_sym] << value
+            else
+                info[key.to_sym] = value
+            end
+        end
+    }
+
+    info
+end
+
+def get_info_rb(input)
+    groups = input.scan($RB_COMMENT_GROUP)
 
     final = []
     # final = {}
@@ -97,32 +120,12 @@ def generate(title)
         code_source = group[last..-1]
 
         body.map! { |e|
-            e.scan($AFTER_COMMENT).first.strip
+            e.scan($RB_AFTER_COMMENT).first.strip
         }
 
-        info = Hash.new("")
-        $PUSH_COLLECT.values.each { |k| info[k[0]] = {} }
-        $APPEND.each { |k| info[k.to_sym] = [] }
+        info = create_info(body)
 
-        body.each { |line|
-            data = line.scan($DATA_LINE)
-            if data.empty?
-                info[:description] += line + " "
-            else
-                key, value = data.first
-                if $PUSH_COLLECT.has_key? key
-                    source, arity = $PUSH_COLLECT[key]
-                    name, *other = value.split(/\b\s*/, arity)
-                    info[source][name] = other
-                elsif $APPEND.include? key
-                    info[key.to_sym] << value
-                else
-                    info[key.to_sym] = value
-                end
-            end
-        }
-
-        name, type, args = signature.scan($SIGNATURE_PARSE).first
+        name, type, args = signature.scan($RB_SIGNATURE_PARSE).first
 
         args = args.split(/,\s*/)
 
@@ -135,6 +138,57 @@ def generate(title)
             source: fit_least_indent(code_source),
         }]
     }
+    final
+end
+
+$AT_COMMENT_GROUP = /\?{2}<<[\s\S]+?\?{2}>>/
+$AT_AFTER_COMMENT = /(?<=\?{3}).+$/
+def get_info_attache(input)
+    groups = input.scan($AT_COMMENT_GROUP)
+
+    final = []
+
+    groups.each { |group|
+        group = group.lines
+        group = group[1..-2]
+        # split into source and non-source
+        sorted = group.group_by { |line|
+            line.start_with? /\s*\?{3}/
+        }
+        source = sorted[false]
+        body = sorted[true].map { |e|
+            e.scan($AT_AFTER_COMMENT).first.strip
+        }
+
+        head = source.first
+        name = head.match($WORD).to_s
+        args = head.match(/#$WORD\s*\[(.+?)\]\s*[.:]=/).to_a[1]
+        args &&= args.split(/,\s*/)
+
+        info = create_info(body)
+
+        final.push [name, {
+            info: info,
+            type: "",
+            args: args,
+            source: fit_least_indent(source)
+        }]
+    }
+
+    final
+end
+
+SYMBOL = /\W/
+def generate(title)
+    input = File.read title
+    final = case title
+        when /\.rb$/
+            get_info_rb input
+        when /\.@$/
+            get_info_attache input
+        else
+            raise "Name #{title.inspect} does not have a valid file extension."
+    end
 
     result = ""
     $toc = Hash.new { |h, k| h[k] = [] }
@@ -166,6 +220,8 @@ def generate(title)
         args_types = {}
 
         # associate types with each argument
+        v[:args] ||= v[:info][:params].keys
+        v[:args] = v[:info][:types].keys if v[:args].empty?
         v[:args].map! { |e|
             # e = e[0]
             name, default = e.split("=")
@@ -178,6 +234,11 @@ def generate(title)
 
             disp_name = "..." + disp_name if decoration == "*"
             disp_name = "**" + disp_name if decoration == "**"
+
+            if pref && pref["..."]
+                pref = pref.gsub("...", "")
+                disp_name = "..." + disp_name
+            end
 
             head = unless pref.nil?
                 BOILERPLATES[:argument] % {
@@ -304,7 +365,7 @@ def generate(title)
     }
 end
 
-sources = ["AtFunctions.rb"]
+sources = ["AtFunctions.rb", "libs/std.@"]
 
 index = ""
 
