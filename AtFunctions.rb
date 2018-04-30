@@ -78,6 +78,14 @@ module AtFunctionCatalog
             inst.clear name
         },
         #<<
+        # Clears the console's screen.
+        # @return nil
+        # @genre IO
+        #>>
+        "ClearScreen" => lambda { |inst|
+            system "cls" or system "clear"
+        },
+        #<<
         # Undefines <code>name</code> from the local scope. Returns that variable's value, or <code>nil</code> if the variable was undefined.
         # @return (*)
         # @genre scope
