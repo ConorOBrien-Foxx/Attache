@@ -1,11 +1,36 @@
 ?? functions commonly used in PPCG submissions
 
-Define[$TestCases, [func, tc] -> {
+??<<
+??? Returns a list of string of formatted test cases of the form <code>input -> output</code>.
+??? @type func fn
+??? @type tc [(*)]
+??? @return [string]
+??? @genre string
+TestCases[func, tc] :=
     {Format["%s -> %s", _, func[_]]} => tc
-}]
+??>>
 
-Define[$PrintTestCases, Print=>TestCases]
+??<<
+??? Prints each string in <code>TestCases[...args]</code>.
+??? @type args (*)...
+??? @return [[string]]
+??? @genre IO
+PrintTestCases := Print=>TestCases
+??>>
 
-Define[$Submission, [code] -> {
+??<<
+??? Formats <code>code</code> as a PPCG submission.
+??? @type code string
+??? @return string
+??? @genre string
+Submission[code] :=
     Format["# Attache, %s bytes\n\n    %s\n", #code, code]
-}]
+??>>
+
+??<<
+??? Prints <code>Submission[code]</code>.
+??? @type code string
+??? @return [string]
+??? @genre IO
+PrintSubmission := Print@Submission
+??>>

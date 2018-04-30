@@ -11,8 +11,6 @@ def highlight_html(str)
     $inst.variables["highlight_html"][$inst, str]
 end
 
-
-
 $PUSH_COLLECT = {
     "type" => [:types, 2],
     "param" => [:params, 2],
@@ -70,6 +68,8 @@ end
 
 $RB_AFTER_COMMENT = /(?<=#).+/
 $RB_COMMENT_GROUP = /#<<[\s\S]+?#>>\s+[^#].*?\r?\n[\s\S]+?\},\s*$/
+$RB_OTHER_COMMENT_GROUP = /##<<[\s\S]+?##>>/
+$RB_OTHER_AFTER_COMMENT = /(?<=##).+$/
 $RB_SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 def create_info(body)
@@ -99,10 +99,10 @@ def create_info(body)
 end
 
 def get_info_rb(input)
-    groups = input.scan($RB_COMMENT_GROUP)
-
     final = []
-    # final = {}
+
+    # pass 1
+    groups = input.scan($RB_COMMENT_GROUP)
 
     groups.each { |group|
         group = group.lines
@@ -138,6 +138,35 @@ def get_info_rb(input)
             source: fit_least_indent(code_source),
         }]
     }
+
+    # pass 2
+    groups = input.scan($RB_OTHER_COMMENT_GROUP)
+    groups.each { |group|
+        group = group.lines
+        group = group[1..-2]
+        # split into source and non-source
+        sorted = group.group_by { |line|
+            line.start_with? /\s*##/
+        }
+        source = sorted[false]
+        body = sorted[true].map { |e|
+            e.scan($RB_OTHER_AFTER_COMMENT).first.strip
+        }
+
+        head = source.first
+        name = head.match(/"(.+?)"/).to_a[1]
+        args = nil
+
+        info = create_info(body)
+
+        final.push [name, {
+            info: info,
+            type: "",
+            args: args,
+            source: fit_least_indent(source)
+        }]
+    }
+
     final
 end
 
@@ -230,15 +259,18 @@ def generate(title)
 
             pref, * = v[:info][:types][name]
 
-            disp_name = name
+            disp_name = name.strip
 
             disp_name = "..." + disp_name if decoration == "*"
             disp_name = "**" + disp_name if decoration == "**"
 
-            if pref && pref["..."]
-                pref = pref.gsub("...", "")
-                disp_name = "..." + disp_name
-            end
+            ["...", "**"].each { |check|
+                if pref && pref[check]
+                    pref = pref.gsub(check, "")
+                    pref = nil if pref.empty?
+                    disp_name = check + disp_name
+                end
+            }
 
             head = unless pref.nil?
                 BOILERPLATES[:argument] % {
@@ -359,13 +391,22 @@ def generate(title)
 
     result = preamble + toc_result + "<div id=\"functions\">#{result}</div>"
 
-    BOILERPLATES[:html] % {
-        title: title,
-        body: result
+    {
+        content: BOILERPLATES[:html] % {
+            title: title,
+            body: result
+        },
+        count: final.size,
     }
 end
 
-sources = ["AtFunctions.rb", "libs/std.@", "libs/visuals.@"]
+sources = %w(
+    AtFunctions.rb
+    libs/metattache.rb
+    libs/ppcg.@
+    libs/std.@
+    libs/visuals.@
+)
 
 index = ""
 
@@ -377,9 +418,10 @@ sources.each { |source|
     base = File.basename source, ".*"
     dest = "docs/#{base}.html"
 
-    File.write dest, generate(source)
+    data = generate source
+    File.write dest, data[:content]
 
-    index += "<li><a href=\"./#{base}.html\">#{base}</a></li>"
+    index += "<li><a href=\"./#{base}.html\">#{base}</a> (function count: #{data[:count]})</li>"
 }
 index += "</ul>"
 
