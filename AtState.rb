@@ -1295,6 +1295,16 @@ class AtState
         end
     end
 
+    def enlist(value)
+        if class_has? value, "$map"
+            map_vector(self, value)
+        elsif value.nil?
+            [value]
+        else
+            [*value]
+        end
+    end
+
     include AtFunctionCatalog
 end
 

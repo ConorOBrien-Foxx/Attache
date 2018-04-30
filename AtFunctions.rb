@@ -2301,7 +2301,7 @@ module AtFunctionCatalog
         # @example ?? 1
         #>>
         "FlatGet" => lambda { |inst, list, inds|
-            [*inds].each { |i|
+            inst.enlist(inds).each { |i|
                 list = list[i]
             }
             list
@@ -4216,7 +4216,7 @@ module AtFunctionCatalog
             if AtState.func_like? g
                 lambda { |inst, *args| f[inst, *g[inst, *args]] }
             else
-                f[inst, *g]
+                f[inst, *g] rescue @@functions["FlatGet"][inst, f, g]
             end
         },
         "@%" => lambda { |inst, f, g|
@@ -4243,7 +4243,7 @@ module AtFunctionCatalog
                     b[inst, a, *args]
                 }
             else
-                resize([*b], a)
+                resize(inst.enlist(b), a)
             end
         },
         "&:" => lambda { |inst, a, b|
