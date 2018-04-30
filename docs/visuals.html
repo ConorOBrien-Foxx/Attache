@@ -12,7 +12,7 @@
         Format["\x1b[%sm%s\x1b[0m", highlight_styles[_.type], _.raw]
     } => tokens
 }
-</pre></div></div><div class="function" id="highlight_html"><h2><code>highlight_html[<span class="type">string</span> code] &rarr; <span class="return">string</span> </code><span class="genre">(string)</span></h2>asdf <button class="source-button" id="highlight_html-button">toggle source</button><div id="highlight_html-source" class="code-source"><pre>highlight_html[code] := Join! {
+</pre></div></div><div class="function" id="highlight_html"><h2><code>highlight_html[<span class="type">string</span> code] &rarr; <span class="return">string</span> </code><span class="genre">(string)</span></h2>Returns a string consisting of valid HTML with <code>&lt;code&gt;</code> tags surrounding each token, each with a class equal to <code>at_(TOKEN_TYPE)</code> as appropriate. Check <a href="https://raw.githubusercontent.com/ConorOBrien-Foxx/Attache/master/libs/visuals.%40">libs/visuals.@</a> for a complete list of token types. <button class="source-button" id="highlight_html-button">toggle source</button><div id="highlight_html-source" class="code-source"><pre>highlight_html[code] := Join! {
     Format["<code class=""at_%s"">%s</code>", _.type, HTMLEscape[_.raw]]
 } => Tokenize[code]
 </pre></div></div></div></div></body>

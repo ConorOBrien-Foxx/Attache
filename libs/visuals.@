@@ -30,7 +30,10 @@ highlight := [code] -> {
 ??>>
 
 ??<<
-??? asdf
+??? Returns a string consisting of valid HTML with <code>&lt;code&gt;</code> tags
+??? surrounding each token, each with a class equal to <code>at_(TOKEN_TYPE)</code>
+??? as appropriate. Check <a href="https://raw.githubusercontent.com/ConorOBrien-Foxx/Attache/master/libs/visuals.%40">libs/visuals.@</a>
+??? for a complete list of token types.
 ??? @type code string
 ??? @return string
 ??? @genre string
