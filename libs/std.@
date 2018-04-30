@@ -100,3 +100,5 @@ MinMax := Min # V # Max
 Divisors[x] := `|&x \ 1:x
 
 ?? TODO: rainbow
+
+Generate := GenerateFirst&:N
