@@ -599,9 +599,13 @@ module AtFunctionCatalog
         "GenerateFirst" => lambda { |inst, f, cond, start=0|
             res = nil
             n = start
-            until !res.nil? && AtState.truthy?(cond[inst, res = f[inst, n]])
+            loop {
+                res = f[inst, n]
+                unless res.nil?
+                    break if AtState.truthy? cond[inst, res]
+                end
                 n += 1
-            end
+            }
             res
         },
         #<<
