@@ -2,7 +2,7 @@
 # TODO: fix that
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
-    
+
     # functions which can receive key things
     @@configurable = [
         "Bisect",
@@ -4205,7 +4205,7 @@ module AtFunctionCatalog
                     f[inst, g[inst, *args]]
                 }
             else
-                f[g]
+                f[g] rescue f[inst, g]
             end
         },
         "@@" => lambda { |inst, f, g|
