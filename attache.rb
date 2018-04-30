@@ -5,40 +5,40 @@ require_relative 'AtState.rb'
 
 class AttacheParser
     FILENAME = File.basename __FILE__
-    
+
     def self.parse(args)
         options = {}
         # defaults
         #none
-        
+
         parser = OptionParser.new { |opts|
             opts.program_name = FILENAME
             opts.banner = "Usage: #{FILENAME} [options]"
-            
+
             opts.separator ""
             opts.separator "[options]"
-            
+
             opts.on(
                 "-d", "--debug",
                 "Debug the program"
             ) do |v|
                 options[:debug] = v
             end
-            
+
             opts.on(
                 "-t", "--tokenize",
                 "Display the tokens of the input program"
             ) do |v|
                 options[:tokenize] = v
             end
-            
+
             opts.on(
                 "-s", "--shunt",
                 "Display the result of the shunted program"
             ) do |v|
                 options[:shunt] = v
             end
-            
+
             opts.on(
                 "-i", "--STDIN [TYPE]",
                 String,
@@ -46,21 +46,21 @@ class AttacheParser
             ) do |v=nil|
                 options[:stdin] = v
             end
-            
+
             opts.on(
                 "-p", "--program",
                 "Display the program received by #{FILENAME}"
             ) do |v|
                 options[:show_program] = v
             end
-            
+
             opts.on(
                 "-a", "--ast",
                 "Display the AST parsed from the program"
             ) do |v|
                 options[:ast] = v
             end
-            
+
             opts.on(
                 "-e", "--execute CODE",
                 String,
@@ -68,25 +68,31 @@ class AttacheParser
             ) do |v|
                 options[:program] = v
             end
-            
+
             opts.on("-r", "--repl",
                 "Engages the Attache repl",
             ) do |v|
                 options[:repl] = v
             end
-            
+
+            opts.on("-H", "--highlight",
+                "Performs syntax highlighting on the code"
+            ) do |v|
+                options[:highlight] = v
+            end
+
             opts.on("-T", "--templat",
                 "Executes TemplAt code"
             ) do |v|
                 options[:templat] = v
             end
-            
+
             opts.on("-S", "--serve-templat",
                 "Starts localhost:8000 with TemplAt code"
             ) do |v|
                 options[:serve_templat] = v
             end
-            
+
             opts.on_tail(
                 "-h", "--help",
                 "Show this help message"
@@ -138,6 +144,13 @@ if options[:repl]
     program += 'Needs["repl"]; REPL[]'
 end
 
+if options[:highlight]
+    inst = AtState.new "Needs[$visuals]"
+    inst.run
+    print inst.variables["highlight"][inst, program]
+    exit
+end
+
 if options[:show_program]
     puts "[program]"
     puts program
@@ -151,7 +164,7 @@ if options[:tokenize] || options[:shunt]
     iter = {}
     iter[:tokenize] = :tokenize   if options[:tokenize]
     iter[:shunt]    = :parse      if options[:shunt]
-    
+
     iter.each { |display, option|
         puts "[#{display}]"
         tokens = send option, program

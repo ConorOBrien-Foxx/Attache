@@ -16,13 +16,25 @@ highlight_styles := <~
     abstract        -> "32;1"
 ~>
 
+??<<
+??? Returns a string with ANSII escape sequences surrounding each token in <code>code</code>.
+??? @type code string
+??? @return string
+??? @genre string
 highlight := [code] -> {
     tokens .= Tokenize[code]
     inner .= Join! {
         Format["\x1b[%sm%s\x1b[0m", highlight_styles[_.type], _.raw]
     } => tokens
 }
+??>>
 
+??<<
+??? asdf
+??? @type code string
+??? @return string
+??? @genre string
 highlight_html[code] := Join! {
     Format["<code class=""at_%s"">%s</code>", _.type, HTMLEscape[_.raw]]
 } => Tokenize[code]
+??>>

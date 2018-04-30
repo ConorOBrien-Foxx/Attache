@@ -365,7 +365,7 @@ def generate(title)
     }
 end
 
-sources = ["AtFunctions.rb", "libs/std.@"]
+sources = ["AtFunctions.rb", "libs/std.@", "libs/visuals.@"]
 
 index = ""
 

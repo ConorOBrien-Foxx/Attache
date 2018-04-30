@@ -582,7 +582,7 @@
 </code><code class="at_comment">?? [1, 0, 0]
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">FlatGet</code><code class="at_bracket_open">[</code><code class="at_word">id</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">0</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? 1</code></code></div><a href="https://tio.run/##SywpSUzOSP3/PzNFwcpWwTMlNa8ks6Qy2jiWyyWzuCAnsTI6MyWWy95eQcFQwUDBAMwyALGhLCCbK6AoM68k2i0nscQ9tQSoXkfBIBasJ9oQyATxsCiJBqohQhHYLLA6w///AQ">Try it online!</a><button class="source-button" id="FlatGet-button">toggle source</button><div id="FlatGet-source" class="code-source"><pre>"FlatGet" => lambda { |inst, list, inds|
-    [*inds].each { |i|
+    inst.enlist(inds).each { |i|
         list = list[i]
     }
     list
@@ -624,9 +624,13 @@
 },</pre></div></div><div class="function" id="GenerateFirst"><h2><code>GenerateFirst[<span class="type">fn</span> f, <span class="type">fn</span> cond, <span class="type">number</span> start?] &rarr; <span class="return">(*)</span> </code><span class="genre">(functional)</span></h2>Starting at <code>n = start</code>, increments <code>n</code> until <code>cond[f[n]]</code> is truthy. Returns <code>f[n]</code>. Note: this ignores <code>nil</code> values returned. <h3>Arguments</h3><p><code><span class="type">fn</span> f</code> - A function that maps a number to a domain, such as <code>Square</code> or <code>Prime</code>.</p><p><code><span class="type">fn</span> cond</code> - A function which, given a possible result of <code>f</code>, returns a truthy or falsey value.</p><p><code><span class="type">number</span> start?</code> - The starting point for testing numbers.</p><button class="source-button" id="GenerateFirst-button">toggle source</button><div id="GenerateFirst-source" class="code-source"><pre>"GenerateFirst" => lambda { |inst, f, cond, start=0|
     res = nil
     n = start
-    until !res.nil? && AtState.truthy?(cond[inst, res = f[inst, n]])
+    loop {
+        res = f[inst, n]
+        unless res.nil?
+            break if AtState.truthy? cond[inst, res]
+        end
         n += 1
-    end
+    }
     res
 },</pre></div></div><div class="function" id="GenerateN"><h2><code>GenerateN[<span class="type">fn</span> f, <span class="type">fn</span> cond, <span class="type">number</span> size, <span class="type">number</span> start?] &rarr; <span class="return">(*)</span> </code><span class="genre">(functional)</span></h2>Similar to <a href="#GenerateFirst"><code>GenerateFirst</code></a>, returns the first <code>size</code> values of <code>f</code> satisfying <code>cond</code> <h3>Arguments</h3><p><code><span class="type">fn</span> f</code> - A function that maps a number to a domain, such as <code>Square</code> or <code>Prime</code>.</p><p><code><span class="type">fn</span> cond</code> - A function which, given a possible result of <code>f</code>, returns a truthy or falsey value.</p><p><code><span class="type">number</span> start?</code> - The starting point for testing numbers.</p><button class="source-button" id="GenerateN-button">toggle source</button><div id="GenerateN-source" class="code-source"><pre>"GenerateN" => lambda { |inst, f, cond, size, start=0|
     res = nil
