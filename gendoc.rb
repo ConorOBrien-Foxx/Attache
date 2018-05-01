@@ -146,7 +146,7 @@ def get_info_rb(input)
         group = group[1..-2]
         # split into source and non-source
         sorted = group.group_by { |line|
-            line.start_with? /\s*##/
+            /^\s*##/ === line
         }
         source = sorted[false]
         body = sorted[true].map { |e|
@@ -182,7 +182,7 @@ def get_info_attache(input)
         group = group[1..-2]
         # split into source and non-source
         sorted = group.group_by { |line|
-            line.start_with? /\s*\?{3}/
+            /^\s*\?{3}/ === line
         }
         source = sorted[false]
         body = sorted[true].map { |e|
@@ -190,12 +190,14 @@ def get_info_attache(input)
         }
 
         head = source.first
-        name = head.match($WORD).to_s
+        name = head.scan($WORD).find { |e| e != "ClassNamed" }
         args = head.match(/#$WORD\s*\[(.+?)\]\s*[.:]=/).to_a[1]
         args &&= args.split(/,\s*/)
 
         info = create_info(body)
-
+        
+        source = [highlight_html(source.join)]
+        
         final.push [name, {
             info: info,
             type: "",
