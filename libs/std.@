@@ -102,3 +102,6 @@ Divisors[x] := `|&x \ 1:x
 ?? TODO: rainbow
 
 Generate := GenerateFirst&:N
+
+?? TODO: rings
+?? Rings[mat, n] := 32
