@@ -50,7 +50,7 @@ Output := Configure[Print, joiner->lf, after->es]@@Tie
 ??? <code>Range[...args]</code>
 ??? @type base number
 ??? @type args number...
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 ??? @example Print => BaseRange[2, 0, 10]
 ??? @example ?? [0, 0, 0, 1]
@@ -76,7 +76,7 @@ BaseRange := {
 ??? <code>base ^ n</code>.
 ??? @type base number
 ??? @type n number
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 BaseBelow[base, n] := BaseRange[base, base^n-1]
 ??>>
@@ -85,7 +85,7 @@ BaseBelow[base, n] := BaseRange[base, base^n-1]
 ??? Returns an array of base <code>2</code> digits of the numbers found in
 ??? <code>Range[...args]</code>
 ??? @type args number...
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 BinRange := 2&BaseRange
 ??>>
@@ -94,7 +94,7 @@ BinRange := 2&BaseRange
 ??? Returns an array of base <code>8</code> digits of the numbers found in
 ??? <code>Range[...args]</code>
 ??? @type args number...
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 OctRange := 8&BaseRange
 ??>>
@@ -103,7 +103,7 @@ OctRange := 8&BaseRange
 ??? Returns an array of base <code>16</code> digits of the numbers found in
 ??? <code>Range[...args]</code>
 ??? @type args number...
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 HexRange := 16&BaseRange
 ??>>
@@ -112,7 +112,7 @@ HexRange := 16&BaseRange
 ??? Returns an array of base <code>2</code> digits less than
 ??? <code>2 ^ n</code>.
 ??? @type n number
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 BinBelow := 2&BaseBelow
 ??>>
@@ -120,7 +120,7 @@ BinBelow := 2&BaseBelow
 ??? Returns an array of base <code>8</code> digits less than
 ??? <code>8 ^ n</code>.
 ??? @type n number
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 OctBelow := 8&BaseBelow
 ??>>
@@ -128,7 +128,7 @@ OctBelow := 8&BaseBelow
 ??? Returns an array of base <code>16</code> digits less than
 ??? <code>16 ^ n</code>.
 ??? @type n number
-??? @return [number]
+??? @return [[number]]
 ??? @genre numeric/bases
 HexBelow := 16&BaseBelow
 ??>>
@@ -177,15 +177,40 @@ OverGrid[f] := UnGrid@f@Grid
 MinMax := Min # V # Max
 ??>>
 
+??<<
+??? Returns all positive integers which divide <code>n</code>.
+??? @type n number
+??? @return [number]
+??? @genre numeric
 Divisors := @{
     a .= `|&_ \ 1:Sqrt[_]
     Concat[a, Reverse[_ / a]] |> Unique
 }
+??>>
 
+??<<
+??? Returns all but the last element of <code>list</code>.
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
 Betail[list] := list[0...#list - 1]
-Behead[list] := list[1...#list]
-ProperDivisors := @(Betail@Divisors)
+??>>
 
+??<<
+??? Returns all but the first element of <code>list</code>.
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
+Behead[list] := list[1...#list]
+??>>
+
+??<<
+??? Returns all divisors of <code>n</code>, except <code>n</code>.
+??? @type n number
+??? @return [number]
+??? @genre numeric
+ProperDivisors := @(Betail@Divisors)
+??>>
 
 ?? TODO: rainbow
 
