@@ -2444,7 +2444,7 @@ module AtFunctionCatalog
         # @example ?? [3, 2, 3]
         #>>
         "Larger" => vectorize_dyad { |inst, a, b|
-            [a, b].max
+            [*a, *b].max
         },
         #<<
         # Returns the last member of <code>list</code>.
@@ -2478,7 +2478,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Max" => lambda { |inst, *args|
-            args.flatten.max
+            (args.flatten - [nil]).max
         },
         #<<
         # Returns the median of <code>list</code>.
@@ -2500,7 +2500,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Min" => lambda { |inst, *args|
-            args.flatten.min
+            (args.flatten - [nil]).min
         },
         #<<
         # Returns the outermost <code>n</code> elements from the left and right sides of <code>list</code>.

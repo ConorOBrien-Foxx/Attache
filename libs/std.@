@@ -177,7 +177,15 @@ OverGrid[f] := UnGrid@f@Grid
 MinMax := Min # V # Max
 ??>>
 
-Divisors[x] := `|&x \ 1:x
+Divisors := @{
+    a .= `|&_ \ 1:Sqrt[_]
+    Concat[a, Reverse[_ / a]] |> Unique
+}
+
+Betail[list] := list[0...#list - 1]
+Behead[list] := list[1...#list]
+ProperDivisors := @(Betail@Divisors)
+
 
 ?? TODO: rainbow
 
