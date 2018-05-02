@@ -1,3 +1,29 @@
 ?? rudimentary repl program
+Needs[$visuals]
 
-REPL := Safely[ReadLineLoop<~"A> ", Display@First@Save@EvalHere~>, redo->true]
+??REPL := Safely[ReadLineLoop<~"A> ", Display@First@Save@EvalHere~>, redo->true]
+
+ClassNamed[Entry]! {
+    input .= _1
+    output .= _2
+
+    $map[f] .= [f[input], f[output]]
+    $equal[other] .= All[[input, output] = other]
+}
+
+previous := []
+head := "A> "
+REPL := {
+    Safely[ReadLineLoop<~head, {
+        line .= Chomp <| _
+        ?? go to line, reset prompt
+        Print["\e[1A" + head, after->""]
+        Print[highlight[line]]
+        res .= EvalHere[line, Last => previous]
+        next .= Entry[line, res]
+        If[#previous = 0 or Last[previous] =/= next,
+            Unshift[previous, Entry[line, res]]
+        ]
+        Display[res]
+    }~>, redo->true][]
+}

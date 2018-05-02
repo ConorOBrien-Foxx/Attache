@@ -169,9 +169,9 @@ module AtFunctionCatalog
         # @type str string
         # @genre meta
         #>>
-        "EvalHere" => lambda { |inst, str|
+        "EvalHere" => lambda { |inst, str, blanks=[]|
             ast(str).map { |tree|
-                inst.evaluate_node tree
+                inst.evaluate_node tree, blanks
             }.last
         },
         #<<
@@ -481,6 +481,15 @@ module AtFunctionCatalog
             list.pop
         },
         #<<
+        # Pops a member from the start of <code>list</code>, modifying it. Returns that element.
+        # @type list [(*)]
+        # @return (*)
+        # @genre list
+        #>>
+        "Shift" => lambda { |inst, list|
+            list.shift
+        },
+        #<<
         # Pushes <code>args</code> to the end of <code>list</code>, modifying it. Returns <code>list</code>.
         # @type list [(*)]
         # @type args (*)
@@ -489,6 +498,16 @@ module AtFunctionCatalog
         #>>
         "Push" => lambda { |inst, list, *args|
             list.push *args
+        },
+        #<<
+        # Pushes <code>args</code> to the start of <code>list</code>, modifying it. Returns <code>list</code>.
+        # @type list [(*)]
+        # @type args (*)
+        # @return [(*)]
+        # @genre list
+        #>>
+        "Unshift" => lambda { |inst, list, *args|
+            list.unshift *args
         },
         #<<
         # Determines if <code>ent</code> is palindromic, that is, if it is itself reversed.
@@ -2203,7 +2222,7 @@ module AtFunctionCatalog
         # @example ?? H
         #>>
         "First" => lambda { |inst, list|
-            list[0]
+            inst.cast_list(list)[0]
         },
         #<<
         # Returns the first element <code>e</code> in <code>list</code> which satisfies <code>f</code>. Returns <code>nil</code> otherwise.
@@ -2457,7 +2476,7 @@ module AtFunctionCatalog
         # @example ?? 5
         #>>
         "Last" => lambda { |inst, list|
-            list[-1]
+            inst.cast_list(list)[-1]
         },
         #<<
         # Forces <code>ent</code> into a list.
@@ -3349,6 +3368,12 @@ module AtFunctionCatalog
         "String" => lambda { |inst, ent|
             inst.cast_string ent
         },
+        "Strip" => lambda { |inst, str|
+            str.strip
+        },
+        "Chomp" => lambda { |inst, str|
+            str.chomp
+        },
         "SwapCase" => vectorize_monad { |inst, str|
             str.chars.map { |e|
                 if e != e.upcase
@@ -3851,7 +3876,13 @@ module AtFunctionCatalog
         # @genre operator/logic
         #>>
         "==" => lambda { |inst, x, y|
-            x == y
+            if class_has? x, "$equal"
+                x["$equal"][inst, y]
+            elsif class_has? y, "$equal"
+                y["$equal"][inst, x]
+            else
+                x == y
+            end
         },
         #<<
         # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise.

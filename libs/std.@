@@ -223,5 +223,7 @@ ProperDivisors := @(Betail@Divisors)
 Generate := GenerateFirst&:N
 ??>>
 
+Echo := Configure[Print, after->es]
+
 ?? TODO: rings
 ?? Rings[mat, n] := 32
