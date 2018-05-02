@@ -2841,7 +2841,8 @@ module AtFunctionCatalog
             res.delete_if { |e| exclude.include? e.size }
         },
         "Sum" => lambda { |inst, list|
-            list.inject(0) { |a, e|
+            head = String === list.first ? "" : 0
+            list.inject(head) { |a, e|
                 @@operators["+"][inst, a, e]
             }
         },
@@ -3100,6 +3101,12 @@ module AtFunctionCatalog
                     f[inst, *e]
                 }
             end
+        },
+        "Cross" => lambda { |inst, func, *lists|
+            head, *rest = lists
+            head.product(*rest).map { |e|
+                func[inst, *e]
+            }
         },
         "Select" => lambda { |inst, f, list=nil|
             if AtState.func_like?(list) || list.nil?
