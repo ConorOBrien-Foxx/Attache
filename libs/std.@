@@ -167,6 +167,14 @@ OverGrid[f] := UnGrid@f@Grid
 ??>>
 
 ??<<
+??? Returns a function which applies <code>f</code> to the charcters in a string. This returns a string.
+??? @type f fn
+??? @return fn
+??? @genre functional/string
+OverChars[f] := Join@f@Chars
+??>>
+
+??<<
 ??? Returns the minimum and the maximum of <code>list</code> in a 2-element array.
 ??? @type list [(*)]
 ??? @return [(*), (*)]
@@ -227,3 +235,9 @@ Echo := Configure[Print, after->es]
 
 ?? TODO: rings
 ?? Rings[mat, n] := 32
+
+MaskMatrix[fs, mask, list] := (
+    If[Concat[fs] =/= fs, fs .= [Id, fs]];;
+    ZipWith<~Call, _, list~> => fs[mask]
+)
+
