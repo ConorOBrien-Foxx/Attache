@@ -3083,13 +3083,14 @@ module AtFunctionCatalog
                 list.map { |e| f[inst, e, *args] }
             end
         },
-        "MaxBy" => lambda { |inst, f, list|
+        "MaxBy" => curry { |inst, f, list|
             list.max_by { |e| f[inst, e] }
         },
-        "MinBy" => lambda { |inst, f, list|
+        "MinBy" => curry { |inst, f, list|
             list.min_by { |e| f[inst, e] }
         },
-        "Outer" => lambda { |inst, f, *lists|
+        # note: at *least* 2 arguments
+        "Outer" => curry(2) { |inst, f, *lists|
             if lists.empty?
                 lambda { |inst, *lists|
                     combine(*lists) { |*e|
@@ -3102,7 +3103,8 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Cross" => lambda { |inst, func, *lists|
+        # note: at *least* 2 arguments
+        "Cross" => curry(2) { |inst, func, *lists|
             head, *rest = lists
             head.product(*rest).map { |e|
                 func[inst, *e]
