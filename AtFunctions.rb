@@ -3044,7 +3044,7 @@ module AtFunctionCatalog
                 }
             else
                 # copy list
-                list = list.to_a
+                list = list.dup
                 if start.nil?
                     start = list.shift
                 end
