@@ -3044,6 +3044,8 @@ module AtFunctionCatalog
                     @@functions["Fold"][inst, f, g[inst, list], start]
                 }
             else
+                # copy list
+                list = list.dup
                 if start.nil?
                     start = list.shift
                 end
