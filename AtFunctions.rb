@@ -3991,6 +3991,26 @@ module AtFunctionCatalog
             end
         },
         #<<
+        # Returns a range from <code>x</code> up to <code>y</code>. If <code>x &gt; y</code>, returns a reversed range.
+        # @type x number
+        # @type y number
+        # @return [number]
+        # @genre operator
+        # @example Print[3::6]
+        # @example ?? [3, 4, 5, 6]
+        # @example Print[6::3]
+        # @example ?? [6, 5, 4, 3]
+        # @example Print[-3::-6]
+        # @example ?? [-3, -4, -5, -6]
+        #>>
+        "::" => vectorize_dyad { |inst, x, y|
+            if x < y
+                @@operators[":"][inst, x, y]
+            else
+                @@operators[":"][inst, y, x].reverse
+            end
+        },
+        #<<
         # Returns a range from <code>x</code> to <code>y</code>, inclusive.
         # @type x number
         # @type y number
