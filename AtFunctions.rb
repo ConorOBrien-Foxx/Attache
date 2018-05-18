@@ -1535,8 +1535,9 @@ module AtFunctionCatalog
         # @type n (*)
         # @return (*)
         # @genre functional
+        # @curries
         #>>
-        "Fixpoint" => lambda { |inst, f, n|
+        "Fixpoint" => curry { |inst, f, n|
             fixpoint f.bind(inst), n
         },
         #<<
