@@ -2841,6 +2841,7 @@ module AtFunctionCatalog
             res.delete_if { |e| exclude.include? e.size }
         },
         "Sum" => lambda { |inst, list|
+            list = force_list(list)
             head = String === list.first ? "" : 0
             list.inject(head) { |a, e|
                 @@operators["+"][inst, a, e]
