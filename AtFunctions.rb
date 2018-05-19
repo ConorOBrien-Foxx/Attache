@@ -856,6 +856,17 @@ module AtFunctionCatalog
             discrete_log n, base
         },
         #<<
+        # Returns <code>true</code> is <code>n</code> is a
+        # <a href="#Rational"><code>Rational</code></a>, <code>false</code>
+        # otherwise.
+        # @type x (*)
+        # @return bool
+        # @genre numeric/logic
+        #>>
+        "IsRational" => lambda { |inst, x|
+            Rational === x
+        },
+        #<<
         # Takes the base-<code>10</code> logarithm of <code>n</code>.
         # @type n number
         # @return number
@@ -1312,11 +1323,42 @@ module AtFunctionCatalog
         # @genre numeric/logic
         #>>
         "Imaginary" => vectorize_monad { |inst, n|
-            unless n.real?
-                n.imaginary != 0
+            @@functions["IsImaginary"][inst, n]
+        },
+        #<<
+        # Returns <code>true</code> if <code>n</code> = <code>a+bi</code> for <code>b /= 0</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type n number
+        # @genre numeric/logic
+        #>>
+        "IsImaginary" => lambda { |inst, n|
+            if Numeric === n
+                unless n.real?
+                    n.imaginary != 0
+                else
+                    false
+                end
             else
                 false
             end
+        },
+        #<<
+        # Returns the imaginary part of <code>n</code>, or <code>0</code> if it doesn't exist.
+        # @type n (*)
+        # @return number
+        # @genre numeric
+        #>>
+        "Im" => vectorize_monad { |inst, n|
+            n.imaginary rescue 0
+        },
+        #<<
+        # Returns the imaginary part of <code>n</code>, or <code>n</code> if it doesn't exist.
+        # @type n (*)
+        # @return number
+        # @genre numeric
+        #>>
+        "Re" => vectorize_monad { |inst, n|
+            n.real rescue n
         },
         #<<
         # Returns <code>true</code> if <code>n</code> is less than <code>0</code>, otherwise <code>false</code>.
@@ -2109,7 +2151,6 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        # [1, 2, 3], [2, 3]
         "Collapse" => lambda { |inst, *lists|
             lists.map.with_index { |c, i|
                 if i == 0
@@ -3888,6 +3929,7 @@ module AtFunctionCatalog
         },
         #<<
         # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise.
+        # <em>Note:</em> does not call operator equality.
         # @type x (*)
         # @type y (*)
         # @return bool
@@ -3918,9 +3960,23 @@ module AtFunctionCatalog
                 x["$equal"][inst, y]
             elsif class_has? y, "$equal"
                 y["$equal"][inst, x]
+            elsif Type === x
+                x.to_s == y
+            elsif Type === y
+                x == y.to_s
             else
                 x == y
             end
+        },
+        #<<
+        # Synonym for <a href="#=="><code>==</code></a>.
+        # @type x (*)
+        # @type y (*)
+        # @return bool
+        # @genre operator/logic
+        #>>
+        "is" => lambda { |inst, x, y|
+            @@operators["=="][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise.
@@ -4535,8 +4591,17 @@ module AtFunctionCatalog
         # @return class|nil
         # @genre unary operator
         #>>
-        "typeof" => lambda { |inst, el|
+        "parentof" => lambda { |inst, el|
             el.parent rescue nil
+        },
+        #<<
+        # Returns the type of <code>el</code>.
+        # @type el (*)
+        # @return Type
+        # @genre unary operator
+        #>>
+        "typeof" => lambda { |inst, el|
+            AtState.typeof(el)
         },
         #<<
         # Returns <code>false</code> if <code>b</code> is truthy, <code>true</code> otherwise.

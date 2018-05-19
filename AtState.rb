@@ -27,100 +27,102 @@ $CURRY_CLOSE = /~>|»/
 $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
-    "."       => [99, :left],
+    "."        => [99, :left],
 
-    ":"       => [30, :left],
-    "::"      => [30, :left],
+    ":"        => [30, :left],
+    "::"       => [30, :left],
 
-    "&"       => [26, :left],
-    "&:"      => [26, :left],
-    "~"       => [25, :left],
-    "@"       => [24, :left],
-    "@@"      => [24, :left],
-    "@%"      => [24, :left],
-    "&>"      => [20, :right],
-    "=>"      => [20, :right],
-    "⇒"      => [20, :right], # => alias
-    "\\"      => [20, :right],
-    "#"       => [20, :left],
-    "''"      => [20, :left],
-    "'"       => [20, :left],
-    "##"      => [19, :left],
+    "&"        => [26, :left],
+    "&:"       => [26, :left],
+    "~"        => [25, :left],
+    "@"        => [24, :left],
+    "@@"       => [24, :left],
+    "@%"       => [24, :left],
+    "&>"       => [20, :right],
+    "=>"       => [20, :right],
+    "⇒"       => [20, :right], # => alias
+    "\\"       => [20, :right],
+    "#"        => [20, :left],
+    "''"       => [20, :left],
+    "'"        => [20, :left],
+    "##"       => [19, :left],
 
 
 
-    "∩"       => [18, :left], # Intersection alias
-    "∪"       => [17, :left], # Union alias
-    "∆"       => [17, :left], # symmetric difference
-    "Ø"       => [17, :left], # setwise difference
+    "∩"        => [18, :left], # Intersection alias
+    "∪"        => [17, :left], # Union alias
+    "∆"        => [17, :left], # symmetric difference
+    "Ø"        => [17, :left], # setwise difference
 
-    "!"       => [16, :right],
-    "^"       => [15, :right],
-    "?"       => [15, :left],
-    "*"       => [13, :left],
-    "/"       => [13, :left],
-    "//"      => [13, :left],
-    "⁄"       => [13, :left], # // alias (fraction slash)
-    "%"       => [13, :left],
-    "|"       => [12, :left],
-    "+"       => [11, :left],
-    "-"       => [11, :left],
-    "±"       => [11, :left],
-    "<:"      => [10, :left],
-    "↞"      => [10, :left],
+    "!"        => [16, :right],
+    "^"        => [15, :right],
+    "?"        => [15, :left],
+    "*"        => [13, :left],
+    "/"        => [13, :left],
+    "//"       => [13, :left],
+    "⁄"        => [13, :left], # // alias (fraction slash)
+    "%"        => [13, :left],
+    "|"        => [12, :left],
+    "+"        => [11, :left],
+    "-"        => [11, :left],
+    "±"        => [11, :left],
+    "<:"       => [10, :left],
+    "↞"       => [10, :left],
 
-    "="       => [9, :left],
-    "=/="     => [9, :left],
-    "/="      => [9, :left],
-    "≠"       => [9, :left], # /= alias
-    "=="      => [9, :left],
-    "<"       => [9, :left],
-    ">"       => [9, :left],
-    "<="      => [9, :left],
-    "≤"       => [9, :left], # <= alias
-    ">="      => [9, :left],
-    "≥"       => [9, :left], # >= alias
+    "="        => [9, :left],
+    "=/="      => [9, :left],
+    "/="       => [9, :left],
+    "≠"        => [9, :left], # /= alias
+    "=="       => [9, :left],
+    "is"       => [9, :left], # == alias
+    "<"        => [9, :left],
+    ">"        => [9, :left],
+    "<="       => [9, :left],
+    "≤"        => [9, :left], # <= alias
+    ">="       => [9, :left],
+    "≥"        => [9, :left], # >= alias
 
-    "in"      => [8, :left],
-    "is_a"    => [8, :left],
+    "in"       => [8, :left],
+    "is_a"     => [8, :left],
 
-    ".."      => [7, :left],
-    "‥"       => [7, :left], # .. alias
-    "..."     => [7, :left],
-    "…"       => [7, :left], # ... alias
+    ".."       => [7, :left],
+    "‥"        => [7, :left], # .. alias
+    "..."      => [7, :left],
+    "…"        => [7, :left], # ... alias
 
-    "|>"      => [6, :left],
-    "▷"      => [6, :left], # |> alias
-    "<|"      => [6, :right],
-    "◁"      => [6, :left], # <| alias
+    "|>"       => [6, :left],
+    "▷"       => [6, :left], # |> alias
+    "<|"       => [6, :right],
+    "◁"       => [6, :left], # <| alias
 
-    "and"     => [6, :left],
-    "∧"       => [6, :left], # and alias
-    "nor"     => [6, :left],
-    "⊽"       => [6, :left], # nor alias
-    "not"     => [6, :left],
-    "xor"     => [5, :left],
-    "⊻"       => [5, :left], # xor alias
-    "or"      => [5, :left],
-    "∨"       => [5, :left], # or alias
-    "nand"    => [5, :left],
-    "⊼"       => [5, :left], # nand alias
+    "and"      => [6, :left],
+    "∧"        => [6, :left], # and alias
+    "nor"      => [6, :left],
+    "⊽"        => [6, :left], # nor alias
+    "not"      => [6, :left],
+    "xor"      => [5, :left],
+    "⊻"        => [5, :left], # xor alias
+    "or"       => [5, :left],
+    "∨"        => [5, :left], # or alias
+    "nand"     => [5, :left],
+    "⊼"        => [5, :left], # nand alias
 
-    "->"      => [4, :left],
-    "→"       => [4, :left], # -> alias
+    "->"       => [4, :left],
+    "→"        => [4, :left], # -> alias
 
-    "else"    => [3, :left],
-    ":>"      => [3, :left],
-    "↠"      => [3, :left], # :> alias
-    "typeof"  => [3, :left],
+    "else"     => [3, :left],
+    ":>"       => [3, :left],
+    "↠"       => [3, :left], # :> alias
+    "typeof"   => [3, :left],
+    "parentof" => [3, :left],
 
-    ":="      => [2, :right],
-    "::="     => [2, :right],
-    "≔"      => [2, :right],
-    ".="      => [2, :right],
-    "..="     => [2, :right],
+    ":="       => [2, :right],
+    "::="      => [2, :right],
+    "≔"       => [2, :right],
+    ".="       => [2, :right],
+    "..="      => [2, :right],
 
-    ";;"      => [1, :left],
+    ";;"       => [1, :left],
 }
 $PRECEDENCE_UNARY = Hash.new(Infinity)
 $PRECEDENCE_UNARY["..."] = 0
@@ -868,12 +870,47 @@ def class_has?(klass, prop)
     klass.methods.has_key? "#{prop}"
 end
 
+class Type
+    private_class_method :new
+    def initialize(name)
+        @value = name
+    end
+
+    STRING = new(:string)
+    ARRAY = new(:array)
+    NUMBER = new(:number)
+    def inspect
+        "Type(#{@value.to_s})"
+    end
+    def to_s
+        @value.to_s
+    end
+
+    def Type.of(el)
+        case el
+            when String
+                STRING
+            when Array
+                ARRAY
+            when Numeric
+                NUMBER
+            when AtClassInstance
+                new el.parent.name
+            else
+                raise "No type defined for #{el}, of class #{el.class}"
+        end
+    end
+end
 
 require_relative 'AtFunctions.rb'
 class AtState
     def AtState.truthy?(ent)
         return true if AtState.func_like? ent
         res = ent && ent != 0 && (ent.size != 0 rescue true)
+    end
+
+    def AtState.typeof(ent)
+        Type.of(ent)
     end
 
     def set_op_quote(token, res)

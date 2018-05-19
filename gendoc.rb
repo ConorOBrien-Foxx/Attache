@@ -126,7 +126,7 @@ def get_info_rb(input)
         info = create_info(body)
 
         name, type, args = signature.scan($RB_SIGNATURE_PARSE).first
-
+        
         args = args.split(/,\s*/)
 
         args.shift # remove inst
@@ -195,9 +195,9 @@ def get_info_attache(input)
         args &&= args.split(/,\s*/)
 
         info = create_info(body)
-        
+
         source = [highlight_html(source.join)]
-        
+
         final.push [name, {
             info: info,
             type: "",

@@ -241,3 +241,18 @@ MaskMatrix[fs, mask, list] := (
     ZipWith<~Call, _, list~> => fs[mask]
 )
 
+??<<
+??? Returns the real and imaginary portions of <code>n</code>.
+??? @return [number]
+??? @type n (*)
+??? @genre numeric
+ReIm := Re#V#Im
+??>>
+
+??
+Norm[x] := (
+    If[IsImaginary[x],
+        Norm[ReIm[x]],
+        Sqrt[Sum[x^2]]
+    ]
+)
