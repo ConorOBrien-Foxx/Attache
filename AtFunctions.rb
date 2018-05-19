@@ -3338,9 +3338,22 @@ module AtFunctionCatalog
             match = make_regex match
             source.scan(match)
         },
+        #<<
+        # Returns the UTF-8 ordinal representing <code>ent</code>.
+        # @type ent string|number
+        # @return number
+        # @genre string
+        #>>
         "Ord" => vectorize_monad { |inst, ent|
             ent.ord
         },
+        #<<
+        # Maps <code>Ord</code> over the characters of <code>ent</code> if it is a string;
+        # otherwise, is equivalent to <code>Ord</code>.
+        # @type ent string|number
+        # @return [number]|number
+        # @genre string
+        #>>
         "Ords" => vectorize_monad { |inst, ent|
             if ent.is_a? String
                 ent.chars.map(&:ord)
@@ -3408,15 +3421,58 @@ module AtFunctionCatalog
                     ent
             end
         },
-        "Center" => lambda { |inst, str, amt, n=" "|
-            str.center(amt, n)
+        #<<
+        # Centers <code>str</code> to <code>amt</code> characters, padding with
+        # <code>pad</code>.
+        # @type str string
+        # @type amt number
+        # @type pad string
+        # @optional pad
+        # @return string
+        # @param pad Default: <code>" "</code>.
+        # @genre string
+        #>>
+        "Center" => lambda { |inst, str, amt, pad=" "|
+            str.center(amt, pad)
         },
+        #<<
+        # Splits <code>str</code> on occurences of <code>sep</code>. When
+        # <code>sep</code> is omitted, splits <code>str</code> on whitespace.
+        # @type str string
+        # @type sep string|regex
+        # @optional sep
+        # @return [string]
+        # @genre string
+        #>>
         "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
             str.split sep
         },
+        #<<
+        # Replaces each character in <code>source</code> with the respective
+        # character in <code>repl</code> in <code>str</code>. Character ranges
+        # are specified with <code>-</code>.
+        # @type str string
+        # @type source string
+        # @type repl string
+        # @return string
+        # @genre string
+        # @example Print[Translate["Hello, World!", "a-z", "A-Z"]]
+        # @example ?? "HELLO, WORLD!"
+        # @example Print[Translate["No one is here today, James", "a-zA-Z", "A-Za-z"]]
+        # @example ?? "nO ONE IS HERE TODAY, jAMES"
+        #>>
         "Translate" => lambda { |inst, str, source, repl|
             str.tr source, repl
         },
+        #<<
+        # Returns all lines of <code>str</code>; splits on line breaks, which
+        # are newlines preceeded by an optional carriage reutrn.
+        # @type str string
+        # @return [string]
+        # @genre string
+        # @example Print[Lines["abc\nhello"]]
+        # @example ?? ["abc", "hello"]
+        #>>
         "Lines" => vectorize_monad { |inst, str|
             str.split(/\r?\n/)
         },
