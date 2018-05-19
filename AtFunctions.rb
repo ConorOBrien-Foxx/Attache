@@ -2104,6 +2104,31 @@ module AtFunctionCatalog
             }
         },
         #<<
+        # Concatenates all the lists in <code>lists</code>, except for matching prefix-suffix pairs.
+        # @type lists [(*)]
+        # @return [(*)]
+        # @genre list
+        #>>
+        # [1, 2, 3], [2, 3]
+        "Collapse" => lambda { |inst, *lists|
+            lists.map.with_index { |c, i|
+                if i == 0
+                    c
+                else
+                    prev = lists[i - 1]
+                    minsize = [prev, c].map(&:size).min
+
+                    ind = (0..minsize).reverse_each.find { |size|
+                        offset = prev.size - size
+                        (0...size).all? { |j|
+                            c[j] == prev[offset + j]
+                        }
+                    }
+                    c[ind..-1]
+                end
+            }.flatten(1)
+        },
+        #<<
         # Chunks <code>list</code> into runs of consecutive values. Returns an array of members which look like <code>[el, els]</code>, where <code>el</code> is the principal run value, and <code>els</code> are the values in that run.
         # @type list [(*)]
         # @optional f
@@ -4329,6 +4354,10 @@ module AtFunctionCatalog
             end
         },
         "=>" => @@functions["Map"],
+        "&>" => lambda { |inst, f, l|
+            f = @@unary_operators["&"][inst, f]
+            @@functions["Map"][inst, f, l]
+        },
         "⇒" => @@functions["Map"],
         ":>" => lambda { |inst, source, func|
             source.map { |x| func[inst, x] }
