@@ -256,3 +256,6 @@ Norm[x] := (
         Sqrt[Sum[x^2]]
     ]
 )
+
+Pairs := Slices&2
+Triples := Slices&3
