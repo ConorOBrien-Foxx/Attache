@@ -3294,13 +3294,46 @@ module AtFunctionCatalog
             grid = str.map(&:chomp).map(&:chars) rescue str
             pad_grid grid, inner
         },
+        #<<
+        # Joins <code>list</code> by <code>joiner</code>.
+        # @type list [(*)]
+        # @type joiner string
+        # @optional joiner
+        # @return string
+        # @genre string
+        #>>
         "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
             list.join joiner
         },
+        #<<
+        # Matches first occurence of <code>match</code> (cast to regex) in <code>source</code>.
+        # @type source string
+        # @type match (*)
+        # @return string
+        # @genre string/regex
+        # @example Print[Match["no you?", ".{3}"]]
+        # @example ?? "no "
+        # @example Print[Match["cat in the hat", "[ch]at"]]
+        # @example ?? "hat"
+        #>>
         "Match" => vectorize_dyad { |inst, source, match|
             match = make_regex match
-            source.match(match).to_a
+            res = source.match(match).to_a
+            if res.empty?
+                nil
+            elsif res.size == 1
+                res[0]
+            else
+                res
+            end
         },
+        #<<
+        # Matches all occurences of <code>match</code> in <code>source</code>.
+        # @type source string
+        # @type match (*)
+        # @return [(*)]
+        # @genre string/regex
+        #>>
         "MatchAll" => vectorize_dyad { |inst, source, match|
             match = make_regex match
             source.scan(match)

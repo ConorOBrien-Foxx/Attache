@@ -697,6 +697,10 @@ $MAKE_REGEX_ESCAPE = {
     "O" => "[^A-Z]",
     "i" => "[A-Za-z0-9]",
     "I" => "[^A-Za-z0-9]",
+    "h" => "[a-fA-F0-9]",
+    "H" => "[^a-fA-F0-9]",
+    "k" => "[aeiouAEIOU]",
+    "K" => "[^aeiouAEIOU]",
 }
 $MAKE_REGEX_STANDARD = "abcfnrv\\'\"^$*+?/(){}|[]bBdDwWsSc0123456789."
 $flags = {
