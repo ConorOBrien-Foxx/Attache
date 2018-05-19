@@ -1560,12 +1560,29 @@ module AtFunctionCatalog
 
             arity += 1 if AtLambda === f || AtFunction === f
 
-            rec = lambda { |fn, inst, *args|
+            rec = lambda { |fn, inst, *args, **opts|
+                # parse arguments
+                args.reject! { |e|
+                    if ConfigureValue === e
+                        opts[e.key.to_sym] = e.value
+                        true
+                    else
+                        false
+                    end
+                }
+                # p args, opts
                 if args.size >= arity - 1
-                    fn[inst, *args]
+                    if AtState.configurable? fn
+                        fn[inst, *args, **opts]
+                    elsif opts.empty?
+                        fn[inst, *args]
+                    else
+                        STDERR.puts "Excess parameter options in curried function: #{opts}"
+                        fn[inst, *args]
+                    end
                 else
-                    lambda { |inst, *more|
-                        rec[fn, inst, *args, *more]
+                    lambda { |inst, *more, **moreopts|
+                        rec[fn, inst, *args, *more, **moreopts.merge(opts)]
                     }
                 end
             }
@@ -2080,7 +2097,7 @@ module AtFunctionCatalog
         # @example Print[Bisect[1:5, bias->$right]]
         # @example ?? [[1, 2], [3, 4, 5]]
         #>>
-        "Bisect" => lambda { |inst, list, **opts|
+        "Bisect" => configurable(arity: 1) { |inst, list, **opts|
             opts[:bias] ||= "none"
             right_upper = list.size / 2.0
             left_lower = list.size / 2.0
@@ -4497,7 +4514,9 @@ module AtFunctionCatalog
         "-" => vectorize_monad { |inst, n| -n },
         "#" => lambda { |inst, n|
             if n.is_a? Train
-                n.freeze
+                lambda { |inst, args|
+                    n[inst, *args]
+                }
             else
                 @@functions["Size"][inst, n]
             end

@@ -186,13 +186,23 @@ MinMax := Min # V # Max
 ??>>
 
 ??<<
+??? Returns all positive integers which divide <code>n</code> which are also
+??? less than or equal to <code>Sqrt[n]</code>.
+??? @type n number
+??? @return [number]
+??? @genre numeric
+RawDivisors[n] :=
+    `|&_ \ 1:Sqrt[n]
+??>>
+
+??<<
 ??? Returns all positive integers which divide <code>n</code>.
 ??? @type n number
 ??? @return [number]
 ??? @genre numeric
 Divisors := @{
-    a .= `|&_ \ 1:Sqrt[_]
-    Concat[a, Reverse[_ / a]] |> Unique
+    d .= RawDivisors[_]
+    Concat[d, _ / d] |> Unique
 }
 ??>>
 
@@ -259,3 +269,8 @@ Norm[x] := (
 
 Pairs := Slices&2
 Triples := Slices&3
+
+Left := First@V
+Right := Last@V
+
+DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)

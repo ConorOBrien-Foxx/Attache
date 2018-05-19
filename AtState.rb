@@ -549,8 +549,8 @@ end
 def held(*held, &fn)
     AtFunction.new(fn, held: held)
 end
-def configurable(&fn)
-    AtFunction.new(fn, config: true)
+def configurable(arity: nil, &fn)
+    AtFunction.new(fn, config: true, arity: arity)
 end
 
 class Token
@@ -1157,6 +1157,15 @@ class AtState
                 blank_args[n..-1]
             else
                 STDERR.puts "Blank too long: #{type} of #{blank}"
+        end
+    end
+
+    def AtState.configurable?(func)
+        case func
+            when AtFunction
+                func.config
+            else
+                false
         end
     end
 
