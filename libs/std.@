@@ -1,5 +1,7 @@
 ?? core library
 
+S := String
+
 ??<<
 ??? Returns a function with arguments <code>l</code> and <code>r</code> which
 ??? calls <code>f[e, r]</code> for each element <code>e</code> in <code>l</code>.
@@ -299,6 +301,11 @@ PascalTriangle[n, seed] := (
     seed ..= [1];;
     NestList[{ 1'(Sum=>Pairs[_])'1 }, seed, n]
 )
+
+Letters := Select[IsAlpha]
+LettersOf := Unique@Letters
+Numbers := Select[IsNumeric]
+NumbersOf := Unique@Numbers
 
 FULL_LEGEND := "-.`_':=,""^;~cz><rs+?T/J\\i*!7FIltv1efuZn|35S{)L[aoCEYjx}(26Pyhkpq4bdwAG9KV8R]OUXB#Hg$&0D%MWQmN@"
 UTF8_LEGEND := "░▒▓"

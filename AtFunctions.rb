@@ -2386,6 +2386,7 @@ module AtFunctionCatalog
         # @example Print[Get["Hello, World!", 4 -> -4]]
         #>>
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
+            ind = force_number ind
             if ConfigureValue === ind
                 list[ind.key..ind.value]
             elsif class_has? list, "$get"
@@ -3319,17 +3320,12 @@ module AtFunctionCatalog
                 func[inst, *e]
             }
         },
-        "Select" => lambda { |inst, f, list=nil|
-            if AtState.func_like?(list) || list.nil?
-                g = list || lambda { |inst, a| a }
-                lambda { |inst, *args|
-                    @@functions["Select"][inst, f, g[inst, *args]]
-                }
-            else
-                list.select { |e|
-                    AtState.truthy? f[inst, e]
-                }
-            end
+        "Select" => curry { |inst, f, list|
+            iter = force_list list
+            res = iter.select { |e|
+                AtState.truthy? f[inst, e]
+            }
+            reform_list res, list
         },
         "Table" => lambda { |inst, f, as, bs=as|
             as.map { |a|
@@ -3732,13 +3728,13 @@ module AtFunctionCatalog
             str.downcase == str
         },
         "IsAlpha" => vectorize_monad { |inst, str|
-            /^[[:alpha:]]*$/ === str
+            /^[[:alpha:]]*$/ === str.to_s
         },
         "IsAlphaNumeric" => vectorize_monad { |inst, str|
-            /^[[:alnum:]]*$/ === str
+            /^[[:alnum:]]*$/ === str.to_s
         },
         "IsNumeric" => vectorize_monad { |inst, str|
-            /^[[:digit:]]*$/ === str
+            /^[[:digit:]]*$/ === str.to_s
         },
 
 
