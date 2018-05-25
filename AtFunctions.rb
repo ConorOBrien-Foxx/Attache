@@ -2735,43 +2735,145 @@ module AtFunctionCatalog
             res = resize force_list(list), size
             reform_list res, list
         },
+        #<<
+        # Returns <code>list</code> without any instances of <code>ent</code>.
+        # @reforms
+        # @type list [(*)]
+        # @type ent (*)
+        # @genre list
+        # @return [(*)]
+        # @example Print[Remove[1:5, 3]]
+        # @example ?? [1, 2, 4, 5]
+        # @example Print[Remove["Hello, World!", "l"]]
+        # @example ?? "Heo, Word!"
+        # @example Print[Remove["Hello, World!", "ll"]]
+        # @example ?? "Hello, World!"
+        #>>
         "Remove" => lambda { |inst, list, ent|
-            list = list.clone
-            list.delete ent
-            list
+            iter = force_list(list)
+            iter.delete ent
+            reform_list iter, list
         },
+        #<<
+        # Returns <code>list</code> without the first occurrence of <code>ent</code>.
+        # @reforms
+        # @type list [(*)]
+        # @type ent (*)
+        # @return [(*)]
+        # @genre list
+        # @example Print[RemoveFirst[[1, 2, 3, 3, 4, 4, 5], 3]]
+        # @example ?? [1, 2, 3, 4, 4, 5]
+        # @example Print[RemoveFirst["Hello, World!", "l"]]
+        # @example ?? "Helo, World!"
+        # @example Print[RemoveFirst["Hello, World!", "ll"]]
+        # @example ?? "Hello, World!"
+        #>>
         "RemoveFirst" => lambda { |inst, list, ent|
-            list = list.clone
-            list.delete_at list.index ent
-            list
+            iter = force_list(list)
+            index = iter.index ent
+            iter.delete_at index unless index.nil?
+            reform_list iter, list
         },
-        "RemoveAll" => lambda { |inst, list, ents|
+        #<<
+        # Returns <code>list</code> without the first occurrence of <code>ent</code>.
+        # @reforms
+        # @type list [(*)]
+        # @type ent (*)
+        # @return [(*)]
+        # @genre list
+        # @example Print[RemoveLast[[1, 2, 3, 3, 4, 4, 3], 3]]
+        # @example ?? [1, 2, 3, 3, 4, 4]
+        # @example Print[RemoveLast["Hello, World!", "l"]]
+        # @example ?? "Hello, Word!"
+        # @example Print[RemoveLast["Hello, World!", "ll"]]
+        # @example ?? "Hello, World!"
+        #>>
+        "RemoveLast" => lambda { |inst, list, ent|
+            iter = force_list(list)
+            index = iter.rindex ent
+            iter.delete_at index unless index.nil?
+            reform_list iter, list
+        },
+        #<<
+        # Returns <code>list</code> without any of the elements specified by <code>ents</code>.
+        # @reforms
+        # @type list [(*)]
+        # @type ents [(*)]
+        # @return [(*)]
+        # @genre list
+        # @example Print[RemoveAmong[1:9, 4:7]]
+        # @example ?? [1, 2, 3, 8, 9]
+        # @example Print[RemoveAmong["Hello, World!", $A:$Z]]
+        # @example ?? ello, orld!
+        # @example Print[RemoveAmong[12930, 0'2'4'6'8]]
+        # @example ?? 12930
+        #>>
+        "RemoveAmong" => lambda { |inst, list, ents|
             ents = ents.nil? ? [ents] : [*ents]
-            list.reject { |e| ents.include? e }
+            iter = force_list(list)
+            iter.reject! { |e| ents.include? e }
+            reform_list iter, list
         },
-        "Repeat" => vectorize_dyad(RIGHT) { |inst, list, amt|
-            Array.new(amt) { list }
+        #<<
+        # Returns <code>ent</code> repeated <code>amt</code> times.
+        # @type ent (*)
+        # @type ent number
+        # @return [(*)]
+        # @genre list
+        # @example Print[Repeat["Hello!", 3]]
+        # @example ?? ["Hello!", "Hello!", "Hello!"]
+        # @example Print[Repeat[4, 0]]
+        # @example ?? []
+        # @example Print[Repeat[9, 1:5]]
+        # @example ?? [[9], [9, 9], [9, 9, 9], [9, 9, 9, 9], [9, 9, 9, 9, 9]]
+        #>>
+        "Repeat" => vectorize_dyad(RIGHT) { |inst, ent, amt|
+            Array.new(amt) { ent }
         },
         #<<
         # Returns an array representing the run-length encoded version of <code>list</code>.
         # @type list (*)
         # @return [[(*),  number]]
         # @genre list
+        # @example Display[RLE["hmmmmm..."]]
+        # @example  "h" 1
+        # @example  "m" 5
+        # @example  "." 3
         #>>
         "RLE" => lambda { |inst, list|
             force_list(list)
                 .chunk { |e| e }
                 .map { |k, v| [k, v.size] }
         },
+        #<<
+        # Rotates <code>list</code> to the left by <code>amount</code>.
+        # @type list [(*)]
+        # @type amount number
+        # @return [(*)]
+        # @example Print[Rotate[1:5, 2]]
+        # @example ?? [3, 4, 5, 1, 2]
+        # @example Print[Rotate["Sorry!", -1]]
+        # @example ?? !Sorry
+        # @genre list
+        #>>
         "Rotate" => vectorize_dyad(RIGHT) { |inst, list, amount=1|
-            if list.is_a? String
-                @@functions["Rotate"][inst, force_list(list), amount].join
-            else
-                rotate list, amount
-            end
+            iter = force_list list
+            res = rotate iter, amount
+            reform_list res, list
         },
+        #<<
+        # Returns all rotations of <code>list</code>.
+        # @type list [(*)]
+        # @return [(*)]
+        # @example Display[Rotations[1:5]]
+        # @example  1 2 3 4 5
+        # @example  2 3 4 5 1
+        # @example  3 4 5 1 2
+        # @example  4 5 1 2 3
+        # @example  5 1 2 3 4
+        # @genre list
+        #>>
         "Rotations" => lambda { |inst, list|
-            list = force_list list
             (0...list.size).map { |rot|
                 rotate list, rot
             }
@@ -3306,7 +3408,7 @@ module AtFunctionCatalog
             list.join joiner
         },
         #<<
-        # Matches first occurence of <code>match</code> (cast to regex) in <code>source</code>.
+        # Matches first occurrence of <code>match</code> (cast to regex) in <code>source</code>.
         # @type source string
         # @type match (*)
         # @return string
@@ -3328,7 +3430,7 @@ module AtFunctionCatalog
             end
         },
         #<<
-        # Matches all occurences of <code>match</code> in <code>source</code>.
+        # Matches all occurrences of <code>match</code> in <code>source</code>.
         # @type source string
         # @type match (*)
         # @return [(*)]
@@ -3436,7 +3538,7 @@ module AtFunctionCatalog
             str.center(amt, pad)
         },
         #<<
-        # Splits <code>str</code> on occurences of <code>sep</code>. When
+        # Splits <code>str</code> on occurrences of <code>sep</code>. When
         # <code>sep</code> is omitted, splits <code>str</code> on whitespace.
         # @type str string
         # @type sep string|regex

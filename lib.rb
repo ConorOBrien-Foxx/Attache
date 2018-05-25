@@ -635,7 +635,7 @@ def force_number(n)
 end
 
 def force_list(list)
-    return list                 if list.is_a? Array
+    return list.clone           if list.is_a? Array
     return list.chars           if list.is_a? String
     return list.digits.reverse  if list.is_a? Numeric
     return list.to_a rescue list
