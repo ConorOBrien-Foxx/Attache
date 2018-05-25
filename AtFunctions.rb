@@ -2257,7 +2257,8 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "Count" => lambda { |inst, list, f|
+        "Count" => curry { |inst, f, list|
+            list = force_list list
             if f.is_a?(Proc) || f.is_a?(AtLambda)
                 list.count { |e| f[inst, e] }
             else
