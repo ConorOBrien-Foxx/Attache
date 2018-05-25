@@ -3105,7 +3105,7 @@ module AtFunctionCatalog
         },
         "ZipWith" => lambda { |inst, fn, a=nil, b=nil|
             l = lambda { |inst, a, b|
-                zipwith(a, b) { |x, y| fn[inst, x, y] }
+                zipwith(force_list(a), force_list(b)) { |x, y| fn[inst, x, y] }
             }
             if a.nil?
                 l
