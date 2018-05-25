@@ -51,17 +51,18 @@
     end
 },</pre></div></div><div class="function" id="->"><h2><code>(<span class="type">expr</span> key) -> (<span class="type">(*)</span> value) &rarr; <span class="return">ConfigureValue</span> </code><span class="genre">(operator)</span></h2>Returns a ConfigureValue key-value pair of <code>key</code> and <code>value</code>. Used for configurable functions and hashes. <button class="source-button" id="->-button">toggle source</button><div id="->-source" class="code-source"><pre>"->" => lambda { |inst, key, value|
     if key.is_a?(Node) && key.head.raw == "V"
+        # make a function
         params = key.children.map(&:raw)
         value.params = params
         value
     elsif key.is_a?(Token) && key.type == :word
-        ConfigureValue.new key.raw, value
+        ConfigureValue.new key.raw, value, raw: true
     elsif key.is_a?(Node)
         keyval = inst.evaluate_node key
-        ConfigureValue.new keyval, value
+        ConfigureValue.new keyval, value, raw: false
     else
         keyval = inst.get_value key
-        ConfigureValue.new keyval, value
+        ConfigureValue.new keyval, value, raw: false
     end
 },</pre></div></div><div class="function" id="."><h2><code>(<span class="type">(*)</span> obj) . (<span class="type">raw</span> prop) &rarr; <span class="return">(*)</span> </code><span class="genre">(operator)</span></h2>Obtains the member in <code>obj</code> with <code>prop</code> as a key. </p><p><em>Note:</em> this feature is not completely finished, and may have unintended behaviours, such as <code>[1, 2, 3].size</code>. <h3>Example</h3><div class="example"><code><code class="at_word">ages</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_curry_open">&lt;~</code><code class="at_whitespace">
   </code><code class="at_word">john</code><code class="at_whitespace"> </code><code class="at_operator">-&gt;</code><code class="at_whitespace"> </code><code class="at_number">32</code><code class="at_comma">,</code><code class="at_whitespace">
@@ -223,14 +224,16 @@
     list.prefixes.map { |e| @@functions["Sum"][inst, e] }
 },</pre></div></div><div class="function" id="Add"><h2><code>Add[<span class="type">number</span> ...args] &rarr; <span class="return">number</span> </code><span class="genre">(numeric)</span></h2>Adds each of <code>args</code> together. <button class="source-button" id="Add-button">toggle source</button><div id="Add-source" class="code-source"><pre>"Add" => lambda { |inst, *args|
     @@functions["Sum"][inst, args]
-},</pre></div></div><div class="function" id="Agenda"><h2><code>Agenda[<span class="type">fn</span> flist, <span class="type">fn[(*) -> number]</span> cond] &rarr; <span class="return">fn[(*) -> (*)]</span> </code><span class="genre">(functional)</span></h2>Returns a function <code>fn[...args]</code> such that the <code>cond[...args]</code>th element of <code>flist</code> is called upon <code>args</code>. <h3>Arguments</h3><p><code><span class="type">fn</span> flist</code> - A list of functions.</p><p><code><span class="type">fn[(*) -> number]</span> cond</code> - A function which produces an index by which to obtain a function from <code>flist</code>.</p><h3>Example</h3><div class="example"><code><code class="at_word">f</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">Agenda</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_word">Halve</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_number">3</code><code class="at_whitespace"> </code><code class="at_operator">*</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_func_end">}</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">Odd</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+},</pre></div></div><div class="function" id="Agenda"><h2><code>Agenda[<span class="type">fn</span> flist, <span class="type">fn[(*) -> number]</span> cond, ...args] &rarr; <span class="return">fn[(*) -> (*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries.</em></p>Returns a function <code>fn[...args]</code> such that the <code>cond[...args]</code>th element of <code>flist</code> is called upon <code>args</code>. <h3>Arguments</h3><p><code><span class="type">fn</span> flist</code> - A list of functions.</p><p><code><span class="type">fn[(*) -> number]</span> cond</code> - A function which produces an index by which to obtain a function from <code>flist</code>.</p><h3>Example</h3><div class="example"><code><code class="at_word">f</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">Agenda</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_word">Halve</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_number">3</code><code class="at_whitespace"> </code><code class="at_operator">*</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_func_end">}</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">Odd</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Map</code><code class="at_bracket_open">[</code><code class="at_word">f</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
-</code><code class="at_comment">?? [4, 1, 10, 2]</code></code></div><a href="https://tio.run/##DcnNCkBAFAbQvaf41tyFwUpJdjZif7vpZsZPSdJkI88@bM9R73VaXQgzygrN4g6rDG51vx3hyRFjRALzCqG3VqLh2g7PnZ48E9gQMkJOKEQkqmtwQfjRpH9ICB8">Try it online!</a><button class="source-button" id="Agenda-button">toggle source</button><div id="Agenda-source" class="code-source"><pre>"Agenda" => lambda { |inst, flist, cond|
-    lambda { |inst, *args|
-        ind = from_numlike cond[inst, *args]
-        flist[ind][inst, *args]
-    }
-},</pre></div></div><div class="function" id="All"><h2><code>All[<span class="type">fn|[(*)]</span> f, <span class="type">[(*)]</span> list?] &rarr; <span class="return">bool</span> </code><span class="genre">(logic)</span></h2>Returns <code>true</code> if all members of <code>Map[f, list]</code> are truthy. <h3>Arguments</h3><p><code><span class="type">[(*)]</span> list?</code> - When omitted, returns <code>true</code> if all members of <code>f</code> are truthy. Otherwise, returns <code>false</code>. When specified, <code>f</code> <em>must</em> be a function.</p><button class="source-button" id="All-button">toggle source</button><div id="All-source" class="code-source"><pre>"All" => lambda { |inst, f, list=nil|
+</code><code class="at_comment">?? [4, 1, 10, 2]</code></code></div><a href="https://tio.run/##DcnNCkBAFAbQvaf41tyFwUpJdjZif7vpZsZPSdJkI88@bM9R73VaXQgzygrN4g6rDG51vx3hyRFjRALzCqG3VqLh2g7PnZ48E9gQMkJOKEQkqmtwQfjRpH9ICB8">Try it online!</a><button class="source-button" id="Agenda-button">toggle source</button><div id="Agenda-source" class="code-source"><pre>       "Agenda" => curry(3) { |inst, flist, cond, *args|
+           unless AtState.func_like? cond
+               ind = cond
+           else
+               ind = from_numlike cond[inst, *args]
+           end
+           flist[ind][inst, *args]
+       },</pre></div></div><div class="function" id="All"><h2><code>All[<span class="type">fn|[(*)]</span> f, <span class="type">[(*)]</span> list?] &rarr; <span class="return">bool</span> </code><span class="genre">(logic)</span></h2>Returns <code>true</code> if all members of <code>Map[f, list]</code> are truthy. <h3>Arguments</h3><p><code><span class="type">[(*)]</span> list?</code> - When omitted, returns <code>true</code> if all members of <code>f</code> are truthy. Otherwise, returns <code>false</code>. When specified, <code>f</code> <em>must</em> be a function.</p><button class="source-button" id="All-button">toggle source</button><div id="All-source" class="code-source"><pre>"All" => lambda { |inst, f, list=nil|
     if list.nil?
         f.all? { |e| AtState.truthy? e }
     else
@@ -781,6 +784,7 @@
 </code><code class="at_comment">?? []</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jMvJTM5tdgtJ7EkWiHaUEcBiIx0FIzBDBAZqwMWNo5ViI3lsrdXiI79/x8A">Try it online!</a><button class="source-button" id="IndicesFlat-button">toggle source</button><div id="IndicesFlat-source" class="code-source"><pre>"IndicesFlat" => lambda { |inst, list, ind|
     force_list(list).indices ind
 },</pre></div></div><div class="function" id="Integers"><h2><code>Integers[...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns the first <code>Prod[Size => args]</code> non-negative integers. <button class="source-button" id="Integers-button">toggle source</button><div id="Integers-source" class="code-source"><pre>       "Integers" => lambda { |inst, *args|
+           args = args.flat_map { |e| e }
            size = args.prod
            iter = args[1..-1]
            res = (0...size).to_a

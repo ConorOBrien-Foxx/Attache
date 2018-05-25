@@ -126,7 +126,7 @@ def get_info_rb(input)
         info = create_info(body)
 
         name, type, args = signature.scan($RB_SIGNATURE_PARSE).first
-        
+
         args = args.split(/,\s*/)
 
         args.shift # remove inst
@@ -283,12 +283,12 @@ def generate(title)
                 disp_name
             end
 
-            unless default.nil?
-                if v[:info][:optional].include? name
-                    head += "?"
-                else
-                    head += "=" + default
-                end
+            optional = v[:info][:optional].include? name
+
+            if optional
+                head += "?"
+            elsif !default.nil?
+                head += "=" + default
             end
 
             args_types[name] = head
