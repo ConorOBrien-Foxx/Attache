@@ -941,7 +941,7 @@ def dim(mat)
         mat = Matrix[*mat]
         [mat.row_count, mat.column_count]
     rescue
-        mat.size
+        [mat.size]
     end
 end
 

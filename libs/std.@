@@ -274,3 +274,25 @@ Left := First@V
 Right := Last@V
 
 DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)
+
+MultiJoin[list] := (
+    dim .= ##list;;
+    if()
+)
+
+LEGEND := "-.`_':=,""^;~cz><rs+?T/J\\i*!7FIltv1efuZn|35S{)L[aoCEYjx}(26Pyhkpq4bdwAG9KV8R]OUXB#Hg$&0D%MWQmN@"
+??<<
+??? Returns a string of characters which represent the "weight" of certain elements.
+??? @type mat [[number]]
+??? @type legend [(*)]
+??? @type min number
+??? @type max number
+??? @optional legend
+??? @optional min
+??? @optional max
+HeatMap[mat, legend, min, max] := (
+    min ..= Min[mat];;
+    max ..= Max[mat];;
+    legend ..= LEGEND;;
+    legend[(mat - min) / (max - min) * (#legend - 1) | Floor]
+)
