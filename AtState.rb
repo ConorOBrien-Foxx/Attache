@@ -546,7 +546,11 @@ class AtFunction
     attr_accessor :held, :config, :fn, :arity
 end
 
+HOLD_ALL = Hash.new(true)
 def held(*held, &fn)
+    if Hash === held[0]
+        held = held[0]
+    end
     AtFunction.new(fn, held: held)
 end
 def configurable(arity: nil, &fn)
@@ -723,9 +727,14 @@ class AtError
 end
 
 class ConfigureValue
-    def initialize(key, value)
+    def initialize(key, value, raw: true)
         @key = key
         @value = value
+        @raw = !!raw
+    end
+
+    def raw?
+        @raw
     end
 
     def to_a

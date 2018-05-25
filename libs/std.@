@@ -45,6 +45,12 @@ Printf := Print@Format
 Output := Configure[Print, joiner->lf, after->es]@@Tie
 ??>>
 
+PadMatrix[ragged, padwith] := (
+    padwith ..= 0;;
+    maxlen .= Max[Size => ragged];;
+    PadRight<~_, maxlen, padwith~> => ragged
+)
+
 ??<<
 ??? Returns an array of base <code>base</code> digits of the numbers found in
 ??? <code>Range[...args]</code>
@@ -273,14 +279,25 @@ Triples := Slices&3
 Left := First@V
 Right := Last@V
 
+Order := Size@Dim
+
 DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)
 
+IsArray[x] := typeof x is $array
+
 MultiJoin[list] := (
-    dim .= ##list;;
-    if()
+    order .= Order[list];;
+    If[Any[IsArray, list], order .= 2];;
+    Cases[
+        order = 1  ->  Join[list],
+        order = 2  ->  UnGrid[list],
+        $else      ->  MultiJoin => list
+    ]
 )
 
-LEGEND := "-.`_':=,""^;~cz><rs+?T/J\\i*!7FIltv1efuZn|35S{)L[aoCEYjx}(26Pyhkpq4bdwAG9KV8R]OUXB#Hg$&0D%MWQmN@"
+FULL_LEGEND := "-.`_':=,""^;~cz><rs+?T/J\\i*!7FIltv1efuZn|35S{)L[aoCEYjx}(26Pyhkpq4bdwAG9KV8R]OUXB#Hg$&0D%MWQmN@"
+UTF8_LEGEND := "░▒▓"
+
 ??<<
 ??? Returns a string of characters which represent the "weight" of certain elements.
 ??? @type mat [[number]]
@@ -293,6 +310,10 @@ LEGEND := "-.`_':=,""^;~cz><rs+?T/J\\i*!7FIltv1efuZn|35S{)L[aoCEYjx}(26Pyhkpq4bd
 HeatMap[mat, legend, min, max] := (
     min ..= Min[mat];;
     max ..= Max[mat];;
-    legend ..= LEGEND;;
-    legend[(mat - min) / (max - min) * (#legend - 1) | Floor]
+    legend ..= FULL_LEGEND;;
+    diffs .= If[max = min,
+        mat * 0,
+        (mat - min) / (max - min)
+    ];;
+    MultiJoin <| legend[diffs * (#legend - 1) | Floor]
 )

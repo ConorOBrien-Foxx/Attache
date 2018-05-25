@@ -1443,11 +1443,14 @@ module AtFunctionCatalog
         # @example ?? [4, 1, 10, 2]
         # @genre functional
         #>>
-        "Agenda" => lambda { |inst, flist, cond|
-            lambda { |inst, *args|
+        "Agenda" => curry(3) { |inst, flist, cond, *args|
+            unless AtState.func_like? cond
+                ind = cond
+            else
                 ind = from_numlike cond[inst, *args]
-                flist[ind][inst, *args]
-            }
+            end
+
+            flist[ind][inst, *args]
         },
         #<<
         # Calls <code>func</code> with <code>arg_arr</code>.
@@ -1889,6 +1892,18 @@ module AtFunctionCatalog
         #>>
         "Falsey" => lambda { |inst, arg|
             AtState.falsey? arg
+        },
+        "Cases" => held(HOLD_ALL) { |inst, *pairs|
+            res = pairs.map { |config|
+                config.children
+            }.find { |cond, value|
+                AtState.truthy? inst.evaluate_node cond
+            }
+            if res.nil?
+                res
+            else
+                inst.evaluate_node res[1]
+            end
         },
         #<<
         # If <code>cond</code> is truthy, evaluates <code>t</code>. Otherwise, if <code>f</code> is specified, evaluates <code>f</code>.
@@ -2486,6 +2501,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Integers" => lambda { |inst, *args|
+            args = args.flat_map { |e| e }
             size = args.prod
             iter = args[1..-1]
             res = (0...size).to_a
@@ -3109,6 +3125,9 @@ module AtFunctionCatalog
         ##------------------##
         "Diagonal" => vectorize_dyad(RIGHT) { |inst, mat, diag=0|
             diagonal mat, diag
+        },
+        "Dim" => lambda { |inst, mat|
+            dim mat
         },
         "Identity" => vectorize_monad { |inst, size|
             Matrix.identity(size).to_a
@@ -4604,7 +4623,13 @@ module AtFunctionCatalog
                     b[inst, a, *args]
                 }
             else
-                resize(inst.enlist(b), a)
+                if Array === a
+                    b = inst.enlist(b)
+                    key = @@operators["%"][inst, @@functions["Integers"][inst, a], b.size]
+                    @@functions["Get"][inst, b, key]
+                else
+                    resize(inst.enlist(b), a)
+                end
             end
         },
         "&:" => lambda { |inst, a, b|
@@ -4668,17 +4693,18 @@ module AtFunctionCatalog
         #>>
         "->" => lambda { |inst, key, value|
             if key.is_a?(Node) && key.head.raw == "V"
+                # make a function
                 params = key.children.map(&:raw)
                 value.params = params
                 value
             elsif key.is_a?(Token) && key.type == :word
-                ConfigureValue.new key.raw, value
+                ConfigureValue.new key.raw, value, raw: true
             elsif key.is_a?(Node)
                 keyval = inst.evaluate_node key
-                ConfigureValue.new keyval, value
+                ConfigureValue.new keyval, value, raw: false
             else
                 keyval = inst.get_value key
-                ConfigureValue.new keyval, value
+                ConfigureValue.new keyval, value, raw: false
             end
         },
         #<<
