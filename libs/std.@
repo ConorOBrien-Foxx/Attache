@@ -329,8 +329,12 @@ MaskMatrix[fs, mask, list] := (
 ReIm := Re#V#Im
 ??>>
 
+MakeFunction[x] := If[typeof x is $function, x, x&{_}]
+
 CellReplace := Curry[[cond, with, list] -> {
-    (@{ If[cond[_], with[_], _] })[list]
+    cond .= If[typeof cond is $function, cond, cond&`==]
+    mapf .= @{ If[cond[_], MakeFunction[with][_], _] }
+    mapf[list]
 }]
 
 ??<<
