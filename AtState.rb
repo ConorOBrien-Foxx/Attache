@@ -888,6 +888,7 @@ class Type
     STRING = new(:string)
     ARRAY = new(:array)
     NUMBER = new(:number)
+    FUNCTION = new(:function)
     def inspect
         "Type(#{@value.to_s})"
     end
@@ -906,7 +907,11 @@ class Type
             when AtClassInstance
                 new el.parent.name
             else
-                raise "No type defined for #{el}, of class #{el.class}"
+                if AtState.func_like? el
+                    FUNCTION
+                else
+                    raise "No type defined for #{el}, of class #{el.class}"
+                end
         end
     end
 end
