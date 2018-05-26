@@ -338,7 +338,7 @@
 </code><code class="at_comment">?? HellolleH
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Bounce</code><code class="at_bracket_open">[</code><code class="at_number">942</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? 94249</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2im/NC85NdrQyjg2lsveXiHaUEfBSEfBGEwaxnKhqFLySM3JyVeCqASzc3JSPVDVWJoYQeSBDBPL//8B">Try it online!</a><button class="source-button" id="Bounce-button">toggle source</button><div id="Bounce-source" class="code-source"><pre>"Bounce" => lambda { |inst, list|
-    listified = force_list(list)
+    listified = inst.cast_list(list)
     bounced = listified[0..-2] + listified.reverse
     reform_list bounced, list
 },</pre></div></div><div class="function" id="C"><h2><code>C[<span class="type">(*)</span> arg] &rarr; <span class="return">fn</span> </code><span class="genre">(functional)</span></h2>Returns a function that returns <code>arg</code>. <button class="source-button" id="C-button">toggle source</button><div id="C-source" class="code-source"><pre>"C" => lambda { |inst, arg|
@@ -382,7 +382,7 @@
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Chop</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">12</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [[1], [2, 3], [4, 5, 6], [7], [8, 9], [10, 11, 12]]</code></code></div><a href="https://tio.run/##dU@7DsIwDNz5CjezkXB5FYZ2YGFkY7AyRBBUpIhUIQN/H@yliNfis@U739nl7E69L@WQrrfMuz4OTNsGYW7tpOuAmRBqHRF4gbBEWGm7RmiE8a1C8I@c3LS9uHD3/2@8ac3ehxARjjGFc2Ve7rqQ0chSQQgKQlKozEcAEpPRa8yvrr8@0CKRN4o0QyBRUm1tKU8">Try it online!</a><button class="source-button" id="Chop-button">toggle source</button><div id="Chop-source" class="code-source"><pre>"Chop" => lambda { |inst, list, size, **opts|
     extra = get_default opts, :extra, true
-    res = chop force_list(list), size, extra
+    res = chop inst.cast_list(list), size, extra
     res.map { |e|
         reform_list e, list
     }
@@ -394,7 +394,7 @@
 </code><code class="at_comment">??   9       [3, -3]
 </code><code class="at_comment">??  25           [5]
 </code><code class="at_comment">??   4          [-2]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jmjNC87WiHaUEfBSEfBGEyCGLEKsbFc9vYK0SCZaMPYWCBpBMJgljEII8SAWpCFY7lcMosLchIrkU3XBWIIgtijC8SmQMpIAagzuLA0sSgVaqWCgiGKDqigiQICAJ0BEbSECYBNhAgamSKrNMXUHq1rFPv/PwA">Try it online!</a><button class="source-button" id="Chunk-button">toggle source</button><div id="Chunk-source" class="code-source"><pre>"Chunk" => lambda { |inst, list, f=nil|
-    list = force_list list
+    list = inst.cast_list list
     if f.nil?
         list.chunk { |e| e }.to_a
     else
@@ -435,9 +435,9 @@
     collatz(n).size - 1
 },</pre></div></div><div class="function" id="Complement"><h2><code>Complement[<span class="type">[(*)]</span> parent, <span class="type">[(*)]</span> ...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns all elements of <code>parent</code> not included in any of the lists in <code>args</code>. <button class="source-button" id="Complement-button">toggle source</button><div id="Complement-source" class="code-source"><pre>"Complement" => lambda { |inst, parent, *args|
     any = args.map { |e|
-        force_list e
+        inst.cast_list e
     }.flatten(1)
-    force_list(parent).reject { |e| any.include? e }
+    inst.cast_list(parent).reject { |e| any.include? e }
 },</pre></div></div><div class="function" id="Concat"><h2><code>Concat[<span class="type">[(*)]</span> ...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns the concatentation of each list in <code>args</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Concat</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">7</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_bracket_open">[</code><code class="at_number">8</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">9</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [1, 2, 3, 4, 5, 2, 3, 7, [8, 9]]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jk/LzmxJFrB0MpUR8HIylhHIdo8FkhEW@goWMbGKsTGctnbK0QbAiV1FICyJjoKpjC2OVAdRNn//wA">Try it online!</a><button class="source-button" id="Concat-button">toggle source</button><div id="Concat-source" class="code-source"><pre>"Concat" => lambda { |inst, *args|
     args.flatten(1)
@@ -456,7 +456,7 @@
 },</pre></div></div><div class="function" id="Cos"><h2><code>Cos[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/trig)</span></h2><p><em>Vectorizes monadically.</em></p>Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cos</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>. <button class="source-button" id="Cos-button">toggle source</button><div id="Cos-source" class="code-source"><pre>"Cos" => vectorize_monad { |inst, n|
     Math::cos n
 },</pre></div></div><div class="function" id="Count"><h2><code>Count[<span class="type">fn|(*)</span> f, <span class="type">[(*)]</span> list] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2><p><em>Curries.</em></p>Counts the number of members satisfying <code>f</code> in <code>list</code>; or, if <code>f</code> is not a function, the number of times <code>f</code> appears in <code>list</code>. <button class="source-button" id="Count-button">toggle source</button><div id="Count-source" class="code-source"><pre>"Count" => curry { |inst, f, list|
-    list = force_list list
+    list = inst.cast_list list
     if f.is_a?(Proc) || f.is_a?(AtLambda)
         list.count { |e| f[inst, e] }
     else
@@ -650,7 +650,7 @@
     list
 },</pre></div></div><div class="function" id="Flip"><h2><code>Flip[<span class="type">[(*)]</span> list] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2><p><em>Reforms result.</em></p>Reverses and transposes a list, or, if the list has only one dimension, reverses it. <button class="source-button" id="Flip-button">toggle source</button><div id="Flip-source" class="code-source"><pre>       "Flip" => lambda { |inst, list|
            is_string = String === list
-           inner = is_string ? @@functions["Grid"][inst, list] : force_list(list)
+           inner = is_string ? @@functions["Grid"][inst, list] : inst.cast_list(list)
            result = begin
                inner.transpose.reverse
            rescue
@@ -664,7 +664,7 @@
         n.floor(r)
     end
 },</pre></div></div><div class="function" id="ForEach"><h2><code>ForEach[<span class="type">[(*)]</span> ent, body] &rarr; <span class="return">nil</span> </code><span class="genre">(logic)</span></h2>For every value <code>el</code> in <code>ent</code>, evaluates <code>body</code>, setting the first abstract value to <code>el</code>, and the second to its index. <button class="source-button" id="ForEach-button">toggle source</button><div id="ForEach-source" class="code-source"><pre>       "ForEach" => lambda { |inst, ent, body|
-           arr = force_list(ent)
+           arr = inst.cast_list(ent)
            arr.each_with_index { |x, i|
                inst.evaluate_node body, [x, i]
            }
@@ -721,7 +721,7 @@
         list[ind]
     end
 },</pre></div></div><div class="function" id="Grade"><h2><code>Grade[<span class="type">[(*)]</span> list] &rarr; <span class="return">[number]</span> </code><span class="genre">(list)</span></h2>Returns a list of indices such that, when <code>list</code> is indexed by that list, the result is <code>list</code> sorted. <button class="source-button" id="Grade-button">toggle source</button><div id="Grade-source" class="code-source"><pre>"Grade" => lambda { |inst, list|
-    grade force_list list
+    grade inst.cast_list list
 },</pre></div></div><div class="function" id="Grid"><h2><code>Grid[<span class="type">string</span> str, <span class="type">string</span> inner?] &rarr; <span class="return">string</span> </code><span class="genre">(string)</span></h2>Returns the characters of each line of <code>str</code>. <h3>Arguments</h3><p><code><span class="type">string</span> inner?</code> - Character to pad the ends of each line with. Default: <code>" "</code>.</p><h3>Example</h3><div class="example"><code><code class="at_word">Map</code><code class="at_bracket_open">[</code><code class="at_word">Print</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">Grid</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello,\nWorld\nof mine!&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [&quot;H&quot;, &quot;e&quot;, &quot;l&quot;, &quot;l&quot;, &quot;o&quot;, &quot;,&quot;, &quot; &quot;, &quot; &quot;]
 </code><code class="at_comment">?? [&quot;W&quot;, &quot;o&quot;, &quot;r&quot;, &quot;l&quot;, &quot;d&quot;, &quot; &quot;, &quot; &quot;, &quot; &quot;]
@@ -776,15 +776,15 @@
 },</pre></div></div><div class="function" id="Increasing"><h2><code>Increasing[<span class="type">[(*)]</span> list] &rarr; <span class="return">bool</span> </code><span class="genre">(list/logic)</span></h2>Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>. <button class="source-button" id="Increasing-button">toggle source</button><div id="Increasing-source" class="code-source"><pre>"Increasing" => lambda { |inst, list|
     list.delta.all?(&:positive?) rescue false
 },</pre></div></div><div class="function" id="Index"><h2><code>Index[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ind] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2><p><em>Vectorizes dyadically on the right.</em></p>Returns the index of the first occurrence of <code>ind</code> in <code>list</code>. <button class="source-button" id="Index-button">toggle source</button><div id="Index-source" class="code-source"><pre>"Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
-    force_list(list).index ind
+    inst.cast_list(list).index ind
 },</pre></div></div><div class="function" id="IndexFlat"><h2><code>IndexFlat[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ind] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2>Returns the index of the first occurrence of <code>ind</code> in <code>list</code>. <button class="source-button" id="IndexFlat-button">toggle source</button><div id="IndexFlat-source" class="code-source"><pre>"IndexFlat" => lambda { |inst, list, ind|
-    force_list(list).index ind
+    inst.cast_list(list).index ind
 },</pre></div></div><div class="function" id="Indices"><h2><code>Indices[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ind] &rarr; <span class="return">[number]</span> </code><span class="genre">(list)</span></h2><p><em>Vectorizes dyadically on the right.</em></p>Returns all indices at which <code>ind</code> occurs in <code>list</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Indices</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [[0, 1, 4, 6], [3, 5]]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jMvJTM5tThaIdpQRwGIjHQUjMEMEBmrAxY2jlWIjeWyt1eIjjYAy5noKJiB5IBqTGNj//8HAA">Try it online!</a><button class="source-button" id="Indices-button">toggle source</button><div id="Indices-source" class="code-source"><pre>"Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
-    force_list(list).indices ind
+    inst.cast_list(list).indices ind
 },</pre></div></div><div class="function" id="IndicesFlat"><h2><code>IndicesFlat[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ind] &rarr; <span class="return">[number]</span> </code><span class="genre">(list)</span></h2>Returns all indices at which <code>ind</code> occurs in <code>list</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">IndicesFlat</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? []</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jMvJTM5tdgtJ7EkWiHaUEcBiIx0FIzBDBAZqwMWNo5ViI3lsrdXiI79/x8A">Try it online!</a><button class="source-button" id="IndicesFlat-button">toggle source</button><div id="IndicesFlat-source" class="code-source"><pre>"IndicesFlat" => lambda { |inst, list, ind|
-    force_list(list).indices ind
+    inst.cast_list(list).indices ind
 },</pre></div></div><div class="function" id="Integers"><h2><code>Integers[...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns the first <code>Prod[Size => args]</code> non-negative integers. <button class="source-button" id="Integers-button">toggle source</button><div id="Integers-source" class="code-source"><pre>       "Integers" => lambda { |inst, *args|
            args = args.flat_map { |e| e }
            size = args.prod
@@ -801,7 +801,7 @@
 },</pre></div></div><div class="function" id="Intersperse"><h2><code>Intersperse[<span class="type">[(*)]</span> list, <span class="type">(*)</span> joiner] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns a list where <code>joiner</code> is placed in between each element of <code>list</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Intersperse</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [1, 0, 2, 0, 3]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jOvJLWouACIU6MNrYx1FAxiY7ns7RWiDYFMHQUjMGkc@/8/AA">Try it online!</a><button class="source-button" id="Intersperse-button">toggle source</button><div id="Intersperse-source" class="code-source"><pre>"Intersperse" => lambda { |inst, list, joiner|
     res = []
-    force_list(list).each_with_index { |e, i|
+    inst.cast_list(list).each_with_index { |e, i|
         res << e
         res << joiner if i != list.size - 1
     }
@@ -890,7 +890,7 @@
     lower_triangle mat, AtState.truthy?(strict)
 },</pre></div></div><div class="function" id="Mask"><h2><code>Mask[<span class="type">[(*)]</span> mask, <span class="type">[(*)]</span> list] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(logic)</span></h2><p><em>Reforms result.</em></p>Selects all elements <code>el</code> in <code>list</code> whose respective member in <code>mask</code> is truthy. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Mask</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_word">true</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">false</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">true</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">true</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">false</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [1, 3, 4]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jexODtaIbqkqDRVRyEtMacYSEE4SEKxOgqGVqaxsVz29grRhjoKxjoKJrH//wMA">Try it online!</a><button class="source-button" id="Mask-button">toggle source</button><div id="Mask-source" class="code-source"><pre>"Mask" => lambda { |inst, mask, list|
-    masked = force_list(list).select.with_index { |e, i|
+    masked = inst.cast_list(list).select.with_index { |e, i|
         AtState.truthy? mask[i]
     }
     reform_list masked, list
@@ -1080,7 +1080,7 @@
                    ent.rjust(amt, fill)
                else
                    fill = fill == NOT_PROVIDED ? 0 : fill
-                   ent = force_list ent
+                   ent = inst.cast_list ent
                    until ent.size >= amt
                        ent = [fill, *ent]
                    end
@@ -1096,7 +1096,7 @@
                    ent.ljust(amt, fill)
                else
                    fill = fill == NOT_PROVIDED ? 0 : fill
-                   ent = force_list ent
+                   ent = inst.cast_list ent
                    until ent.size >= amt
                        ent = [*ent, fill]
                    end
@@ -1141,8 +1141,8 @@
 </code><code class="at_word">Display</code><code class="at_bracket_open">[</code><code class="at_word">Positions</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_string">&quot;l&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_string">&quot;!&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_string">&quot;l&quot;</code><code class="at_whitespace"> </code><code class="at_bracket_open">[</code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_string">&quot;!&quot;</code><code class="at_whitespace">    </code><code class="at_bracket_open">[</code><code class="at_number">5</code><code class="at_bracket_close">]</code></code></div><a href="https://tio.run/##ZYw7CgMxDET7PcWsahXxZ2@QImV6ocKEhRhMHLCbnN4RalfF8Bg0r8xZXu9zrXsd31Z@8uyjzto/QyCBERnJMzOCQnVDgNwYh1H0l2SUYCfRKDtl3a5Cepyt9Z0YQs2SdlITGtvUPdb4/NC1/g">Try it online!</a><button class="source-button" id="Positions-button">toggle source</button><div id="Positions-source" class="code-source"><pre>"Positions" => lambda { |inst, arr, els=arr|
-    arr = force_list arr
-    els = force_list els
+    arr = inst.cast_list arr
+    els = inst.cast_list els
     positions arr, els
 },</pre></div></div><div class="function" id="Positive"><h2><code>Positive[<span class="type">number</span> n] &rarr; <span class="return">bool</span> </code><span class="genre">(numeric/logic)</span></h2><p><em>Vectorizes monadically.</em></p>Returns <code>true</code> if <code>n</code> is greater than <code>0</code>, otherwise <code>false</code>. <button class="source-button" id="Positive-button">toggle source</button><div id="Positive-source" class="code-source"><pre>"Positive" => vectorize_monad { |inst, n|
     n.positive?
@@ -1150,7 +1150,7 @@
 </code><code class="at_comment">?? [[], [9], [4], [9, 4], [6], [9, 6], [4, 6], [9, 4, 6]]
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Powerset</code><code class="at_bracket_open">[</code><code class="at_number">123</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [0, 1, 2, 12, 3, 13, 23, 123]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOiC/PLWoOLUkWiHaUsdExyxWITaWy95eITo6VgcoBCJMwCwdBTBtBuWAaRMoDZIEMWO50Aw1NDKGGmego2Coo2AEJIHYGEgBsRGIBqr4/x8A">Try it online!</a><button class="source-button" id="Powerset-button">toggle source</button><div id="Powerset-source" class="code-source"><pre>"Powerset" => lambda { |inst, list|
-    force_list(list).powerset.map { |e|
+    inst.cast_list(list).powerset.map { |e|
         reform_list e, list
     }
 },</pre></div></div><div class="function" id="Prefixes"><h2><code>Prefixes[<span class="type">[(*)]</span> list] &rarr; <span class="return">[[(*)]]</span> </code><span class="genre">(list)</span></h2><p><em>Reforms result's elements.</em></p>Returns the non-empty prefixes of <code>list</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Prefixes</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1159,7 +1159,7 @@
 </code><code class="at_comment">?? [&quot;h&quot;, &quot;hi&quot;, &quot;hi?&quot;]
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Prefixes</code><code class="at_bracket_open">[</code><code class="at_number">901</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [9, 90, 901]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOqAoNS2zIrU42tDKNDaWy95eITraMFZHIdpQR8EIRusoGCMxdRRMUHk6CiCtaOYpZWTaK0FNVMpQ0lEACkBIoDC6YksDQ6hSSx0FSwMQNoz9/x8A">Try it online!</a><button class="source-button" id="Prefixes-button">toggle source</button><div id="Prefixes-source" class="code-source"><pre>"Prefixes" => lambda { |inst, list|
-    force_list(list).prefixes.map { |e|
+    inst.cast_list(list).prefixes.map { |e|
         reform_list e, list
     }
 },</pre></div></div><div class="function" id="PreviousPrime"><h2><code>PreviousPrime[<span class="type">number</span> n, <span class="type">number</span> rep?] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/prime)</span></h2><p><em>Vectorizes dyadically.</em></p>Returns the closest previous prime before <code>n</code>. <h3>Arguments</h3><p><code><span class="type">number</span> rep?</code> - When specified, returns the <code>rep</code>th prime before <code>n</code>.</p><button class="source-button" id="PreviousPrime-button">toggle source</button><div id="PreviousPrime-source" class="code-source"><pre>"PreviousPrime" => vectorize_dyad { |inst, n, rep=1|
@@ -1267,7 +1267,7 @@
 </code><code class="at_comment">?? &quot;Heo, Word!&quot;
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Remove</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_string">&quot;ll&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? &quot;Hello, World!&quot;</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOig1N78sNdrQylRHwTg2lsveXiHaUEfBSEfBREfBNJYLRZWSR2pOTr6OQnh@UU6KopKOglKOEkQPUAYiDhQmqAdJE7LU//8A">Try it online!</a><button class="source-button" id="Remove-button">toggle source</button><div id="Remove-source" class="code-source"><pre>"Remove" => lambda { |inst, list, ent|
-    iter = force_list(list)
+    iter = inst.cast_list(list)
     iter.delete ent
     reform_list iter, list
 },</pre></div></div><div class="function" id="RemoveAmong"><h2><code>RemoveAmong[<span class="type">[(*)]</span> list, <span class="type">[(*)]</span> ents] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2><p><em>Reforms result.</em></p>Returns <code>list</code> without any of the elements specified by <code>ents</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">RemoveAmong</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">9</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_operator">:</code><code class="at_number">7</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1277,7 +1277,7 @@
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">RemoveAmong</code><code class="at_bracket_open">[</code><code class="at_number">12930</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_operator">'</code><code class="at_number">2</code><code class="at_operator">'</code><code class="at_number">4</code><code class="at_operator">'</code><code class="at_number">6</code><code class="at_operator">'</code><code class="at_number">8</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? 12930</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOig1N78s1TE3Py892tDKUkfBxMo8NpbL3l4h2lBHwUhHwVhHwUJHwTKWC1O9kkdqTk6@jkJ4flFOiqKSjoKKo5VKFEQ3RAYsgUWnoZGlsYGOgoG6kbqJupm6BUQPWPT/fwA">Try it online!</a><button class="source-button" id="RemoveAmong-button">toggle source</button><div id="RemoveAmong-source" class="code-source"><pre>"RemoveAmong" => lambda { |inst, list, ents|
     ents = ents.nil? ? [ents] : [*ents]
-    iter = force_list(list)
+    iter = inst.cast_list(list)
     iter.reject! { |e| ents.include? e }
     reform_list iter, list
 },</pre></div></div><div class="function" id="RemoveFirst"><h2><code>RemoveFirst[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ent] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2><p><em>Reforms result.</em></p>Returns <code>list</code> without the first occurrence of <code>ent</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">RemoveFirst</code><code class="at_bracket_open">[</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">5</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1286,7 +1286,7 @@
 </code><code class="at_comment">?? &quot;Helo, World!&quot;
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">RemoveFirst</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_string">&quot;ll&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? &quot;Hello, World!&quot;</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOig1N78s1S2zqLgkOtpQR8FIR8EYjEzAyDQWyImN5bK3V0DIwqS4MI1Q8kjNycnXUQjPL8pJUVTSUVDKUYJoB8kgJIjTiqwXSer/fwA">Try it online!</a><button class="source-button" id="RemoveFirst-button">toggle source</button><div id="RemoveFirst-source" class="code-source"><pre>"RemoveFirst" => lambda { |inst, list, ent|
-    iter = force_list(list)
+    iter = inst.cast_list(list)
     index = iter.index ent
     iter.delete_at index unless index.nil?
     reform_list iter, list
@@ -1296,7 +1296,7 @@
 </code><code class="at_comment">?? &quot;Hello, Word!&quot;
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">RemoveLast</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_string">&quot;ll&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? &quot;Hello, World!&quot;</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOig1N78s1SexuCQ62lBHwUhHwRiMTMDIOBaEY7ns7RUwZGO5MExQ8kjNycnXUQjPL8pJUVTSUVDKUYLoRpIBShClE4tWkNT//wA">Try it online!</a><button class="source-button" id="RemoveLast-button">toggle source</button><div id="RemoveLast-source" class="code-source"><pre>"RemoveLast" => lambda { |inst, list, ent|
-    iter = force_list(list)
+    iter = inst.cast_list(list)
     index = iter.rindex ent
     iter.delete_at index unless index.nil?
     reform_list iter, list
@@ -1330,7 +1330,7 @@
 </code><code class="at_comment">?? He
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Resize</code><code class="at_bracket_open">[</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_bracket_close">]</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">7</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [1, 2, 1, 2, 1, 2, 1]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOii1OLMqNVrJIzUnJ19RSUfBKDaWy95ewSOVC0VBtCFISkfBHCIN5uoooJCx//8DAA">Try it online!</a><button class="source-button" id="Resize-button">toggle source</button><div id="Resize-source" class="code-source"><pre>"Resize" => lambda { |inst, list, size|
-    res = resize force_list(list), size
+    res = resize inst.cast_list(list), size
     reform_list res, list
 },</pre></div></div><div class="function" id="Retrieve"><h2><code>Retrieve[<span class="type">string</span> name] &rarr; <span class="return">(*)</span> </code><span class="genre">(scope)</span></h2>Returns the value of the variable whose name is <code>name</code>. <h3>Example</h3><div class="example"><code><code class="at_word">a</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_number">323</code><code class="at_whitespace">
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Retrieve</code><code class="at_bracket_open">[</code><code class="at_reference">$a</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1343,7 +1343,7 @@
  </code><code class="at_string">&quot;h&quot;</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_whitespace">
  </code><code class="at_string">&quot;m&quot;</code><code class="at_whitespace"> </code><code class="at_number">5</code><code class="at_whitespace">
  </code><code class="at_string">&quot;.&quot;</code><code class="at_whitespace"> </code><code class="at_number">3</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yWzuCAnsTI6yMc1WikjFwT09PSUYmO5FJQylBQMgVSukoIpkNJTUjD@/x8A">Try it online!</a><button class="source-button" id="RLE-button">toggle source</button><div id="RLE-source" class="code-source"><pre>"RLE" => lambda { |inst, list|
-    force_list(list)
+    inst.cast_list(list)
         .chunk { |e| e }
         .map { |k, v| [k, v.size] }
 },</pre></div></div><div class="function" id="Rot"><h2><code>Rot[<span class="type">string</span> str, <span class="type">number</span> amount=13] &rarr; <span class="return">str</span> </code><span class="genre">(string)</span></h2><p><em>Vectorizes dyadically on the right.</em></p>Translates every alphabetic character in <code>str</code> <code>amount</code> character to the right, wrapping around. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Rot</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1357,7 +1357,7 @@
 </code><code class="at_comment">?? [3, 4, 5, 1, 2]
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Rotate</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Sorry!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_operator">-</code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? !Sorry</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kOii/JLEkNdrQylRHwSg2lsveXiHaWEfBREcBKGAIEuNCUagUnF9UVKmopKOgawhRrggW@f8fAA">Try it online!</a><button class="source-button" id="Rotate-button">toggle source</button><div id="Rotate-source" class="code-source"><pre>"Rotate" => vectorize_dyad(RIGHT) { |inst, list, amount=1|
-    iter = force_list list
+    iter = inst.cast_list list
     res = rotate iter, amount
     reform_list res, list
 },</pre></div></div><div class="function" id="Rotations"><h2><code>Rotations[<span class="type">[(*)]</span> list] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns all rotations of <code>list</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Display</code><code class="at_bracket_open">[</code><code class="at_word">Rotations</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
@@ -1476,7 +1476,7 @@
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">TakeWhile</code><code class="at_bracket_open">[</code><code class="at_word">IsPrime</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">357923</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? 357</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yWzuCAnsTI6JDE7NTwjMyc1ujpeQd9WobigVkdBySM1JydfRyE8vygnRVEpNpbL3h4mqMQVUJSZV4Kk0bUsNU9HIdpIR8FER8FMR8FQRwHINo6FaIOJx2Lo8ywGiuSmApWamlsaGUOUA9n//wMA">Try it online!</a><button class="source-button" id="TakeWhile-button">toggle source</button><div id="TakeWhile-source" class="code-source"><pre>       "TakeWhile" => lambda { |inst, cond, list|
            collect = []
-           force_list(list).each { |el|
+           inst.cast_list(list).each { |el|
                break unless cond[inst, el]
                collect << el
            }
@@ -1537,7 +1537,7 @@
 },</pre></div></div><div class="function" id="Union"><h2><code>Union[<span class="type">[(*)]</span> ...lists] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2>Returns an array representing the union of all lists in <code>lists</code>. <button class="source-button" id="Union-button">toggle source</button><div id="Union-source" class="code-source"><pre>"Union" => lambda { |inst, *lists|
     lists.inject(&:|)
 },</pre></div></div><div class="function" id="Unique"><h2><code>Unique[<span class="type">[(*)]</span> list, <span class="type">fn</span> func?] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(list)</span></h2><p><em>Reforms result.</em></p>Returns the non-duplicated elements in <code>list</code>. <button class="source-button" id="Unique-button">toggle source</button><div id="Unique-source" class="code-source"><pre>"Unique" => lambda { |inst, list, func=nil|
-    fl = force_list list
+    fl = inst.cast_list list
     unique = if func.nil?
         fl.uniq
     else

@@ -63,17 +63,17 @@ Output := Configure[Print, joiner->lf, after->es]@@Tie
 ??? @return [[(*)]]
 ??? @genre list/matrix
 ??? @example Display[PadMatrix[1:5:5]]
-??? @example  1 2 3 4 5
-??? @example  2 3 4 5 0
-??? @example  3 4 5 0 0
-??? @example  4 5 0 0 0
-??? @example  5 0 0 0 0
+??? @example ??  1 2 3 4 5
+??? @example ??  2 3 4 5 0
+??? @example ??  3 4 5 0 0
+??? @example ??  4 5 0 0 0
+??? @example ??  5 0 0 0 0
 ??? @example Display[PadMatrix[1:5:5, 9, PadLeft]]
-??? @example  1 2 3 4 5
-??? @example  9 2 3 4 5
-??? @example  9 9 3 4 5
-??? @example  9 9 9 4 5
-??? @example  9 9 9 9 5
+??? @example ??  1 2 3 4 5
+??? @example ??  9 2 3 4 5
+??? @example ??  9 9 3 4 5
+??? @example ??  9 9 9 4 5
+??? @example ??  9 9 9 9 5
 PadMatrix[ragged, padwith, padf] := (
     padwith ..= 0;;
     padf ..= PadRight;;
@@ -182,6 +182,24 @@ ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
 ??>>
 
 ??<<
+??? Returns the distance between points <code>p1</code> and <code>p2</code> on the
+??? Euclidean plane.
+??? @type p1 [(*)]
+??? @type p2 [(*)]
+??? @return number
+??? @genre number
+??? @example Print[Distance[ [1, 2], [1, 4] ]]
+??? @example ?? 2.0
+??? @example Print[Distance[ Point[0, 0], Point[5, 12] ]]
+??? @example ?? 13.0
+??? @example Print[Distance[ -3-4i, 3+4i ]]
+??? @example ?? 10.0
+??? @example Print[Distance[ [0, 0], [1, 1] ]]
+??? @example ?? 1.4142135623730951
+Distance[p1, p2] := Norm[p1 - p2]
+??>>
+
+??<<
 ??? Point class.
 ??? @genre numeric
 ??? @return Point
@@ -286,11 +304,18 @@ ProperDivisors := @(Betail@Divisors)
 Generate := GenerateFirst&:N
 ??>>
 
+??<<
+??? <code>Print</code>, but without a trailing newline.
+??? @type args (*)...
+??? @return [(*)]
+??? @genre IO
 Echo := Configure[Print, after->es]
+??>>
 
 ?? TODO: rings
 ?? Rings[mat, n] := 32
 
+?? you know, I have no idea what this is
 MaskMatrix[fs, mask, list] := (
     If[Concat[fs] =/= fs, fs .= [Id, fs]];;
     ZipWith<~Call, _, list~> => fs[mask]
@@ -304,13 +329,24 @@ MaskMatrix[fs, mask, list] := (
 ReIm := Re#V#Im
 ??>>
 
-??
+CellReplace := Curry[[cond, with, list] -> {
+    (@{ If[cond[_], with[_], _] })[list]
+}]
+
+??<<
+??? Returns the norm of <code>x</code>.
+??? @type x [(*)]
+??? @return number
+??? @genre list
+??? @example Print[Norm[3'4]]
+??? @example ?? 5.0
+??? @example Print[Norm[-2+1i]]
+??? @example ?? 2.23606797749979
 Norm[x] := (
-    If[IsImaginary[x],
-        Norm[ReIm[x]],
-        Sqrt[Sum[x^2]]
-    ]
+    list .= Flat[CellReplace[IsImaginary, ReIm, x]];;
+    Sqrt[Sum[list^2]]
 )
+??>>
 
 Pairs := Slices&2
 Triples := Slices&3
