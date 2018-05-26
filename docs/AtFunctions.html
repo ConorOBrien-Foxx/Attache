@@ -455,7 +455,8 @@
     }
 },</pre></div></div><div class="function" id="Cos"><h2><code>Cos[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/trig)</span></h2><p><em>Vectorizes monadically.</em></p>Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cos</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>. <button class="source-button" id="Cos-button">toggle source</button><div id="Cos-source" class="code-source"><pre>"Cos" => vectorize_monad { |inst, n|
     Math::cos n
-},</pre></div></div><div class="function" id="Count"><h2><code>Count[<span class="type">[(*)]</span> list, <span class="type">fn|(*)</span> f] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2>Counts the number of members satisfying <code>f</code> in <code>list</code>; or, if <code>f</code> is not a function, the number of times <code>f</code> appears in <code>list</code>. <button class="source-button" id="Count-button">toggle source</button><div id="Count-source" class="code-source"><pre>"Count" => lambda { |inst, list, f|
+},</pre></div></div><div class="function" id="Count"><h2><code>Count[<span class="type">fn|(*)</span> f, <span class="type">[(*)]</span> list] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2><p><em>Curries.</em></p>Counts the number of members satisfying <code>f</code> in <code>list</code>; or, if <code>f</code> is not a function, the number of times <code>f</code> appears in <code>list</code>. <button class="source-button" id="Count-button">toggle source</button><div id="Count-source" class="code-source"><pre>"Count" => curry { |inst, f, list|
+    list = force_list list
     if f.is_a?(Proc) || f.is_a?(AtLambda)
         list.count { |e| f[inst, e] }
     else
@@ -711,6 +712,7 @@
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Get</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_operator">:</code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [&quot;H&quot;, &quot;e&quot;, &quot;l&quot;, &quot;l&quot;, &quot;o&quot;]
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Get</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_whitespace"> </code><code class="at_operator">-&gt;</code><code class="at_whitespace"> </code><code class="at_operator">-</code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2j21JNrQylRHwSg2lsveXsGYCyGu5JGak5OvoxCeX5SToqiko2BgZQJRBZQCcpVSQUQOnMhXisWn20RB105BF2jC//8A">Try it online!</a><button class="source-button" id="Get-button">toggle source</button><div id="Get-source" class="code-source"><pre>"Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
+    ind = force_number ind
     if ConfigureValue === ind
         list[ind.key..ind.value]
     elsif class_has? list, "$get"

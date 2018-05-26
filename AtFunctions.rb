@@ -603,7 +603,7 @@ module AtFunctionCatalog
         "TakeWhile" => lambda { |inst, cond, list|
             collect = []
 
-            force_list(list).each { |el|
+            inst.cast_list(list).each { |el|
                 break unless cond[inst, el]
                 collect << el
             }
@@ -1955,7 +1955,7 @@ module AtFunctionCatalog
         # @reforms
         #>>
         "Mask" => lambda { |inst, mask, list|
-            masked = force_list(list).select.with_index { |e, i|
+            masked = inst.cast_list(list).select.with_index { |e, i|
                 AtState.truthy? mask[i]
             }
             reform_list masked, list
@@ -2034,7 +2034,7 @@ module AtFunctionCatalog
         # @return nil
         #>>
         "ForEach" => lambda { |inst, ent, body|
-            arr = force_list(ent)
+            arr = inst.cast_list(ent)
 
             arr.each_with_index { |x, i|
                 inst.evaluate_node body, [x, i]
@@ -2150,7 +2150,7 @@ module AtFunctionCatalog
         # @example ?? 94249
         #>>
         "Bounce" => lambda { |inst, list|
-            listified = force_list(list)
+            listified = inst.cast_list(list)
             bounced = listified[0..-2] + listified.reverse
             reform_list bounced, list
         },
@@ -2172,7 +2172,7 @@ module AtFunctionCatalog
         #>>
         "Chop" => lambda { |inst, list, size, **opts|
             extra = get_default opts, :extra, true
-            res = chop force_list(list), size, extra
+            res = chop inst.cast_list(list), size, extra
             res.map { |e|
                 reform_list e, list
             }
@@ -2219,7 +2219,7 @@ module AtFunctionCatalog
         # @example ??   4          [-2]
         #>>
         "Chunk" => lambda { |inst, list, f=nil|
-            list = force_list list
+            list = inst.cast_list list
             if f.nil?
                 list.chunk { |e| e }.to_a
             else
@@ -2235,9 +2235,9 @@ module AtFunctionCatalog
         #>>
         "Complement" => lambda { |inst, parent, *args|
             any = args.map { |e|
-                force_list e
+                inst.cast_list e
             }.flatten(1)
-            force_list(parent).reject { |e| any.include? e }
+            inst.cast_list(parent).reject { |e| any.include? e }
         },
         #<<
         # Returns the concatentation of each list in <code>args</code>.
@@ -2258,7 +2258,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Count" => curry { |inst, f, list|
-            list = force_list list
+            list = inst.cast_list list
             if f.is_a?(Proc) || f.is_a?(AtLambda)
                 list.count { |e| f[inst, e] }
             else
@@ -2361,7 +2361,7 @@ module AtFunctionCatalog
         #>>
         "Flip" => lambda { |inst, list|
             is_string = String === list
-            inner = is_string ? @@functions["Grid"][inst, list] : force_list(list)
+            inner = is_string ? @@functions["Grid"][inst, list] : inst.cast_list(list)
 
 
             result = begin
@@ -2441,7 +2441,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Grade" => lambda { |inst, list|
-            grade force_list list
+            grade inst.cast_list list
         },
         #<<
         # Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>.
@@ -2462,7 +2462,7 @@ module AtFunctionCatalog
         # @example ?? [[0, 1, 4, 6], [3, 5]]
         #>>
         "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            force_list(list).indices ind
+            inst.cast_list(list).indices ind
         },
         #<<
         # Returns the index of the first occurrence of <code>ind</code> in <code>list</code>.
@@ -2472,7 +2472,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            force_list(list).index ind
+            inst.cast_list(list).index ind
         },
         #<<
         # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
@@ -2484,7 +2484,7 @@ module AtFunctionCatalog
         # @example ?? []
         #>>
         "IndicesFlat" => lambda { |inst, list, ind|
-            force_list(list).indices ind
+            inst.cast_list(list).indices ind
         },
         #<<
         # Returns the index of the first occurrence of <code>ind</code> in <code>list</code>.
@@ -2494,7 +2494,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "IndexFlat" => lambda { |inst, list, ind|
-            force_list(list).index ind
+            inst.cast_list(list).index ind
         },
         #<<
         # Returns the first <code>Prod[Size => args]</code> non-negative integers.
@@ -2534,7 +2534,7 @@ module AtFunctionCatalog
         #>>
         "Intersperse" => lambda { |inst, list, joiner|
             res = []
-            force_list(list).each_with_index { |e, i|
+            inst.cast_list(list).each_with_index { |e, i|
                 res << e
                 res << joiner if i != list.size - 1
             }
@@ -2663,7 +2663,7 @@ module AtFunctionCatalog
         # @example ?? [9, 90, 901]
         #>>
         "Prefixes" => lambda { |inst, list|
-            force_list(list).prefixes.map { |e|
+            inst.cast_list(list).prefixes.map { |e|
                 reform_list e, list
             }
         },
@@ -2686,8 +2686,8 @@ module AtFunctionCatalog
         # @example "!"    [5]
         #>>
         "Positions" => lambda { |inst, arr, els=arr|
-            arr = force_list arr
-            els = force_list els
+            arr = inst.cast_list arr
+            els = inst.cast_list els
             positions arr, els
         },
         #<<
@@ -2702,7 +2702,7 @@ module AtFunctionCatalog
         # @example ?? [0, 1, 2, 12, 3, 13, 23, 123]
         #>>
         "Powerset" => lambda { |inst, list|
-            force_list(list).powerset.map { |e|
+            inst.cast_list(list).powerset.map { |e|
                 reform_list e, list
             }
         },
@@ -2750,7 +2750,7 @@ module AtFunctionCatalog
         # @example ?? [1, 2, 1, 2, 1, 2, 1]
         #>>
         "Resize" => lambda { |inst, list, size|
-            res = resize force_list(list), size
+            res = resize inst.cast_list(list), size
             reform_list res, list
         },
         #<<
@@ -2768,7 +2768,7 @@ module AtFunctionCatalog
         # @example ?? "Hello, World!"
         #>>
         "Remove" => lambda { |inst, list, ent|
-            iter = force_list(list)
+            iter = inst.cast_list(list)
             iter.delete ent
             reform_list iter, list
         },
@@ -2787,7 +2787,7 @@ module AtFunctionCatalog
         # @example ?? "Hello, World!"
         #>>
         "RemoveFirst" => lambda { |inst, list, ent|
-            iter = force_list(list)
+            iter = inst.cast_list(list)
             index = iter.index ent
             iter.delete_at index unless index.nil?
             reform_list iter, list
@@ -2807,7 +2807,7 @@ module AtFunctionCatalog
         # @example ?? "Hello, World!"
         #>>
         "RemoveLast" => lambda { |inst, list, ent|
-            iter = force_list(list)
+            iter = inst.cast_list(list)
             index = iter.rindex ent
             iter.delete_at index unless index.nil?
             reform_list iter, list
@@ -2828,7 +2828,7 @@ module AtFunctionCatalog
         #>>
         "RemoveAmong" => lambda { |inst, list, ents|
             ents = ents.nil? ? [ents] : [*ents]
-            iter = force_list(list)
+            iter = inst.cast_list(list)
             iter.reject! { |e| ents.include? e }
             reform_list iter, list
         },
@@ -2859,7 +2859,7 @@ module AtFunctionCatalog
         # @example  "." 3
         #>>
         "RLE" => lambda { |inst, list|
-            force_list(list)
+            inst.cast_list(list)
                 .chunk { |e| e }
                 .map { |k, v| [k, v.size] }
         },
@@ -2875,7 +2875,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Rotate" => vectorize_dyad(RIGHT) { |inst, list, amount=1|
-            iter = force_list list
+            iter = inst.cast_list list
             res = rotate iter, amount
             reform_list res, list
         },
@@ -3004,7 +3004,7 @@ module AtFunctionCatalog
             end
         },
         "Shuffle" => lambda { |inst, list|
-            shuffled = force_list(list).shuffle
+            shuffled = inst.cast_list(list).shuffle
             reform_list shuffled, list
         },
         "SortBy" => lambda { |inst, list, func|
@@ -3020,7 +3020,7 @@ module AtFunctionCatalog
             }
         },
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
-            split_at force_list(str), inds
+            split_at inst.cast_list(str), inds
         },
         #<<
         # Calculates the standard deviation of <code>list</code>.
@@ -3045,8 +3045,8 @@ module AtFunctionCatalog
             res.delete_if { |e| exclude.include? e.size }
         },
         "Sum" => lambda { |inst, list|
-            list = force_list(list)
-            head = String === list.first ? "" : 0
+            list = inst.cast_list(list)
+            head = String === list.first ? "" : 0 rescue 0
             list.inject(head) { |a, e|
                 @@operators["+"][inst, a, e]
             }
@@ -3110,7 +3110,7 @@ module AtFunctionCatalog
         # @reforms
         #>>
         "Unique" => lambda { |inst, list, func=nil|
-            fl = force_list list
+            fl = inst.cast_list list
             unique = if func.nil?
                 fl.uniq
             else
@@ -3204,7 +3204,7 @@ module AtFunctionCatalog
         ## Combinatoric Functions ##
         ##------------------------##
         "Combinations" => lambda { |inst, list, count=nil|
-            inner = force_list list
+            inner = inst.cast_list list
             if count.nil?
                 count = (0..inner.size).to_a
             end
@@ -3218,17 +3218,17 @@ module AtFunctionCatalog
         },
         "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
             if list.is_a? String
-                force_list(list).permutation(count).map(&:join).to_a
+                inst.cast_list(list).permutation(count).map(&:join).to_a
             else
-                reform_list force_list(list).permutation(count).to_a, list
+                reform_list inst.cast_list(list).permutation(count).to_a, list
             end
         },
         "Zip" => lambda { |inst, a, *b|
-            force_list(a).zip(*b.map { |e| force_list e })
+            inst.cast_list(a).zip(*b.map { |e| inst.cast_list e })
         },
         "ZipWith" => lambda { |inst, fn, a=nil, b=nil|
             l = lambda { |inst, a, b|
-                zipwith(force_list(a), force_list(b)) { |x, y| fn[inst, x, y] }
+                zipwith(inst.cast_list(a), inst.cast_list(b)) { |x, y| fn[inst, x, y] }
             }
             if a.nil?
                 l
@@ -3321,7 +3321,7 @@ module AtFunctionCatalog
             }
         },
         "Select" => curry { |inst, f, list|
-            iter = force_list list
+            iter = inst.cast_list list
             res = iter.select { |e|
                 AtState.truthy? f[inst, e]
             }
@@ -3502,7 +3502,7 @@ module AtFunctionCatalog
 
                 else
                     fill = fill == NOT_PROVIDED ? 0 : fill
-                    ent = force_list ent
+                    ent = inst.cast_list ent
                     until ent.size >= amt
                         ent = [fill, *ent]
                     end
@@ -3532,7 +3532,7 @@ module AtFunctionCatalog
 
                 else
                     fill = fill == NOT_PROVIDED ? 0 : fill
-                    ent = force_list ent
+                    ent = inst.cast_list ent
                     until ent.size >= amt
                         ent = [*ent, fill]
                     end

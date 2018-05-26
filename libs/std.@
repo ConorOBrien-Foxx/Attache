@@ -1,6 +1,12 @@
 ?? core library
 
+??<<
+??? Alias for <a href="AtFunctions.html#String" target="_blank"><code>String</code></a>.
+??? @type e (*)
+??? @return string
+??? @genre string
 S := String
+??>>
 
 ??<<
 ??? Returns a function with arguments <code>l</code> and <code>r</code> which
@@ -47,11 +53,34 @@ Printf := Print@Format
 Output := Configure[Print, joiner->lf, after->es]@@Tie
 ??>>
 
-PadMatrix[ragged, padwith] := (
+??<<
+??? Makes <code>ragged</code> a rectangular matrix, padding to the right with <code>padwith</code>.
+??? @type ragged [[(*)]]
+??? @type padwith (*)
+??? @type padf fn
+??? @optional padwith
+??? @optional padf
+??? @return [[(*)]]
+??? @genre list/matrix
+??? @example Display[PadMatrix[1:5:5]]
+??? @example  1 2 3 4 5
+??? @example  2 3 4 5 0
+??? @example  3 4 5 0 0
+??? @example  4 5 0 0 0
+??? @example  5 0 0 0 0
+??? @example Display[PadMatrix[1:5:5, 9, PadLeft]]
+??? @example  1 2 3 4 5
+??? @example  9 2 3 4 5
+??? @example  9 9 3 4 5
+??? @example  9 9 9 4 5
+??? @example  9 9 9 9 5
+PadMatrix[ragged, padwith, padf] := (
     padwith ..= 0;;
+    padf ..= PadRight;;
     maxlen .= Max[Size => ragged];;
-    PadRight<~_, maxlen, padwith~> => ragged
+    padf<~_, maxlen, padwith~> => ragged
 )
+??>>
 
 ??<<
 ??? Returns an array of base <code>base</code> digits of the numbers found in
@@ -147,6 +176,8 @@ HexBelow := 16&BaseBelow
 ??? @type n number
 ??? @return [[(*)]]
 ??? @genre list
+??? @example Print[ChopInto[1:6, 3]]
+??? @example ?? [[1, 2], [3, 4], [5, 6]]
 ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
 ??>>
 
@@ -156,6 +187,12 @@ ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
 ??? @return Point
 ??? @type x number
 ??? @type y number
+??? @example origin := Point[0, 0]
+??? @example Print[origin]
+??? @example ?? (0, 0)
+??? @example pythag := Point[3, 4]
+??? @example Print[pythag]
+??? @example ?? (3, 4)
 ClassNamed[Point]! {
     x .= _1
     y .= _2
