@@ -3168,7 +3168,7 @@ module AtFunctionCatalog
         "MatrixIota" => lambda { |inst, mat|
             matrix_iota mat
         },
-        "Moores" => lambda { |inst, list, fn, r=1|
+        "Moore" => lambda { |inst, list, fn, r=1|
             list.map.with_index { |row, i|
                 row.map.with_index { |c, j|
                     res = (i-r..i+r).map { |y|
