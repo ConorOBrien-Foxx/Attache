@@ -4644,6 +4644,10 @@ module AtFunctionCatalog
             f = @@unary_operators["&"][inst, f]
             @@functions["Map"][inst, f, l]
         },
+        "@>" => lambda { |inst, f, l|
+            f = @@unary_operators["@"][inst, f]
+            f[inst, l]
+        },
         "⇒" => @@functions["Map"],
         ":>" => lambda { |inst, source, func|
             source.map { |x| func[inst, x] }

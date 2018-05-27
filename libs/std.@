@@ -329,13 +329,53 @@ MaskMatrix[fs, mask, list] := (
 ReIm := Re#V#Im
 ??>>
 
-MakeFunction[x] := If[typeof x is $function, x, x&{_}]
+??<<
+??? Returns <code>x</code> if it is a function, otherwise returns a constant function
+??? returning <code>x</code>.
+??? @type x (*)
+??? @type bonder fn
+??? @optional bonder
+??? @param bonder If specified, returns a function with <code>x</code> as its left argument instead of a constant function.
+??? @return fn
+??? @genre functional
+MakeFunction[x, bonder] := (
+    bonder ..= {_};;
+    If[typeof x is $function, x, x&bonder]
+)
+??>>
 
+??<<
+??? Replaces all cells in <code>list</code> matching <code>cond</code> with <code>with</code>.
+??? @curries
+??? @type cond (*)
+??? @type with (*)
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
+??? @example mat1 := Identity[4]
+??? @example Display[CellReplace[0, 9, mat1]]
+??? @example ??  1 9 9 9
+??? @example ??  9 1 9 9
+??? @example ??  9 9 1 9
+??? @example ??  9 9 9 1
+??? @example mat2 := Integers[3, 3]
+??? @example Display[CellReplace[Odd, Square, mat2]]
+??? @example ??  0  1  2
+??? @example ??  9  4 25
+??? @example ??  6 49  8
+??? @example Print[CellReplace[Positive, `-, -4:4]]
+??? @example ?? [-4, -3, -2, -1, 0, -1, -2, -3, -4]
 CellReplace := Curry[[cond, with, list] -> {
-    cond .= If[typeof cond is $function, cond, cond&`==]
-    mapf .= @{ If[cond[_], MakeFunction[with][_], _] }
-    mapf[list]
+    cond .= MakeFunction[cond, `==]
+    with .= MakeFunction[with]
+    {
+        If[cond[_],
+            with[_],
+            _
+        ]
+    } @> list
 }]
+??>>
 
 ??<<
 ??? Returns the norm of <code>x</code>.
@@ -352,22 +392,73 @@ Norm[x] := (
 )
 ??>>
 
+??<<
+??? Returns all overlapping slices of size <code>2</code> in <code>list</code>.
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
+??? @example Print[Pairs[1:5]]
+??? @example ?? [[1, 2], [2, 3], [3, 4], [4, 5]]
 Pairs := Slices&2
+??>>
+
+??<<
+??? Returns all overlapping slices of size <code>3</code> in <code>list</code>.
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
+??? @example Print[Triples[1:5]]
+??? @example ?? [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
 Triples := Slices&3
+??>>
 
+??<<
+??? Returns the leftmost argument given.
+??? @type args (*)...
+??? @return (*)
+??? @genre functional
+??? @example Print[Left[1, 2, 3, 4]]
+??? @example ?? 1
 Left := First@V
+??>>
+
+??<<
+??? Returns the rightmost argument given.
+??? @type args (*)...
+??? @return (*)
+??? @genre functional
+??? @example Print[Right[1, 2, 3, 4]]
+??? @example ?? 4
 Right := Last@V
-
-Order := Size@Dim
-
-DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)
+??>>
 
 IsArray[x] := typeof x is $array
 
+??<<
+??? Returns the dimensionality of <code>x</code>.
+??? @type x [(*)]
+??? @return number
+??? @genre list
+??? @example Print[Order[10]]
+??? @example ?? 0
+??? @example Print[Order["Hello! :D"]]
+??? @example ?? 0
+??? @example Print[Order[1:5]]
+??? @example ?? 1
+??? @example Print[Order[Identity[3]]]
+??? @example ?? 2
+??? @example Print[Order[ [[[[[9]]]]] ]]
+??? @example ?? 2 (broken, since Dim is currently broken)
+Order := Agenda[[{0}, Size@Dim], IsArray]
+??>>
+
+DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)
+
 MultiJoin[list] := (
     order .= Order[list];;
-    If[Any[IsArray, list], order .= 2];;
+    If[Any[IsArray, list] and order = 1, order .= 2];;
     Cases[
+        order = 0  ->  String[list],
         order = 1  ->  Join[list],
         order = 2  ->  UnGrid[list],
         $else      ->  MultiJoin => list

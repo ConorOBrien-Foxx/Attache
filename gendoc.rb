@@ -311,7 +311,11 @@ def generate(title)
 
         sig = []
         sig.push vector_from_signature v[:type]
-        sig.push curry_from_signature v[:type]
+        if v[:info].has_key? :curries
+            sig.push "Curries."
+        else
+            sig.push curry_from_signature v[:type]
+        end
         sig.push reform_from_signature v[:info][:reforms] if v[:info].has_key? :reforms
 
         sig.reject!(&:empty?)
