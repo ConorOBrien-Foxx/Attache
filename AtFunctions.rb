@@ -3168,6 +3168,20 @@ module AtFunctionCatalog
         "MatrixIota" => lambda { |inst, mat|
             matrix_iota mat
         },
+        "Moores" => lambda { |inst, list, fn, r=1|
+            list.map.with_index { |row, i|
+                row.map.with_index { |c, j|
+                    res = (i-r..i+r).map { |y|
+                        next unless 0 <= y && y < list.size
+                        (j-r..j+r).map { |x|
+                            next unless 0 <= x && x < row.size
+                            list[y][x]
+                        }.compact
+                    }.compact
+                    fn[inst, res]
+                }
+            }
+        },
         "Tr" => lambda { |inst, list|
             list.transpose
         },
