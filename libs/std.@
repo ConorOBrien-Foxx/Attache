@@ -454,6 +454,8 @@ Order := Agenda[[{0}, Size@Dim], IsArray]
 
 DivisorPairs := @(Tr@Fork[Right, V, `/]#RawDivisors)
 
+Clip := CellReplace[{_ /= 0}, 1]
+
 MultiJoin[list] := (
     order .= Order[list];;
     If[Any[IsArray, list] and order = 1, order .= 2];;

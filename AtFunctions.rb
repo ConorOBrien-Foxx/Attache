@@ -421,7 +421,12 @@ module AtFunctionCatalog
         "FileExists" => lambda { |inst, name|
             File.exists? name.strip
         },
-
+        "Wait" => lambda { |inst, n|
+            sleep n
+        },
+        "Cls" => lambda { |inst|
+            cls
+        },
 
         #################
         #### CLASSES ####
@@ -3007,17 +3012,16 @@ module AtFunctionCatalog
             shuffled = inst.cast_list(list).shuffle
             reform_list shuffled, list
         },
-        "SortBy" => lambda { |inst, list, func|
-            if String === list
-                return @@functions["SortBy"][inst, list.chars].join
-            end
-            list.sort_by { |e|
+        "SortBy" => curry { |inst, func, ent|
+            list = inst.cast_list ent
+            res = list.sort_by { |e|
                 res = func[inst, e]
                 if res == !!res
                     res = force_number res
                 end
-                res
+                res.nil? ? Infinity : res
             }
+            reform_list res, ent
         },
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
             split_at inst.cast_list(str), inds
@@ -3165,16 +3169,53 @@ module AtFunctionCatalog
             }
             mat
         },
-        "MatrixIota" => lambda { |inst, mat|
-            matrix_iota mat
+        "MatrixIota" => lambda { |inst, mat, fn=nil|
+            res = matrix_iota mat
+            if fn
+                res.map { |row|
+                    row.map { |(i, j)|
+                        fn[inst, mat[i][j], i, j]
+                    }
+                }
+            else
+                res
+            end
         },
-        "Moore" => lambda { |inst, list, fn, r=1|
+        "Moore" => configurable { |inst, list, fn, r=1, **opts|
+            # see also: http://mathworld.wolfram.com/MooreNeighborhood.html
+            cycle = get_default opts, :cycle, false
+            list.map.with_index { |row, i|
+                row.map.with_index { |c, j|
+                    res = (i-r..i+r).map { |y|
+                        next unless 0 <= y && y < list.size || cycle
+                        (j-r..j+r).map { |x|
+                            cond = (i - y).abs <= r && (j - x).abs <= r
+                            unless cycle
+                                cond &&= 0 <= x && x < row.size
+                            end
+                            next unless cond
+                            from = list[y % list.size]
+                            from[x % from.size]
+                        }.compact
+                    }.compact
+                    ar = fn.arity rescue fn.size rescue 1
+                    ar > 1 ? fn[inst, res, c] : fn[inst, res]
+                }
+            }
+        },
+        "VonNeumann" => configurable { |inst, list, fn, r=1, **opts|
+            # see also: http://mathworld.wolfram.com/vonNeumannNeighborhood.html
+            cycle = get_default opts, :cycle, false
             list.map.with_index { |row, i|
                 row.map.with_index { |c, j|
                     res = (i-r..i+r).map { |y|
                         next unless 0 <= y && y < list.size
                         (j-r..j+r).map { |x|
-                            next unless 0 <= x && x < row.size
+                            cond = (i - y).abs + (j - x).abs <= r
+                            unless cycle
+                                cond &&= 0 <= x && x < list.size
+                            end
+                            next unless cond
                             list[y][x]
                         }.compact
                     }.compact
