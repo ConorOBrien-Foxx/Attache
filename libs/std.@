@@ -543,3 +543,84 @@ HeatMap[mat, legend, min, max] := (
     MultiJoin <| legend[diffs * (#legend - 1) | Floor]
 )
 ??>>
+
+ClassNamed[MatrixShapeGenerator]! {
+    motions .= <~
+        "v" -> {
+            While[row < height, _[row, col] ;; row .= row + 1]
+        },
+        ">" -> {
+            While[col < width, _[row, col] ;; col .= col + 1]
+        },
+        "\\" -> {
+            While[col < width and row < height, _[row, col] ;; row .= row + 1 ;; col .= col + 1]
+        },
+        "/" -> {
+            While[col >= 0 and row < height, _[row, col] ;; row .= row + 1 ;; col .= col - 1]
+        },
+        "^" -> {
+            While[row >= 0, _[row, col] ;; row .= row - 1]
+        },
+        "<" -> {
+            While[col >= 0, _[row, col] ;; col .= col - 1]
+        },
+        "$" -> {
+            default_action .= _
+        }
+    ~>
+    keys .= Join[EscapeRegex => Keys[motions]]
+    code .= MatchAll[_1, "[" + keys + "][^\\`" + keys + "]|."]
+    ClearLocal[keys]
+
+    height .= _2
+    width  .= _3
+    width ..= height
+    matrix .= [height, width]&0
+    row .= 0
+    col .= 0
+    ip .= 0
+    actions .= <~
+        "." -> ([row, col] -> { mark[row, col, 1] }),
+        "!" -> ([row, col] -> { mark[row, col, 1 - matrix[row][col]] }),
+        ":" -> ({ step }),
+        ?? I have no idea why, but you have to have a reference to a method here.
+        "`" -> '{
+            row .= 0
+            col .= 0
+        },
+        ";" -> '{
+            row .= height - 1
+            col .= width - 1
+        }
+    ~>
+    ??Print => actions
+    default_action .= actions["."]
+
+    mark[row, col, n] .= SetMatrix[matrix, row, col, n]
+
+    step .= {
+        cur .= code[ip]
+        If[cur@0 in motions,
+            mot .= motions[cur@0];;
+            act .= actions[cur@1];;
+            mot[act or default_action],
+
+            act .= actions[cur];;
+            act[row, col]
+        ]
+        ip .= ip + 1
+    }
+
+    run .= {
+        While[ip < #code, step[]]
+        matrix
+    }
+}
+
+?? Generates a matrix of 1's and 0's
+DrawMatrix := Curry[[s, n] -> {
+    m .= _3
+    m ..= n
+    inst .= MatrixShapeGenerator[s, n, m]
+    inst.run[]
+}]

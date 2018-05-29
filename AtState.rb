@@ -666,9 +666,9 @@ class AtLambda
         @params.size
     end
 
-    def inspect
-        "AtLambda(#{@raw})"
-    end
+    # def inspect
+    #     "AtLambda(#{@raw})"
+    # end
 
     alias :arity :size
 

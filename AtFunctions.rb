@@ -2391,13 +2391,17 @@ module AtFunctionCatalog
         # @example Print[Get["Hello, World!", 4 -> -4]]
         #>>
         "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            ind = force_number ind
-            if ConfigureValue === ind
-                list[ind.key..ind.value]
-            elsif class_has? list, "$get"
-                list["$get"][inst, list, ind]
-            else
+            if Hash === list
                 list[ind]
+            else
+                ind = force_number ind
+                if ConfigureValue === ind
+                    list[ind.key..ind.value]
+                elsif class_has? list, "$get"
+                    list["$get"][inst, list, ind]
+                else
+                    list[ind]
+                end
             end
         },
         #<<
@@ -2916,6 +2920,12 @@ module AtFunctionCatalog
             else
                 ent[key] = val
             end
+        },
+        "Keys" => lambda { |inst, hash|
+            hash.keys
+        },
+        "SetMatrix" => lambda { |inst, mat, row, col, val|
+            mat[row][col] = val
         },
         "Size" => lambda { |inst, list|
             if Numeric === list
@@ -3829,8 +3839,18 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
+        "Debug_" => lambda { |inst, arg|
+            di "debugging function instance"
+            p arg.raw
+            p arg
+            dd "end debugging"
+
+        },
         "Error" => lambda { |inst, name, msg="An error has occured."|
             AtError.new name, msg
+        },
+        "EscapeRegex" => lambda { |inst, str|
+            Regexp.escape str.to_s
         },
         #<<
         # Escapes <code>str</code> such that it is safe to be passed to an HTML document. (Escapes the following: <code>&<>"</code>.)

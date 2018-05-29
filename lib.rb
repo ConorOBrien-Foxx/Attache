@@ -721,7 +721,7 @@ def make_regex(str, flags="")
                     break if str[i + 1] != "`"
                     i += 1
                 end
-                build += RegExp.escape str[i]
+                build += Regexp.escape str[i]
                 i += 1
             end
         elsif str[i] == "\\"
