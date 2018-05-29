@@ -2902,7 +2902,7 @@ module AtFunctionCatalog
         #>>
         "Rotations" => lambda { |inst, list|
             (0...list.size).map { |rot|
-                rotate list, rot
+                @@functions["Rotate"][inst, list, rot]
             }
         },
         "Same" => lambda { |inst, *args|
