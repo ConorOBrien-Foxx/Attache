@@ -626,7 +626,8 @@ DrawMatrix := Curry[[s, n] -> {
 }]
 
 AlignRight[str, n] := (
-    lines .= If[IsArray[str], str, Lines[str]];;
+    lines .= If[IsArray[str], Lines! UnGrid! str, Lines[str]];;
     n ..= Max[Size => lines];;
-    Join[PadLeft&n => lines, lf]
+    res .= PadLeft&n => lines;;
+    Join[res, lf]
 )
