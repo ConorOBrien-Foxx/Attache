@@ -624,3 +624,9 @@ DrawMatrix := Curry[[s, n] -> {
     inst .= MatrixShapeGenerator[s, n, m]
     inst.run[]
 }]
+
+AlignRight[str, n] := (
+    lines .= If[IsArray[str], str, Lines[str]];;
+    n ..= Max[Size => lines];;
+    Join[PadLeft&n => lines, lf]
+)

@@ -2481,7 +2481,11 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
-            inst.cast_list(list).index ind
+            if String === list
+                list.index ind
+            else
+                inst.cast_list(list).index ind
+            end
         },
         #<<
         # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
@@ -3046,7 +3050,14 @@ module AtFunctionCatalog
             list.stddev
         },
         "Stitch" => lambda { |inst, left, right|
-            stitch left, right
+            if String === left && String === right
+                grid = @@functions["Grid"]
+                zipwith(grid[inst, left], grid[inst, right]) { |x, y|
+                    [x, y].reject(&:nil?).join
+                }.join "\n"
+            else
+                stitch left, right
+            end
         },
         "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
