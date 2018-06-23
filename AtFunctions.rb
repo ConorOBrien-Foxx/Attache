@@ -2909,6 +2909,18 @@ module AtFunctionCatalog
                 @@functions["Rotate"][inst, list, rot]
             }
         },
+        #<<
+        # Returns <code>true</code> if every member in each argument is the same.
+        # @type args [(*)]
+        # @return bool
+        # @example Print[Same[1:5]]
+        # @example ?? false
+        # @example Print[Same[ [1, 1, 1, 1] ]]
+        # @example ?? true
+        # @example Print[Same[ [1:3, 1:3, 1:3] ]]
+        # @example ?? true
+        # @genre list
+        #>>
         "Same" => lambda { |inst, *args|
             list = args.flatten(1)
             list.all? { |e| e == list[0] }

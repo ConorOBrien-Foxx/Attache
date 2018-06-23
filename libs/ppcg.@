@@ -1,21 +1,42 @@
 ?? functions commonly used in PPCG submissions
 
 ??<<
-??? Returns a list of string of formatted test cases of the form <code>input -> output</code>.
+??? Returns a list of inputs and outputs for <code>func</code> and <code>tc</code>.
+??? @type func fn
+??? @type tc [(*)]
+??? @return [[(*)]]
+??? @genre string
+ExecuteTestCases[func, tc] := V#func => tc
+??>>
+
+??<<
+??? Returns a list of strings of formatted test cases of the form <code>input -> output</code>.
 ??? @type func fn
 ??? @type tc [(*)]
 ??? @return [string]
 ??? @genre string
-TestCases[func, tc] :=
+FormatTestCases[func, tc] :=
     {Format["%s -> %s", _, func[_]]} => tc
 ??>>
 
 ??<<
-??? Prints each string in <code>TestCases[...args]</code>.
+??? Prints each string in <code>FormatTestCases[...args]</code>.
 ??? @type args (*)...
 ??? @return [[string]]
 ??? @genre IO
-PrintTestCases := Print=>TestCases
+PrintTestCases := Print => FormatTestCases
+??>>
+
+??<<
+??? Displays each test case.
+??? @type func fn
+??? @type tc [(*)]
+??? @return [[(*)]]
+??? @genre IO
+DisplayTestCases := {
+    Print[Repr[_1], "->"]
+    Display[_2]
+} &> ExecuteTestCases
 ??>>
 
 ??<<
