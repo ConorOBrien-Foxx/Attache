@@ -818,9 +818,9 @@ def read_option(prompt, opts, clear=false)
     res
 end
 
-def zipwith(a, b, &fn)
-    a.zip(b).map { |x, y|
-        fn[x, y]
+def zipwith(a, *bs, &fn)
+    a.zip(*bs).map { |args|
+        fn[*args]
     }
 end
 

@@ -3049,14 +3049,16 @@ module AtFunctionCatalog
         "StdDev" => lambda { |inst, list|
             list.stddev
         },
-        "Stitch" => lambda { |inst, left, right|
-            if String === left && String === right
+        "Stitch" => lambda { |inst, *args|
+            if args.all? { |e| String === e }
                 grid = @@functions["Grid"]
-                zipwith(grid[inst, left], grid[inst, right]) { |x, y|
-                    [x, y].reject(&:nil?).join
+                zipwith(*args.map { |e| grid[inst, e] }) { |*args|
+                    args.reject(&:nil?).join
                 }.join "\n"
             else
-                stitch left, right
+                zipwith(*args.map { |e| deep_copy e }) { |*args|
+                    args.reject(&:nil?).inject(:concat)
+                }
             end
         },
         "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
