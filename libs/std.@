@@ -564,6 +564,29 @@ ClassNamed[MatrixShapeGenerator]! {
         "<" -> {
             While[col >= 0, _[row, col] ;; col .= col - 1]
         },
+        "u" -> {
+            row .= row - 1
+            wrap_bounds[]
+            _[row, col]
+        },
+        "d" -> {
+            row .= row + 1
+            wrap_bounds[]
+            _[row, col]
+        },
+        "l" -> {
+            col .= col - 1
+            wrap_bounds[]
+            _[row, col]
+        },
+        "r" -> {
+            col .= col + 1
+            wrap_bounds[]
+            _[row, col]
+        },
+        "@" -> {
+            _[row, col]
+        },
         "$" -> {
             default_action .= _
         }
@@ -571,7 +594,7 @@ ClassNamed[MatrixShapeGenerator]! {
     keys .= Join[EscapeRegex => Keys[motions]]
     code .= MatchAll[_1, "[" + keys + "][^\\`" + keys + "]|."]
     ClearLocal[keys]
-
+    
     height .= _2
     width  .= _3
     width ..= height
@@ -582,6 +605,9 @@ ClassNamed[MatrixShapeGenerator]! {
     actions .= <~
         "." -> ([row, col] -> { mark[row, col, 1] }),
         "!" -> ([row, col] -> { mark[row, col, 1 - matrix[row][col]] }),
+        "R" -> ([row, col] -> { mark[row, col, matrix[row][col] + row] }),
+        "C" -> ([row, col] -> { mark[row, col, matrix[row][col] + col] }),
+        "B" -> ([row, col] -> { mark[row, col, matrix[row][col] + row + col] }),
         ":" -> ({ step }),
         ?? I have no idea why, but you have to have a reference to a method here.
         "`" -> '{
@@ -593,9 +619,18 @@ ClassNamed[MatrixShapeGenerator]! {
             col .= width - 1
         }
     ~>
+    "0":"9" :> {
+        n .= N! _
+        Set[actions, _, { mark[_, _2, matrix[_][_2] + n] }]
+    }
     ??Print => actions
     default_action .= actions["."]
-
+    
+    wrap_bounds .= {
+        row .= row % height
+        col .= col % width
+    }
+    
     mark[row, col, n] .= SetMatrix[matrix, row, col, n]
 
     step .= {
