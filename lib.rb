@@ -149,6 +149,10 @@ class Array
         (1..size).map { |i| self[0...i] }
     end
 
+    def suffixes
+        (0...size).map { |i| self[i..-1] }
+    end
+
     # modified from https://github.com/sagivo/powerset/blob/master/powerset.rb
     def powerset
         a = [[]]

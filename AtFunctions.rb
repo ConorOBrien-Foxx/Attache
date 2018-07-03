@@ -2681,6 +2681,24 @@ module AtFunctionCatalog
             }
         },
         #<<
+        # Returns the non-empty suffixes of <code>list</code>.
+        # @reforms elements
+        # @type list [(*)]
+        # @return [[(*)]]
+        # @genre list
+        # @example Print[Suffixes[1:5]]
+        # @example ?? [[1, 2, 3, 4, 5], [2, 3, 4, 5], [3, 4, 5], [4, 5], [5]]
+        # @example Print[Suffixes["hi?"]]
+        # @example ?? ["hi?", "i?", "?"]
+        # @example Print[Suffixes[901]]
+        # @example ?? [901, 1, 1]
+        #>>
+        "Suffixes" => lambda { |inst, list|
+            inst.cast_list(list).suffixes.map { |e|
+                reform_list e, list
+            }
+        },
+        #<<
         # Returns a list of lists of the form <code>[id, inds]</code>, where <code>id</code> corresponds to a unique element of <code>els</code>.
         # <code>inds</code> is a narray of indices where <code>id</code> occurs.
         # @type arr [(*)]
