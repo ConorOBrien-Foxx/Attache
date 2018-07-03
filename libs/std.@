@@ -594,7 +594,7 @@ ClassNamed[MatrixShapeGenerator]! {
     keys .= Join[EscapeRegex => Keys[motions]]
     code .= MatchAll[_1, "[" + keys + "][^\\`" + keys + "]|."]
     ClearLocal[keys]
-    
+
     height .= _2
     width  .= _3
     width ..= height
@@ -625,12 +625,12 @@ ClassNamed[MatrixShapeGenerator]! {
     }
     ??Print => actions
     default_action .= actions["."]
-    
+
     wrap_bounds .= {
         row .= row % height
         col .= col % width
     }
-    
+
     mark[row, col, n] .= SetMatrix[matrix, row, col, n]
 
     step .= {

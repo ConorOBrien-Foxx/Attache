@@ -4488,6 +4488,20 @@ module AtFunctionCatalog
             @@functions["Has"][inst, y, x]
         },
         #<<
+        # Returns <code>false</code> if <code>y</code> contains <code>x</code>, otherwise <code>true</code>. See also: <code><a href="#Has">Has</a></code>.
+        # @return bool
+        # @type x (*)
+        # @type y [(*)]
+        # @genre operator/logic
+        # @example Print[3 !in 1:5]
+        # @example ?? false
+        # @example Print[30 !in 1:5]
+        # @example ?? true
+        #>>
+        "!in" => lambda { |inst, x, y|
+            !@@functions["Has"][inst, y, x]
+        },
+        #<<
         # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
         # @return bool
         # @type el (*)

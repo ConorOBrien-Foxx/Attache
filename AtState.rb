@@ -84,6 +84,7 @@ $PRECEDENCE = {
     "≥"        => [9, :left], # >= alias
 
     "in"       => [8, :left],
+    "!in"      => [8, :left],
     "is_a"     => [8, :left],
 
     ".."       => [7, :left],
