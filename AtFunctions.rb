@@ -3717,18 +3717,37 @@ module AtFunctionCatalog
             end
         },
         #<<
-        # Centers <code>str</code> to <code>amt</code> characters, padding with
+        # Centers <code>ent</code> to <code>amt</code> elements, padding with
         # <code>pad</code>.
-        # @type str string
+        # @type ent [(*)]
         # @type amt number
-        # @type pad string
+        # @type pad (*)
         # @optional pad
         # @return string
-        # @param pad Default: <code>" "</code>.
+        # @param pad Default: <code>" "</code> or <code>0</code>, depending on <code>ent</code>.
+        # @example Print[Center["a", 3]]
+        # @example ?? " a "
+        # @example Print[Center[[1, 2], 6]]
+        # @example ?? [0, 0, 1, 2, 0, 0]
+        # @example Print[Center["Hi!", 10, "~"]]
+        # @example "~~~Hi!~~~~"
+        # @example Print[Center[9, 5, 1]]
+        # @example ?? 11911
         # @genre string
         #>>
-        "Center" => lambda { |inst, str, amt, pad=" "|
-            str.center(amt, pad)
+        "Center" => lambda { |inst, ent, amt, pad=NOT_PROVIDED|
+            list = force_list(ent)
+            deficit = amt - list.size
+            return reform_list(list, ent) if deficit <= 0
+
+            pad = pad == NOT_PROVIDED ? inst.default_cell_type(list[0]) : pad rescue 0
+
+            before = deficit / 2
+            after = deficit - before
+
+            result = Array.new(before) { pad } + list + Array.new(after) { pad }
+
+            reform_list(result, ent)
         },
         #<<
         # Splits <code>str</code> on occurrences of <code>sep</code>. When

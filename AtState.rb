@@ -1049,6 +1049,20 @@ class AtState
         # raise
     end
 
+    def default_cell_type(type)
+        case type
+            when String
+                " "
+            when Numeric
+                0
+            when Array
+                []
+            else
+                type.class.new
+        end
+    end
+
+
     def get_variable(name)
         if @@extended_variables.has_key? name
             @@extended_variables[name]
