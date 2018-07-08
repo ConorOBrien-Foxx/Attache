@@ -15,6 +15,7 @@ $PAREN_OPEN = /\(/
 $PAREN_CLOSE = /\)/
 $COMMA = /,/
 $STRING = /"(?:[^"]|"")*"/
+$RAW_STRING = /`#$STRING/
 $FUNC_START = /\{/
 $FUNC_END = /\}/
 $WHITESPACE = /\s+/
@@ -151,6 +152,7 @@ $TYPES = {
     $STATEMENT_SEP      => :statement_sep,
     $WORD               => :word,
     $COMMA              => :comma,
+    $RAW_STRING         => :raw_string,
     $STRING             => :string,
     $NUMBER             => :number,
     $ABSTRACT           => :abstract,
@@ -170,6 +172,7 @@ $DATA = [
     :reference,
     :abstract_reference,
     :string,
+    :raw_string,
     :op_quote,
     :call_func,
     :curry_func,
@@ -1080,6 +1083,9 @@ class AtState
             raw[1..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
                 eval '"' + e + '"' rescue e
             }
+
+        elsif type == :raw_string
+            raw[2..-2].gsub(/""/, '"')
 
         elsif @@extended_variables.has_key? raw
             @@extended_variables[raw]
