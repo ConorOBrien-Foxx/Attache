@@ -3619,11 +3619,22 @@ module AtFunctionCatalog
         #<<
         # Returns the UTF-8 ordinal representing <code>ent</code>.
         # @type ent string|number
+        # @optional offset
+        # @type offset number
+        # @param offset Specifies the offset at which the ordinal is taken.
         # @return number
         # @genre string
+        # @example Print[Ord["A"]]
+        # @example ?? 65
+        # @example Print[Ord["asdf"]]
+        # @example ?? 97
+        # @example Print[Ord["asdf", 1]]
+        # @example ?? 115
+        # @example Print[Ord["asdf", 1:3]]
+        # @example ?? [115, 100, 102]
         #>>
-        "Ord" => vectorize_monad { |inst, ent|
-            ent.ord
+        "Ord" => vectorize_dyad { |inst, ent, offset=0|
+            ent[offset].ord
         },
         #<<
         # Maps <code>Ord</code> over the characters of <code>ent</code> if it is a string;
