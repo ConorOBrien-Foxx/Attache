@@ -3569,7 +3569,7 @@ module AtFunctionCatalog
         # @example ?? "no "
         # @example Print[Match["cat in the hat", "[ch]at"]]
         # @example ?? "cat"
-        # @example match2vowels := Match["\\w*[aeiou]{2}\\w*"]
+        # @example match2vowels := Match[`"\w*[aeiou]{2}\w*"]
         # @example Print[match2vowels["Hello, loopy man!"]]
         # @example ?? "loopy"
         #>>
@@ -3597,10 +3597,24 @@ module AtFunctionCatalog
         # @type match (*)
         # @return [(*)]
         # @genre string/regex
+        # @example Print[MatchAll["no you?", ".{3}"]]
+        # @example ?? ["no ", "you"]
+        # @example Print[MatchAll["cat in the hat", "[ch]at"]]
+        # @example ?? ["cat", "hat"]
+        # @example match2vowels := MatchAll[`"\w*[aeiou]{2}\w*"]
+        # @example Print[match2vowels["Hello, loopy man!"]]
+        # @example ?? ["loopy"]
         #>>
         "MatchAll" => vectorize_dyad { |inst, source, match|
-            match = make_regex match
-            source.scan(match)
+            if match.nil?
+                match = source
+                lambda { |inst, source|
+                    @@functions["MatchAll"][inst, source, match]
+                }
+            else
+                match = make_regex match
+                source.scan(match)
+            end
         },
         #<<
         # Returns the UTF-8 ordinal representing <code>ent</code>.

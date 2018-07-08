@@ -79,7 +79,7 @@ div.example {
 }
 
 /* style */
-.at_string, .at_reference, .at_abstract {
+.at_string, .at_raw_string, .at_reference, .at_abstract {
     color: #cc5555;
 }
 
