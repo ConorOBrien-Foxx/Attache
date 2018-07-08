@@ -3632,16 +3632,22 @@ module AtFunctionCatalog
         # @example ?? 115
         # @example Print[Ord["asdf", 1:3]]
         # @example ?? [115, 100, 102]
+        # @example Print[Ord[33]]
+        # @example ?? 33
         #>>
         "Ord" => vectorize_dyad { |inst, ent, offset=0|
-            ent[offset].ord
+            Numeric === ent ? ent : ent[offset].ord
         },
         #<<
         # Maps <code>Ord</code> over the characters of <code>ent</code> if it is a string;
-        # otherwise, is equivalent to <code>Ord</code>.
+        # otherwise, is equivalent to <code>[Ord[ent]]</code>.
         # @type ent string|number
-        # @return [number]|number
+        # @return [number]
         # @genre string
+        # @example Print[Ords["Hello!"]]
+        # @example ?? [72, 101, 108, 108, 111, 33]
+        # @example Print[Ords[ [33, 34, 35] ]]
+        # @example ?? [32, 34, 35]
         #>>
         "Ords" => vectorize_monad { |inst, ent|
             if ent.is_a? String
