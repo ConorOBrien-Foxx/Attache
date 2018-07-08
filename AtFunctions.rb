@@ -1965,6 +1965,9 @@ module AtFunctionCatalog
             }
             reform_list masked, list
         },
+        "Reform" => lambda { |inst, result, to|
+            reform_list result, to
+        },
         #<<
         # Returns <code>true</code> if <code>arg</code> is truthy, <code>false</code> otherwise.
         # @return bool
@@ -2287,7 +2290,7 @@ module AtFunctionCatalog
         # @example ?? false
         #>>
         "Decreasing" => lambda { |inst, list|
-            list.delta.all?(&:negative?) rescue false
+            force_list(list).delta.all?(&:negative?) rescue false
         },
         #<<
         # Returns the differences between each member of <code>list</code>.
@@ -2459,7 +2462,7 @@ module AtFunctionCatalog
         # @genre list/logic
         #>>
         "Increasing" => lambda { |inst, list|
-            list.delta.all?(&:positive?) rescue false
+            force_list(list).delta.all?(&:positive?) rescue false
         },
         #<<
         # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
@@ -2488,6 +2491,20 @@ module AtFunctionCatalog
             end
         },
         #<<
+        # Returns the index of the last occurrence of <code>ind</code> in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return number
+        # @genre list
+        #>>
+        "LastIndex" => vectorize_dyad(RIGHT) { |inst, list, ind|
+            if String === list
+                list.rindex ind
+            else
+                inst.cast_list(list).rindex ind
+            end
+        },
+        #<<
         # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
         # @type list [(*)]
         # @type ind (*)
@@ -2508,6 +2525,16 @@ module AtFunctionCatalog
         #>>
         "IndexFlat" => lambda { |inst, list, ind|
             inst.cast_list(list).index ind
+        },
+        #<<
+        # Returns the index of the last occurrence of <code>ind</code> in <code>list</code>.
+        # @type list [(*)]
+        # @type ind (*)
+        # @return number
+        # @genre list
+        #>>
+        "LastIndexFlat" => lambda { |inst, list, ind|
+            inst.cast_list(list).rindex ind
         },
         #<<
         # Returns the first <code>Prod[Size => args]</code> non-negative integers.
@@ -3533,6 +3560,7 @@ module AtFunctionCatalog
         },
         #<<
         # Matches first occurrence of <code>match</code> (cast to regex) in <code>source</code>.
+        # If only one argument <code>source</code> is given, then returns a function which takes the source as input.
         # @type source string
         # @type match (*)
         # @return string
@@ -3540,17 +3568,27 @@ module AtFunctionCatalog
         # @example Print[Match["no you?", ".{3}"]]
         # @example ?? "no "
         # @example Print[Match["cat in the hat", "[ch]at"]]
-        # @example ?? "hat"
+        # @example ?? "cat"
+        # @example match2vowels := Match["\\w*[aeiou]{2}\\w*"]
+        # @example Print[match2vowels["Hello, loopy man!"]]
+        # @example ?? "loopy"
         #>>
         "Match" => vectorize_dyad { |inst, source, match|
-            match = make_regex match
-            res = source.match(match).to_a
-            if res.empty?
-                nil
-            elsif res.size == 1
-                res[0]
+            if match.nil?
+                match = source
+                lambda { |inst, source|
+                    @@functions["Match"][inst, source, match]
+                }
             else
-                res
+                match = make_regex match
+                res = source.match(match).to_a
+                if res.empty?
+                    nil
+                elsif res.size == 1
+                    res[0]
+                else
+                    res
+                end
             end
         },
         #<<
