@@ -239,9 +239,25 @@ module TimeChangeExtension
     alias :second   :seconds
 end
 
+module CallReturnSelf
+    def [](*args)
+        self
+    end
+end
+
 class Numeric
     include TimeChangeExtension
+    include CallReturnSelf
 end
+
+class Integer
+    include CallReturnSelf
+end
+
+class Float
+    include CallReturnSelf
+end
+
 
 def yearlike(n)
     case n
