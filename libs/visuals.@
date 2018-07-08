@@ -13,6 +13,7 @@ highlight_styles := <~
     func_start      -> "1",
     comma           -> "1",
     string          -> "33",
+    raw_string      -> "33",
     statement_sep   -> "1",
     op_quote        -> "33;1",
     reference       -> "33;1",
