@@ -124,6 +124,7 @@ $PRECEDENCE = {
     "≔"       => [2, :right],
     ".="       => [2, :right],
     "..="      => [2, :right],
+    "@="       => [2, :right],
 
     ";;"       => [1, :left],
 }
@@ -1001,6 +1002,8 @@ class AtState
         "⅜" => Rational(3, 8),
         "⅝" => Rational(5, 8),
         "⅞" => Rational(7, 8),
+        "NOT_PROVIDED" => AtFunctionCatalog::NOT_PROVIDED,
+        "NP" => AtFunctionCatalog::NOT_PROVIDED,
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,

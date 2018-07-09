@@ -1,5 +1,15 @@
 # assumes included at a certain position in `AtState.rb`
 # TODO: fix that
+
+# NOTE: prefer `inst.cast_list` over `force_list`
+
+def default_sentinel(*values, sentinel: AtFunctionCatalog::NOT_PROVIDED, &final)
+    values.each { |e|
+        return e if e != sentinel
+    }
+    return final[] if final
+    sentinel
+end
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
 
@@ -2290,7 +2300,7 @@ module AtFunctionCatalog
         # @example ?? false
         #>>
         "Decreasing" => lambda { |inst, list|
-            force_list(list).delta.all?(&:negative?) rescue false
+            inst.cast_list(list).delta.all?(&:negative?) rescue false
         },
         #<<
         # Returns the differences between each member of <code>list</code>.
@@ -2462,7 +2472,7 @@ module AtFunctionCatalog
         # @genre list/logic
         #>>
         "Increasing" => lambda { |inst, list|
-            force_list(list).delta.all?(&:positive?) rescue false
+            inst.cast_list(list).delta.all?(&:positive?) rescue false
         },
         #<<
         # Returns all indices at which <code>ind</code> occurs in <code>list</code>.
@@ -3338,25 +3348,28 @@ module AtFunctionCatalog
         ##------------------------##
         ## Combinatoric Functions ##
         ##------------------------##
-        "Combinations" => lambda { |inst, list, count=nil|
-            inner = inst.cast_list list
-            if count.nil?
-                count = (0..inner.size).to_a
-            end
+        "Combinations" => lambda { |inst, list, count=NOT_PROVIDED|
+            count = default_sentinel(count) {
+                (0..inst.cast_list(list).size).to_a
+            }
             if count.is_a? Array
                 count.map { |e|
-                    reform_list inner.combination(e).to_a, list
+                    @@functions["Combinations"][inst, list, e]
                 }.flatten(1)
             else
-                reform_list inner.combination(count).to_a, list
+                inner = inst.cast_list list
+                inner.combination(count).map { |e|
+                    reform_list e, list
+                }
             end
         },
-        "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=list.size|
-            if list.is_a? String
-                inst.cast_list(list).permutation(count).map(&:join).to_a
-            else
-                reform_list inst.cast_list(list).permutation(count).to_a, list
-            end
+        "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=NOT_PROVIDED|
+            listified = inst.cast_list(list)
+            size = listified.size
+            count = default_sentinel(count, size)
+            listified.permutation(count).map { |perm|
+                reform_list perm, list
+            }.to_a
         },
         "Zip" => lambda { |inst, a, *b|
             inst.cast_list(a).zip(*b.map { |e| inst.cast_list e })
@@ -3674,11 +3687,11 @@ module AtFunctionCatalog
         "PadLeft" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
             case ent
                 when String
-                    fill = fill == NOT_PROVIDED ? " " : fill
+                    fill = default_sentinel(fill, " ")
                     ent.rjust(amt, fill)
 
                 else
-                    fill = fill == NOT_PROVIDED ? 0 : fill
+                    fill = default_sentinel(fill, 0)
                     ent = inst.cast_list ent
                     until ent.size >= amt
                         ent = [fill, *ent]
@@ -3704,11 +3717,11 @@ module AtFunctionCatalog
         "PadRight" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
             case ent
                 when String
-                    fill = fill == NOT_PROVIDED ? " " : fill
+                    fill = default_sentinel(fill, " ")
                     ent.ljust(amt, fill)
 
                 else
-                    fill = fill == NOT_PROVIDED ? 0 : fill
+                    fill = default_sentinel(fill, 0)
                     ent = inst.cast_list ent
                     until ent.size >= amt
                         ent = [*ent, fill]
@@ -3736,11 +3749,13 @@ module AtFunctionCatalog
         # @genre string
         #>>
         "Center" => lambda { |inst, ent, amt, pad=NOT_PROVIDED|
-            list = force_list(ent)
+            list = inst.cast_list(ent)
             deficit = amt - list.size
             return reform_list(list, ent) if deficit <= 0
 
-            pad = pad == NOT_PROVIDED ? inst.default_cell_type(list[0]) : pad rescue 0
+            pad = default_sentinel(pad) {
+                inst.default_cell_type(list[0]) rescue 0
+            }
 
             before = deficit / 2
             after = deficit - before
@@ -4151,6 +4166,16 @@ module AtFunctionCatalog
                 p 'idek'
                 raise
             end
+        },
+        "@=" => held(true) { |inst, left, value|
+            ent = inst.get_variable left.head.raw
+            inds = left.children.map { |e|
+                inst.evaluate_node e
+            }
+            until inds.size == 1
+                ent = ent[inds.shift]
+            end
+            ent[inds.first] = value
         },
         #<<
         # Multiplication.
@@ -5037,7 +5062,15 @@ module AtFunctionCatalog
             end
         },
         "!" => vectorize_monad { |inst, n|
-            factorial n
+            if AtState.func_like? n
+                lambda { |inst, *args|
+                    @@functions["Permutations"][inst, *args].map { |perm|
+                        n[inst, perm]
+                    }
+                }
+            else
+                factorial n
+            end
         },
         "?" => vectorize_monad { |inst, n|
             AtState.truthy? n
