@@ -376,10 +376,12 @@
 </code><code class="at_string">&quot;~~~Hi!~~~~&quot;</code><code class="at_whitespace">
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Center</code><code class="at_bracket_open">[</code><code class="at_number">9</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">5</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? 11911</code></code></div><a href="https://tio.run/##XYwxCoAwDEX3niJmzmAUBScHF0f30qFIwS4dpHOuXqOdKoQQ/n95Pmd/XqGU444p2y2kHG6LHglG58y6AoIHNE1tmWBwBHMlbE@g84bf0bsWxz126mOtUFB/UEQ00y0/80IwKVm9zAtzKQ8">Try it online!</a><button class="source-button" id="Center-button">toggle source</button><div id="Center-source" class="code-source"><pre>       "Center" => lambda { |inst, ent, amt, pad=NOT_PROVIDED|
-           list = force_list(ent)
+           list = inst.cast_list(ent)
            deficit = amt - list.size
            return reform_list(list, ent) if deficit <= 0
-           pad = pad == NOT_PROVIDED ? inst.default_cell_type(list[0]) : pad rescue 0
+           pad = default_sentinel(pad) {
+               inst.default_cell_type(list[0]) rescue 0
+           }
            before = deficit / 2
            after = deficit - before
            result = Array.new(before) { pad } + list + Array.new(after) { pad }
@@ -535,7 +537,7 @@
 </code><code class="at_comment">?? false
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Decreasing</code><code class="at_bracket_open">[</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_whitespace"> </code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? false</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2iU1uSg1sTgzLz1aQVfD0MpUUyE2lsveXqGkqDSVC1NNtJGOgqGOgkEsAWWxhI1BMyktMacYm1Kgm5BV/P8PAA">Try it online!</a><button class="source-button" id="Decreasing-button">toggle source</button><div id="Decreasing-source" class="code-source"><pre>"Decreasing" => lambda { |inst, list|
-    force_list(list).delta.all?(&:negative?) rescue false
+    inst.cast_list(list).delta.all?(&:negative?) rescue false
 },</pre></div></div><div class="function" id="Define"><h2><code>Define[<span class="type">string</span> name, <span class="type">(*)</span> value] &rarr; <span class="return">(*)</span> </code><span class="genre">(scope)</span></h2>Defines <code>name</code> in the global scope as <code>value</code>. Returns <code>value</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Define</code><code class="at_bracket_open">[</code><code class="at_reference">$a</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_string">&quot;This is variable a!&quot;</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">a</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? This is variable a!</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yU1LTMvNVolUUdBKSQjs1gBiMoSizITk3JSFRIVlWK5Aooy80qiE2O57O0VsKj4/x8A">Try it online!</a><button class="source-button" id="Define-button">toggle source</button><div id="Define-source" class="code-source"><pre>"Define" => lambda { |inst, name, value|
@@ -796,7 +798,7 @@
 </code><code class="at_comment">?? false</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2lghM0/B0Mo0lsveXqGkqDSVCypugCyRlphTDNQCAA">Try it online!</a><button class="source-button" id="in-button">toggle source</button><div id="in-source" class="code-source"><pre>"in" => lambda { |inst, x, y|
     @@functions["Has"][inst, y, x]
 },</pre></div></div><div class="function" id="Increasing"><h2><code>Increasing[<span class="type">[(*)]</span> list] &rarr; <span class="return">bool</span> </code><span class="genre">(list/logic)</span></h2>Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>. <button class="source-button" id="Increasing-button">toggle source</button><div id="Increasing-source" class="code-source"><pre>"Increasing" => lambda { |inst, list|
-    force_list(list).delta.all?(&:positive?) rescue false
+    inst.cast_list(list).delta.all?(&:positive?) rescue false
 },</pre></div></div><div class="function" id="Index"><h2><code>Index[<span class="type">[(*)]</span> list, <span class="type">(*)</span> ind] &rarr; <span class="return">number</span> </code><span class="genre">(list)</span></h2><p><em>Vectorizes dyadically on the right.</em></p>Returns the index of the first occurrence of <code>ind</code> in <code>list</code>. <button class="source-button" id="Index-button">toggle source</button><div id="Index-source" class="code-source"><pre>"Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
     if String === list
         list.index ind
@@ -1145,10 +1147,10 @@
 </code><code class="at_comment">?? [0, 0, 0, 1, 2, 3]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yWzuCAnsTI6IDHFJzWtJFrJOSOxKCe1WElHwcggNpbL3l5BSQEZwOS5Aooy80rg@gytjHUUzCAaog10FCDIEGiKjoJx7P//AA">Try it online!</a><button class="source-button" id="PadLeft-button">toggle source</button><div id="PadLeft-source" class="code-source"><pre>       "PadLeft" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
            case ent
                when String
-                   fill = fill == NOT_PROVIDED ? " " : fill
+                   fill = default_sentinel(fill, " ")
                    ent.rjust(amt, fill)
                else
-                   fill = fill == NOT_PROVIDED ? 0 : fill
+                   fill = default_sentinel(fill, 0)
                    ent = inst.cast_list ent
                    until ent.size >= amt
                        ent = [fill, *ent]
@@ -1161,10 +1163,10 @@
 </code><code class="at_comment">?? [1, 2, 3, 0, 0, 0]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yWzuCAnsTI6IDElKDM9oyRayTkjsSgntVhJR8HIIDaWy95eASakgAyUuAKKMvNKEBoNrYx1FMwgOqINgbp1FIACBhAU@/8/AA">Try it online!</a><button class="source-button" id="PadRight-button">toggle source</button><div id="PadRight-source" class="code-source"><pre>       "PadRight" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
            case ent
                when String
-                   fill = fill == NOT_PROVIDED ? " " : fill
+                   fill = default_sentinel(fill, " ")
                    ent.ljust(amt, fill)
                else
-                   fill = fill == NOT_PROVIDED ? 0 : fill
+                   fill = default_sentinel(fill, 0)
                    ent = inst.cast_list ent
                    until ent.size >= amt
                        ent = [*ent, fill]
