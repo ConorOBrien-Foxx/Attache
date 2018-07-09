@@ -274,6 +274,15 @@ module AtFunctionCatalog
             read_option prompt, opts
         },
         #<<
+        # Returns the successor of <code>ent</code>.
+        # @type ent (*)
+        # @return (*)
+        # @genre data
+        #>>
+        "Pred" => lambda { |inst, ent|
+            ent.pred
+        },
+        #<<
         # Prints each argument of <code>args</code>, separated by spaces.
         # @type args (*)
         # @return [(*)]
@@ -376,6 +385,15 @@ module AtFunctionCatalog
         #>>
         "Stdin" => lambda { |inst|
             STDIN.read
+        },
+        #<<
+        # Returns the successor of <code>ent</code>.
+        # @type ent (*)
+        # @return (*)
+        # @genre data
+        #>>
+        "Succ" => lambda { |inst, ent|
+            ent.succ
         },
         #<<
         # Writes <code>args</code>, joined together, to STDOUT.
@@ -569,7 +587,7 @@ module AtFunctionCatalog
                     break if config[:include] ? value > max : value >= max
                     collect.push value
                 end
-                i += 1
+                i = @@functions["Succ"][inst, i]
             }
             collect
         },
@@ -597,7 +615,7 @@ module AtFunctionCatalog
                     break if config[:include] ? value > max : value >= max
                     collect.push value if cond[inst, value]
                 end
-                i += 1
+                i = @@functions["Succ"][inst, i]
             }
             collect
         },
@@ -646,7 +664,7 @@ module AtFunctionCatalog
                 unless res.nil?
                     break if AtState.truthy? cond[inst, res]
                 end
-                n += 1
+                n = @@functions["Succ"][inst, n]
             }
             res
         },
@@ -672,7 +690,7 @@ module AtFunctionCatalog
                 if !res.nil? && AtState.truthy?(cond[inst, res])
                     collect << res
                 end
-                n += 1
+                n = @@functions["Succ"][inst, n]
             end
             collect
         },
@@ -1658,7 +1676,7 @@ module AtFunctionCatalog
         "InvocationIndex" => lambda { |inst, func|
             i = -1
             lambda { |inst, *args|
-                func[inst, *args, i += 1]
+                func[inst, *args, @@functions["Succ"][inst, i]]
             }
         },
         #<<
@@ -2328,6 +2346,21 @@ module AtFunctionCatalog
             halve1 = @@functions["Complement"][inst, a, b]
             halve2 = @@functions["Complement"][inst, b, a]
             halve1 + halve2
+        },
+        #<<
+        # Returns a list of all elements in <code>list</code> paired with their indices,
+        # starting at <code>offset</code>.
+        # @type list [(*)]
+        # @return [[(*), number]]
+        # @genre list
+        #>>
+        "Enumerate" => lambda { |inst, list, start=0|
+            i = start
+            list.map { |e|
+                res = [e, i]
+                i = @@functions["Succ"][inst, i]
+                res
+            }
         },
         #<<
         # Returns the first element of <code>list</code>.
