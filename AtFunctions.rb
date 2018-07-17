@@ -803,6 +803,15 @@ module AtFunctionCatalog
             args.inject(:/)
         },
         #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>e</mi><mi>n</mi></msup></math>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "Exp" => lambda { |inst, n|
+            Math::exp n
+        },
+        #<<
         # Returns the <code>n</code>th number in the Fibonacci sequence, starting with <code>f<sub>0</sub> = 0</code> and <code>f<sub>1</sub> = 1</code>.
         # @type n number
         # @return number
@@ -1165,6 +1174,15 @@ module AtFunctionCatalog
             Math::acos n
         },
         #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>cosh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "ArcCosh" => vectorize_monad { |inst, n|
+            Math::acosh n
+        },
+        #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sin</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
         # @type n number
         # @return number
@@ -1174,6 +1192,15 @@ module AtFunctionCatalog
             Math::asin n
         },
         #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sinh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "ArcSinh" => vectorize_monad { |inst, n|
+            Math::asinh n
+        },
+        #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
         # @type n number
         # @return number
@@ -1181,6 +1208,15 @@ module AtFunctionCatalog
         #>>
         "ArcTan" => vectorize_monad { |inst, n|
             Math::atan n
+        },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tanh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "ArcTanh" => vectorize_monad { |inst, n|
+            Math::atanh n
         },
         #<<
         # Calculates the principal value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
@@ -1202,6 +1238,15 @@ module AtFunctionCatalog
             Math::cos n
         },
         #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cosh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "Cosh" => vectorize_monad { |inst, n|
+            Math::cosh n
+        },
+        #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sin</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
         # @type n number
         # @return number
@@ -1211,6 +1256,15 @@ module AtFunctionCatalog
             Math::sin n
         },
         #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sinh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "Sinh" => vectorize_monad { |inst, n|
+            Math::sinh n
+        },
+        #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
         # @type n number
         # @return number
@@ -1218,6 +1272,15 @@ module AtFunctionCatalog
         #>>
         "Tan" => vectorize_monad { |inst, n|
             Math::tan n
+        },
+        #<<
+        # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
+        # @type n number
+        # @return number
+        # @genre numeric/trig
+        #>>
+        "Tanh" => vectorize_monad { |inst, n|
+            Math::tanh n
         },
 
         ##-----------------##
