@@ -16,6 +16,7 @@ $PAREN_CLOSE = /\)/
 $COMMA = /,/
 $STRING = /"(?:[^"]|"")*"/
 $RAW_STRING = /`#$STRING/
+$FORMAT_STRING = /\$#$STRING/
 $FUNC_START = /\{/
 $FUNC_END = /\}/
 $WHITESPACE = /\s+/
