@@ -3385,9 +3385,23 @@ module AtFunctionCatalog
                         }.compact
                     }.compact
                     ar = fn.arity rescue fn.size rescue 1
-                    ar > 1 ? fn[inst, res, c] : fn[inst, res]
+                    ar > 1 ? fn[inst, res, c] : fn[inst, res] rescue fn[inst, res]
                 }
             }
+        },
+        "MooreN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
+            widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
+            moores = []
+            @@functions["Moore"][inst, list, lambda { |inst, mat|
+                moores << mat
+            }, r, **opts]
+            if Array === widths
+                moores.select.with_index { |e, i|
+                    widths.include? i
+                }
+            else
+                moores[widths]
+            end
         },
         "VonNeumann" => configurable { |inst, list, fn, r=1, **opts|
             # see also: http://mathworld.wolfram.com/vonNeumannNeighborhood.html
@@ -3408,6 +3422,20 @@ module AtFunctionCatalog
                     fn[inst, res]
                 }
             }
+        },
+        "VonNeumannN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
+            widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
+            von_neumanns = []
+            @@functions["VonNeumann"][inst, list, lambda { |inst, mat|
+                moores << mat
+            }, r, **opts]
+            if Array === widths
+                von_neumanns.select.with_index { |e, i|
+                    widths.include? i
+                }
+            else
+                von_neumanns[widths]
+            end
         },
         "Tr" => lambda { |inst, list|
             list.transpose
