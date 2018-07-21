@@ -235,6 +235,10 @@ def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
 end
 
+def open_func?(type)
+    [:func_start, :named_func_start].include? type
+end
+
 def parse(code)
     # group expression
     stack = []
@@ -250,12 +254,12 @@ def parse(code)
 
         next if type == :comment
 
-        is_data = $DATA.include?(type) || type == :func_start# || type == :curry_open
+        is_data = $DATA.include?(type) || open_func?(type) # || type == :curry_open
         last_was_data = $DATA_SIGNIFIER.include? last_token.type
 
         # two adjacent datatypes mark a statement
         if is_data && last_was_data || type == :statement_sep
-            flush(out, stack, [:func_start])
+            flush(out, stack, [:func_start, :named_func_start])
         end
 
         if type == :statement_sep
@@ -266,7 +270,7 @@ def parse(code)
         if $DATA.include? type
             out.push ent
 
-        elsif type == :func_start
+        elsif open_func? type
             stack.push ent
             out.push ent
 
@@ -276,14 +280,23 @@ def parse(code)
             end
 
             collect = []
-            until out.empty? || out.last.type == :func_start
+            until out.empty? || open_func?(out.last.type)
                 collect.unshift out.pop
+            end
+
+            if out.last.type == :named_func_start
+                #Token<"x", :word, 3>, #Token<"_", :abstract, 8>, #Token<".=", :operator, 5>
+                prefix = []
+                ["x", "y", "z"].each_with_index { |var, i|
+                    prefix.push Token.new var, :word, nil
+                    prefix.push Token.new "_#{i + 1}", :abstract, nil
+                    prefix.push Token.new ".=", :operator, nil
+                }
+                collect = prefix.concat collect
             end
 
             next_start = stack.pop.start
             out.pop
-
-            # p collect
 
             out.push Token.new collect, :make_lambda, next_start
 
