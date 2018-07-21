@@ -4918,6 +4918,26 @@ module AtFunctionCatalog
         "Ø" => lambda { |inst, a, b|
             a - b
         },
+        #<<
+        # Removes all <code>b</code> from <code>a</code>. See also: <a href="#Remove"><code>Remove</code></a>.
+        # @type a [(*)]
+        # @type b (*)
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "^^" => lambda { |inst, a, b|
+            @@functions["Remove"][inst, a, b]
+        },
+        #<<
+        # Removes all <code>b</code> from <code>a</code>. See also: <a href="#^^"><code>a ^^ b</code></a>.
+        # @type a [(*)]
+        # @type b (*)
+        # @return [(*)]
+        # @genre operator
+        #>>
+        "⩓" => lambda { |inst, a, b|
+            @@functions["Remove"][inst, a, b]
+        },
 
 
         ## -- functional -- #

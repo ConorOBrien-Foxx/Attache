@@ -55,6 +55,8 @@ $PRECEDENCE = {
     "∪"        => [17, :left], # Union alias
     "∆"        => [17, :left], # symmetric difference
     "Ø"        => [17, :left], # setwise difference
+    "^^"       => [17, :left], # similar to the above
+    "⩓"        => [17, :left], # ^^ alias
 
     "!"        => [16, :right],
     "^"        => [15, :right],
