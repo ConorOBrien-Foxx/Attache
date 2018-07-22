@@ -5000,13 +5000,24 @@ module AtFunctionCatalog
         },
         #<<
         # Removes all <code>b</code> from <code>a</code>. See also: <a href="#Remove"><code>Remove</code></a>.
-        # @type a [(*)]
+        # If <code>a</code> is a fucntion, then folds <code>a</code> over <code>b</code>/
+        # @type a [(*)]|fn
         # @type b (*)
         # @return [(*)]
+        # @example Print[1:5 ^^ 2]
+        # @example ?? [1, 3, 4, 5]
+        # @example Print[[1, 2, 2, 3, 2, 4, 5, 3, 2, 1, 3] ^^ 2]
+        # @example ?? [1, 3, 4, 5, 3, 1, 3]
+        # @example Print[Add ^^ 1:5]
+        # @example ?? 15
         # @genre operator
         #>>
         "^^" => lambda { |inst, a, b|
-            @@functions["Remove"][inst, a, b]
+            if AtState.func_like? a
+                @@functions["Fold"][inst, a, b]
+            else
+                @@functions["Remove"][inst, a, b]
+            end
         },
         #<<
         # Removes all <code>b</code> from <code>a</code>. See also: <a href="#^^"><code>a ^^ b</code></a>.
