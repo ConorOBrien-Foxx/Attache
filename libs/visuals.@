@@ -28,7 +28,7 @@ highlight_styles := <~
 ??? @type code string
 ??? @return string
 ??? @genre string
-highlight := [code] -> {
+Highlight := [code] -> {
     tokens .= Tokenize[code]
     inner .= Join! {
         Format["\x1b[%sm%s\x1b[0m", highlight_styles[_.type], _.raw]
@@ -44,7 +44,26 @@ highlight := [code] -> {
 ??? @type code string
 ??? @return string
 ??? @genre string
-highlight_html[code] := Join! {
+HighlightHTML[code] := Join! {
     Format["<code class=""at_%s"">%s</code>", _.type, HTMLEscape[_.raw]]
 } => Tokenize[code]
+??>>
+
+duodecimal_alphabet := "0123456789↊↋"
+??<<
+??? Returns the duodecimal representation of <code>n</code>, using the duodecimal digits <code>↊</code> and <code>↋</code>.
+??? @type n number
+??? @return string
+??? @genre numeric/bases
+Duodecimal[n] :=
+    duodecimal_alphabet[ToBase[n, 12]] |> Join
+??>>
+
+??<<
+??? Given a duodecimal representation <code>str</code>, returns the number represented by <code>str</code>.
+??? @type str string
+??? @return number
+??? @genre numeric/bases
+UnDuodecimal[str] :=
+    FromBase[Index[duodecimal_alphabet, Chars! str], 12]
 ??>>

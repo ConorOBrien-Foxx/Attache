@@ -1053,7 +1053,7 @@ class AtState
             ext = File.extname loc
             case ext
                 when ".@"
-                    ast(File.read(loc)).each { |tree|
+                    ast(File.read(loc, encoding: "utf-8")).each { |tree|
                         evaluate_node tree
                     }
                 when ".rb"

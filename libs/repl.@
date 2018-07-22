@@ -18,7 +18,7 @@ REPL := {
         line .= Chomp <| _
         ?? go to line, reset prompt
         Print["\e[1A" + head, after->""]
-        Print[highlight[line]]
+        Print[Highlight[line]]
         res .= EvalHere[line, Last => previous]
         next .= Entry[line, res]
         If[#previous = 0 or Last[previous] =/= next,

@@ -8,7 +8,7 @@ $inst = AtState.new "Needs[$visuals]"
 $inst.run
 
 def highlight_html(str)
-    $inst.variables["highlight_html"][$inst, str]
+    $inst.variables["HighlightHTML"][$inst, str]
 end
 
 $PUSH_COLLECT = {
