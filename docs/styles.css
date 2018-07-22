@@ -98,6 +98,7 @@ div.example {
 .at_curry_close,
 .at_func_end,
 .at_func_start,
+.at_named_func_start,
 .at_comma {
     font-weight: bold;
 }

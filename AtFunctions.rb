@@ -1714,9 +1714,6 @@ module AtFunctionCatalog
                 g[inst, f[inst, *args], h[inst, *args]]
             }
         },
-        # "Group" => lambda { |inst, arr|
-
-        # },
         #<<
         # Composes the functions <code>f</code> and <code>g</code> into a hook. When called with arguments <code>args</code> this is equivalent to calling <code>f[First[args], g[...args]]</code>.
         # @type f fn
@@ -2562,6 +2559,31 @@ module AtFunctionCatalog
             grade inst.cast_list list
         },
         #<<
+        # Groups <code>list</code> according to <code>Map[fn, list]</code>.
+        # @type list [(*)]
+        # @type f fn
+        # @return Hash[(*) -> (*)]
+        # @genre list
+        #>>
+        "Group" => curry { |inst, f, list|
+            inst.cast_list(list).group_by { |e| f[inst, e] }
+        },
+        #<<
+        # Equivalent to <code><a href="#UnSparse">UnSparse</a>@<a href="#Group">Group</a></code>.
+        # @type list [(*)]
+        # @type f fn
+        # @type fill (*)
+        # @return [(*)]
+        # @optional fill
+        # @genre list
+        #>>
+        "FlatGroup" => curry { |inst, f, list, fill=nil|
+            @@functions["UnSparse"][inst,
+                @@functions["Group"][inst, f, list],
+                fill
+            ]
+        },
+        #<<
         # Returns <code>true</code> if each member <code>el</code> is strictly greater than the previous element, otherwise <code>false</code>.
         # @type list [(*)]
         # @return bool
@@ -3243,6 +3265,36 @@ module AtFunctionCatalog
         },
         "UnSlices" => lambda { |inst, list|
             list[0...-1].map(&:first) + list[-1]
+        },
+        #<<
+        # Treats <code>ent</code> as a hash where keys are indices and values are values, and converts to an array,
+        # filling in empty values with <code>fill</code>.
+        # @type ent Hash[(*) -> (*)]
+        # @type fill (*)
+        # @return [(*)]
+        # @genre list
+        # @param fill default: <code>nil</code>.
+        # @example test := <~ 0 -> 3, 2 -> 4, 6 -> 3 ~>
+        # @example Print[UnSparse[test]]
+        # @example ?? [3, nil, 4, nil, nil, nil, 3]
+        # @example Print[UnSparse[test, 0]]
+        # @example ?? [3, 0, 4, 0, 0, 0, 3]
+        # @optional fill
+        #>>
+        "UnSparse" => lambda { |inst, ent, fill=nil|
+            if Hash === ent
+                res = []
+                ent.each { |k, v|
+                    ind = force_number k
+                    while ind >= res.size
+                        res << fill
+                    end
+                    res[ind] = v
+                }
+                res
+            else
+                raise "unimplemented"
+            end
         },
         #<<
         # Returns an array of lists representing all pairs <code>(x, y)</code> such that <code>a <= y <= b</code> and <code>a <= x < y</code>.
