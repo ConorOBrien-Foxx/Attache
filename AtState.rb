@@ -35,6 +35,8 @@ $PRECEDENCE = {
     ":"        => [30, :left],
     "::"       => [30, :left],
 
+    "`"        => [28, :left],
+
     "&"        => [26, :left],
     "&:"       => [26, :left],
     "~"        => [25, :left],
@@ -153,6 +155,7 @@ $TYPES = {
     $CURRY_CLOSE        => :curry_close,
     $BRACKET_OPEN       => :bracket_open,
     $BRACKET_CLOSE      => :bracket_close,
+    $OP_QUOTE           => :op_quote,
     $OPERATOR           => :operator,
     $STATEMENT_SEP      => :statement_sep,
     $WORD               => :word,
@@ -162,7 +165,6 @@ $TYPES = {
     $STRING             => :string,
     $NUMBER             => :number,
     $ABSTRACT           => :abstract,
-    $OP_QUOTE           => :op_quote,
     $NAMED_FUNC_START   => :named_func_start,
     $FUNC_END           => :func_end,
     $REFERENCE          => :reference,

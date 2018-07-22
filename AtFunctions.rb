@@ -5180,6 +5180,12 @@ module AtFunctionCatalog
                 @@functions["Size"][inst, n]
             end
         },
+        # make constant
+        "`" => lambda { |inst, n|
+            lambda { |inst, *discard|
+                n
+            }
+        },
         #<<
         # Forces <code>func</code> to use parent scope.
         # @type func fn
