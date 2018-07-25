@@ -356,37 +356,6 @@ def configurable(arity: nil, &fn)
     AtFunction.new(fn, config: true, arity: arity)
 end
 
-class Token
-    def initialize(raw, type, start)
-        @raw = raw
-        @type = type
-        @start = start
-    end
-
-    attr_accessor :raw, :type, :start
-    @@words = %w(raw type start)
-
-    def [](n)
-        raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
-    end
-
-    def []=(n, v)
-        raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
-    end
-
-    def to_ary
-        [@raw, @type, @start]
-    end
-
-    def to_s
-        "#{@type} #{@raw.inspect} @ #{@start}"
-    end
-
-    def inspect
-        "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
-    end
-end
-
 class Node
     DISP_WIDTH = 4
     NODE_PREFIX = "\\- "
