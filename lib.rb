@@ -215,6 +215,34 @@ class X
 end
 
 class ReverseRange
+    INHERIT_BLOCKS_FROM_ENUMERATOR = %w(
+        chunk
+        collect
+        collect_concat
+        cycle
+        detect
+        drop_while
+        each_cons
+        each_entry
+        each_with_index
+        find
+        find_all
+        find_index
+        flat_map
+        group_by
+        inject
+        map
+        max_by
+        min_by
+        minmax_by
+        partition
+        reject
+        reverse_each
+        select
+        sort_by
+        take_while
+    ).map(&:to_sym)
+
     def initialize(start, finish, exclude_end=false)
         @begin = start
         @end = finish
@@ -233,10 +261,19 @@ class ReverseRange
 
         @exclude_end = exclude_end
         @end_status = @exclude_end ? 0 : -1
+        @size = begin
+            @begin - @end - @end_status
+        rescue
+            nil
+        end
     end
 
     def exclude_end?
         @exclude_end
+    end
+
+    def size
+        @size
     end
 
     def iter_stop?(iter)
@@ -258,16 +295,34 @@ class ReverseRange
         end
     end
 
-    def map
-        return enum_for(:map) unless block_given?
+    INHERIT_BLOCKS_FROM_ENUMERATOR.each { |prop|
+        define_method(prop) { |*args, &fn|
+            return enum_for(prop, *args) if fn.nil?
 
-        each.map { |e|
-            yield e
+            each.send(prop, *args, &fn)
         }
-    end
+    }
+
+    # def each_cons(n)
+    #     return enum_for(:each_cons, n) unless block_given?
+    #
+    #     each.each_cons(n) { |e| yield e }
+    # end
+    #
+    # def map
+    #     return enum_for(:map) unless block_given?
+    #
+    #     each.map { |e|
+    #         yield e
+    #     }
+    # end
 
     def reverse
         Range.new(@end, @begin, @exclude_end)
+    end
+
+    def sort
+        reverse.sort
     end
 
     def to_s
