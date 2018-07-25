@@ -4703,7 +4703,7 @@ module AtFunctionCatalog
                     }]
                 }
             else
-                (x..y).to_a
+                x..y
             end
         },
         #<<
@@ -4734,7 +4734,7 @@ module AtFunctionCatalog
         # @genre operator
         #>>
         ".." => vectorize_dyad { |inst, x, y|
-            (x..y).to_a
+            x..y
         },
         #<<
         # Returns a range from <code>x</code> to <code>y</code>, inclusive. See also: <a href="#.."><code>..</code></a>.
@@ -4754,7 +4754,7 @@ module AtFunctionCatalog
         # @genre operator
         #>>
         "..." => vectorize_dyad { |inst, x, y|
-            (x...y).to_a
+            x...y
         },
         #<<
         # Returns a range from <code>x</code> to <code>y</code>, excluding <code>y</code>. See also: <a href="#..."><code>...</code></a>.

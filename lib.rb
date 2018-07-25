@@ -187,6 +187,92 @@ class Array
     end
 end
 
+class Enumerator
+    def reverse
+        to_a.reverse
+    end
+end
+
+class X
+    def initialize(s)
+        @s=s.ord
+    end
+    def to_s
+        @s.chr
+    end
+    def pred
+        X.new(@s - 1)
+    end
+    def to_i
+        @s
+    end
+    def <=>(other)
+        @s <=> other.to_i
+    end
+    def inspect
+        "X(#{@s})"
+    end
+end
+
+class ReverseRange
+    def initialize(start, finish, exclude_end=false)
+        @begin = start
+        @end = finish
+
+        # @begin must have a predecessor
+        unless @begin.respond_to?(:pred)
+            raise ArgumentError.new("bad value for reverse range (@begin has no predecessor)")
+        end
+
+        # @begin must be comparable to @end
+        begin
+            iter_stop?(@begin)
+        rescue
+            raise ArgumentError.new("@begin and @end are not comparable")
+        end
+
+        @exclude_end = exclude_end
+        @end_status = @exclude_end ? 0 : -1
+    end
+
+    def exclude_end?
+        @exclude_end
+    end
+
+    def iter_stop?(iter)
+        res = iter <=> @end
+        if res.nil?
+            1 - (@end <=> iter)
+        else
+            res
+        end
+    end
+
+    def each
+        return enum_for(:each) unless block_given?
+        iter = @begin
+
+        until iter_stop?(iter) <= @end_status
+            yield iter
+            iter = iter.pred
+        end
+    end
+
+    def reverse
+        Range.new(@end, @begin, @exclude_end)
+    end
+
+    def inspect
+        "#{@begin.inspect}::#{@exclude_end ? ":" : ""}#{@end.inspect}"
+    end
+end
+
+class Range
+    def reverse
+        ReverseRange.new(self.end, self.begin, exclude_end?)
+    end
+end
+
 # extend TrueClass and FalseClass
 module TruthExtension
     def to_i
