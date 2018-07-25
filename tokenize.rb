@@ -195,41 +195,30 @@ $DATA_SIGNIFIER = $DATA + [
 $SEPARATOR = $DATA_SIGNIFIER
 $TOKENIZER = Regexp.new($TYPES.keys.join("|"), "u")
 
+class AtTokenizer
+    def initialize(code)
+        @code = code
+        @i = 0
+        @build = []
+    end
+
+    def running?
+        @i < @code.size
+    end
+
+    def step(output)
+        $TYPES.each { |re, type|
+            
+        }
+    end
+
+    def run(output)
+        step(output) while running?
+    end
+end
+
 def tokenize(code)
     Enumerator.new { |enum|
-        i = 0
-        depth = nil
-        build = nil
-        build_type = nil
-        code = code.encode("UTF-8")
-        code.scan($TOKENIZER) { |part|
-            $TYPES.each { |reg, type|
-                next unless /^#{reg}$/ === part
 
-                if depth.nil?
-                    if type == :comment_open
-                        depth = 1
-                        build = part
-                        build_type = type
-                    else
-                        enum.yield Token.new part, type, i
-                        i += part.size
-                    end
-                elsif build_type == :comment_open
-                    build += part
-                    depth += 1 if type == :comment_open
-                    depth -= 1 if type == :comment_close
-                    if depth.zero?
-                        depth = nil
-                        enum.yield Token.new build, :comment, i
-                    end
-                    i += part.size
-                else
-                    raise "unimplemented"
-                end
-
-                break
-            }
-        }
     }
 end
