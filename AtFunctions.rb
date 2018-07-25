@@ -3141,10 +3141,14 @@ module AtFunctionCatalog
         "Slices" => lambda { |inst, list, skew=(1..list.size).to_a|
             if skew.is_a? Array
                 skew.flat_map { |e|
-                    slices list, e
+                    @@functions["Slices"][inst, list, e]
                 }
             else
-                slices list, skew
+                forced = inst.cast_list(list)
+                res = slices forced, skew
+                res.map { |e|
+                    reform_list e, list
+                }
             end
         },
         #<<
