@@ -258,6 +258,14 @@ class ReverseRange
         end
     end
 
+    def map
+        return enum_for(:map) unless block_given?
+
+        each.map { |e|
+            yield e
+        }
+    end
+
     def reverse
         Range.new(@end, @begin, @exclude_end)
     end
