@@ -262,6 +262,10 @@ class ReverseRange
         Range.new(@end, @begin, @exclude_end)
     end
 
+    def to_s
+        each.to_a.inspect
+    end
+
     def inspect
         "#{@begin.inspect}::#{@exclude_end ? ":" : ""}#{@end.inspect}"
     end
@@ -270,6 +274,10 @@ end
 class Range
     def reverse
         ReverseRange.new(self.end, self.begin, exclude_end?)
+    end
+
+    def to_s
+        each.to_a.inspect
     end
 end
 
