@@ -75,6 +75,12 @@ class AttacheParser
                 options[:repl] = v
             end
 
+            opts.on("-m", "--time",
+                "Times how long it takes to handle the program",
+            ) do |v|
+                options[:time] = v
+            end
+
             opts.on("-H", "--highlight",
                 "Performs syntax highlighting on the code"
             ) do |v|
@@ -111,6 +117,10 @@ class AttacheParser
 end
 
 options = AttacheParser.parse(ARGV)
+
+if options[:time]
+    $start_time = Time.now
+end
 
 def read_program(options)
     if options.has_key? :stdin
@@ -176,6 +186,11 @@ if options[:tokenize] || options[:shunt]
 else
     inst = AtState.new program
     inst.run
+end
+
+if options[:time]
+    $end_time = Time.now
+    puts "Time taken: #{$end_time - $start_time}"
 end
 
 # k.run
