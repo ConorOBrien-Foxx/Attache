@@ -250,12 +250,18 @@ class AtTokenizer
         end
     end
 
-    def read_until(entity)
+    def read_until(entity, skipping=/^$/)
         build = ""
-        until has_ahead? entity
-            build += @code[@i]
-            @i += 1
-        end
+        loop {
+            if has_ahead? skipping
+                build += @match
+                @i += @match.size
+            else
+                break if has_ahead? entity
+                build += @code[@i]
+                @i += 1
+            end
+        }
         build
     end
 
@@ -287,7 +293,7 @@ class AtTokenizer
                 first_time = true
                 loop {
                     # TODO: make an "empty" format string not "FORMAT_STRING_END"
-                    token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/)
+                    token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/, /""/)
                     token.raw += @match
                     @i += @match.size
                     if $FORMAT_STRING_END === @match
