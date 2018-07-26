@@ -147,7 +147,7 @@ end
 if options[:highlight]
     inst = AtState.new "Needs[$visuals]"
     inst.run
-    print inst.variables["highlight"][inst, program]
+    print inst.variables["Highlight"][inst, program]
     exit
 end
 
