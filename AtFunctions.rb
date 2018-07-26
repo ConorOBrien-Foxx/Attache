@@ -13,6 +13,8 @@ end
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
 
+    # TODO: remove @@configurable and @@held_arguments in favor of `held`
+    # and `configurable` functions
     # functions which can receive key things
     @@configurable = [
         "Bisect",
@@ -4065,8 +4067,26 @@ module AtFunctionCatalog
         "Strip" => lambda { |inst, str|
             str.strip
         },
-        "Chomp" => lambda { |inst, str|
-            str.chomp
+        #<<
+        # Removes <code>to_chomp</code> once from the end of <code>ent</code>.
+        # @type ent (*)
+        # @type to_chomp (*)
+        # @return (*)
+        # @genre string
+        # @param to_chomp For strings, defaults to <code>"\n"</code>; otherwise, <code>0</code>.
+        #>>
+        "Chomp" => lambda { |inst, ent, to_chomp=NOT_PROVIDED|
+            if String === ent
+                to_chomp = default_sentinel to_chomp, "\n"
+                ent.chomp to_chomp
+            else
+                to_chomp = default_sentinel to_chomp, 0
+                list = inst.cast_list ent
+                if !list.empty? && list.last == to_chomp
+                    list.pop
+                end
+                reform_list(list, ent)
+            end
         },
         "SwapCase" => vectorize_monad { |inst, str|
             str.chars.map { |e|
