@@ -3,6 +3,7 @@
 load 'boilerplates.rb'
 require_relative 'AtState.rb'
 require_relative 'tio.rb'
+require 'redcarpet'
 
 $inst = AtState.new "Needs[$visuals]"
 $inst.run
@@ -416,7 +417,48 @@ sources = %w(
 
 index = ""
 
-index += "<p>This is an index of all documentation of the features of Attache. <code>AtState</code> contains most of the functions found in Attache.</p>"
+index += "<p>This is an index of all documentation of the features of Attache. <code>AtFunctions</code> contains most of the functions found in Attache.</p>"
+
+# generate tutorial
+class CustomRender < Redcarpet::Render::HTML
+    def block_code(code, language)
+        if language.downcase == "attache"
+            "<pre><code>#{highlight_html code}</code></pre>"
+        else
+            "<pre><code>#{code}</code></pre>"
+        end
+    end
+end
+$markdown = Redcarpet::Markdown.new(CustomRender.new, fenced_code_blocks: true)
+def render(md, title)
+    result = $markdown.render md
+    %Q(
+<html lang="en">
+<head>
+    <meta charset="utf8">
+    <link rel="STYLESHEET" href="../styles.css">
+    <title>#{title}</title>
+</head>
+<body>
+    #{result}
+</body>
+</html>
+    ).strip
+end
+
+index += "<h2>Tutorial</h2>\n<ul>\n"
+Dir["docs/tutorial/*.md"].each { |path|
+    base = File.basename path, ".md"
+    md = File.read path
+    md.match(/^\s*#\s*(.+?)$/m)
+    title = $1
+    coded = render(md, title)
+    index += "<li><a href=\"./tutorial/#{base}.html\">#{title}</a></li>\n"
+    File.write("docs/tutorial/#{base}.html", coded)
+}
+index += "</ul>"
+
+
 
 index += "<h2>Documented files</h2>"
 index += "<ul>"

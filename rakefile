@@ -4,19 +4,29 @@ def installed?(gem_name)
     !!(`gem list -i ^#{gem_name}$`.index "true")
 end
 REQUIREMENTS = [
-    "nokogiri"
+    "nokogiri",
+    "redcarpet"
 ]
 
 def default
+    installed = 0
+    failed = 0
     REQUIREMENTS.each { |gem|
         next if installed? gem
         puts "Installing #{gem}."
         if system("gem install #{gem}")
             puts "Installation completed."
+            installed += 1
         else
             puts "Installation failed."
+            failed += 1
         end
     }
+    if installed.zero? && failed.zero?
+        puts "All requirements were already installed."
+    else
+        puts "Gems installed successfully: #{installed}\nGem installations failed: #{failed}"
+    end
     nil
 end
 
