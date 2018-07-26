@@ -79,7 +79,8 @@ div.example {
 }
 
 /* style */
-.at_string, .at_raw_string, .at_reference, .at_abstract {
+.at_string, .at_raw_string, .at_reference, .at_abstract,
+.format_string_begin, .format_string_end, .format_string_continue {
     color: #cc5555;
 }
 

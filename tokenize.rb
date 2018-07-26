@@ -1,3 +1,34 @@
+class Token
+    def initialize(raw=nil, type=nil, start=nil)
+        @raw = raw
+        @type = type
+        @start = start
+    end
+
+    attr_accessor :raw, :type, :start
+    @@words = %w(raw type start)
+
+    def [](n)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
+    end
+
+    def []=(n, v)
+        raise "Indexing is deprecated. `Use inst.#{@@words[n]} = #{v.inspect}` instead."
+    end
+
+    def to_ary
+        [@raw, @type, @start]
+    end
+
+    def to_s
+        "#{@type} #{@raw.inspect} @ #{@start}"
+    end
+
+    def inspect
+        "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
+    end
+end
+
 $WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
@@ -10,8 +41,11 @@ $PAREN_CLOSE = /\)/
 $COMMA = /,/
 $STRING = /"(?:[^"]|"")*"/
 $RAW_STRING = /`#$STRING/
-$FORMAT_STRING_BEGIN = /\$".*?\$\{/m
-$FORMAT_STRING = /\$#$STRING/
+$FORMAT_STRING_BEGIN = /\$"/
+$FORMAT_STRING_END = /"/
+$FORMAT_STRING_CONTINUE = /\}/
+$FORMAT_STRING_INTERRUPT = /\$\{/
+# $FORMAT_STRING = /\$#$STRING/
 $FUNC_START = /\{/
 $NAMED_FUNC_START = /\$#$FUNC_START/
 $FUNC_END = /\}/
@@ -157,7 +191,6 @@ $TYPES = {
     $COMMA              => :comma,
     $RAW_STRING         => :raw_string,
     $FORMAT_STRING_BEGIN => :format_string_begin,
-    $FORMAT_STRING      => :format_string,
     $STRING             => :string,
     $NUMBER             => :number,
     $ABSTRACT           => :abstract,
@@ -179,6 +212,7 @@ $DATA = [
     :string,
     :raw_string,
     :format_string,
+    :format_string_bare,
     :op_quote,
     :call_func,
     :curry_func,
@@ -193,43 +227,115 @@ $DATA_SIGNIFIER = $DATA + [
     :func_end,
 ]
 $SEPARATOR = $DATA_SIGNIFIER
-$TOKENIZER = Regexp.new($TYPES.keys.join("|"), "u")
+# $TOKENIZER = Regexp.new($TYPES.keys.join("|"), "u")
 
-def tokenize(code)
-    Enumerator.new { |enum|
-        i = 0
-        depth = nil
-        build = nil
-        build_type = nil
-        code = code.encode("UTF-8")
-        code.scan($TOKENIZER) { |part|
-            $TYPES.each { |reg, type|
-                next unless /^#{reg}$/ === part
+class AtTokenizer
+    def initialize(code)
+        @code = code
+        @i = 0
+        @build = []
+        @match = nil
 
-                if depth.nil?
-                    if type == :comment_open
-                        depth = 1
-                        build = part
-                        build_type = type
-                    else
-                        enum.yield Token.new part, type, i
-                        i += part.size
+    end
+
+    def running?
+        @i < @code.size
+    end
+
+    def has_ahead?(entity)
+        if @code.index(entity, @i) == @i
+            @match = @code.match(entity, @i).to_s
+        else
+            nil
+        end
+    end
+
+    def read_until(entity, skipping=/^$/)
+        build = ""
+        loop {
+            if has_ahead? skipping
+                build += @match
+                @i += @match.size
+            else
+                break if has_ahead? entity
+                build += @code[@i]
+                @i += 1
+            end
+        }
+        build
+    end
+
+    def step(output)
+
+        $TYPES.each { |re, type|
+            next unless has_ahead? re
+            token = Token.new(@match, type, @i)
+            if type == :comment_open
+                token.type = :comment
+
+                depth = 1
+                @i += @match.size
+                until depth.zero?
+                    if has_ahead? $COMMENT_OPEN
+                        depth += 1
+                    elsif has_ahead? $COMMENT_CLOSE
+                        depth -= 1
+                    elsif !has_ahead?(/./m)
+                        raise "no more characters while searching for end of comment"
                     end
-                elsif build_type == :comment_open
-                    build += part
-                    depth += 1 if type == :comment_open
-                    depth -= 1 if type == :comment_close
-                    if depth.zero?
-                        depth = nil
-                        enum.yield Token.new build, :comment, i
-                    end
-                    i += part.size
-                else
-                    raise "unimplemented"
+                    token.raw += @match
+                    @i += @match.size
                 end
 
-                break
-            }
+            elsif type == :format_string_begin
+
+                @i += token.raw.size
+                first_time = true
+                loop {
+                    # TODO: make an "empty" format string not "FORMAT_STRING_END"
+                    token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/, /""/)
+                    token.raw += @match
+                    @i += @match.size
+                    if $FORMAT_STRING_END === @match
+                        token.type = first_time ? :format_string_bare : :format_string_end
+                        break
+                    end
+                    inner = nil
+                    collect = []
+                    depth = 1
+                    while running?
+                        inner = step(collect)
+                        depth += 1 if inner.raw == "{" || inner.raw == "${"
+                        depth -= 1 if inner.raw == "}"
+                        break if depth == 0
+                    end
+                    collect.pop
+                    output << token
+                    collect.each { |c| output << c }
+                    token = inner
+                    token.type = :format_string_continue
+                    first_time = false
+                }
+
+            else
+                @i += @match.size
+            end
+
+            output << token unless output.nil?
+
+            return token
         }
+        raise "unhandled character at position #{@i}"
+    end
+
+    def run(output)
+        step(output) while running?
+    end
+end
+
+def tokenize(code)
+    tokenizer = AtTokenizer.new(code)
+    Enumerator.new { |enum|
+        tokenizer.run(enum)
     }
 end
