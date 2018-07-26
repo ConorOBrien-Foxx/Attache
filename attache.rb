@@ -19,46 +19,17 @@ class AttacheParser
             opts.separator "[options]"
 
             opts.on(
-                "-d", "--debug",
-                "Debug the program"
-            ) do |v|
-                options[:debug] = v
-            end
-
-            opts.on(
-                "-t", "--tokenize",
-                "Display the tokens of the input program"
-            ) do |v|
-                options[:tokenize] = v
-            end
-
-            opts.on(
-                "-s", "--shunt",
-                "Display the result of the shunted program"
-            ) do |v|
-                options[:shunt] = v
-            end
-
-            opts.on(
-                "-i", "--STDIN [TYPE]",
-                String,
-                "Reads the program from STDIN, until [TYPE]"
-            ) do |v=nil|
-                options[:stdin] = v
-            end
-
-            opts.on(
-                "-p", "--program",
-                "Display the program received by #{FILENAME}"
-            ) do |v|
-                options[:show_program] = v
-            end
-
-            opts.on(
                 "-a", "--ast",
                 "Display the AST parsed from the program"
             ) do |v|
                 options[:ast] = v
+            end
+
+            opts.on(
+                "-d", "--debug",
+                "Debug the program"
+            ) do |v|
+                options[:debug] = v
             end
 
             opts.on(
@@ -69,10 +40,20 @@ class AttacheParser
                 options[:program] = v
             end
 
-            opts.on("-r", "--repl",
-                "Engages the Attache repl",
+            opts.on_tail(
+                "-h", "--help",
+                "Show this help message"
             ) do |v|
-                options[:repl] = v
+                puts opts
+                exit
+            end
+
+            opts.on(
+                "-i", "--STDIN [TYPE]",
+                String,
+                "Reads the program from STDIN, until [TYPE]"
+            ) do |v=nil|
+                options[:stdin] = v
             end
 
             opts.on("-m", "--time",
@@ -81,16 +62,37 @@ class AttacheParser
                 options[:time] = v
             end
 
+            opts.on(
+                "-p", "--program",
+                "Display the program received by #{FILENAME}"
+            ) do |v|
+                options[:show_program] = v
+            end
+
+            opts.on("-r", "--repl",
+                "Engages the Attache repl",
+            ) do |v|
+                options[:repl] = v
+            end
+
+            opts.on(
+                "-s", "--shunt",
+                "Display the result of the shunted program"
+            ) do |v|
+                options[:shunt] = v
+            end
+
+            opts.on(
+                "-t", "--tokenize",
+                "Display the tokens of the input program"
+            ) do |v|
+                options[:tokenize] = v
+            end
+
             opts.on("-H", "--highlight",
                 "Performs syntax highlighting on the code"
             ) do |v|
                 options[:highlight] = v
-            end
-
-            opts.on("-T", "--templat",
-                "Executes TemplAt code"
-            ) do |v|
-                options[:templat] = v
             end
 
             opts.on("-S", "--serve-templat",
@@ -99,12 +101,10 @@ class AttacheParser
                 options[:serve_templat] = v
             end
 
-            opts.on_tail(
-                "-h", "--help",
-                "Show this help message"
+            opts.on("-T", "--templat",
+                "Executes TemplAt code"
             ) do |v|
-                puts opts
-                exit
+                options[:templat] = v
             end
         }
         parser.parse!(args)
