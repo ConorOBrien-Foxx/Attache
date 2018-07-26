@@ -19,46 +19,17 @@ class AttacheParser
             opts.separator "[options]"
 
             opts.on(
-                "-d", "--debug",
-                "Debug the program"
-            ) do |v|
-                options[:debug] = v
-            end
-
-            opts.on(
-                "-t", "--tokenize",
-                "Display the tokens of the input program"
-            ) do |v|
-                options[:tokenize] = v
-            end
-
-            opts.on(
-                "-s", "--shunt",
-                "Display the result of the shunted program"
-            ) do |v|
-                options[:shunt] = v
-            end
-
-            opts.on(
-                "-i", "--STDIN [TYPE]",
-                String,
-                "Reads the program from STDIN, until [TYPE]"
-            ) do |v=nil|
-                options[:stdin] = v
-            end
-
-            opts.on(
-                "-p", "--program",
-                "Display the program received by #{FILENAME}"
-            ) do |v|
-                options[:show_program] = v
-            end
-
-            opts.on(
                 "-a", "--ast",
                 "Display the AST parsed from the program"
             ) do |v|
                 options[:ast] = v
+            end
+
+            opts.on(
+                "-d", "--debug",
+                "Debug the program"
+            ) do |v|
+                options[:debug] = v
             end
 
             opts.on(
@@ -69,10 +40,53 @@ class AttacheParser
                 options[:program] = v
             end
 
+            opts.on_tail(
+                "-h", "--help",
+                "Show this help message"
+            ) do |v|
+                puts opts
+                exit
+            end
+
+            opts.on(
+                "-i", "--STDIN [TYPE]",
+                String,
+                "Reads the program from STDIN, until [TYPE]"
+            ) do |v=nil|
+                options[:stdin] = v
+            end
+
+            opts.on("-m", "--time",
+                "Times how long it takes to handle the program",
+            ) do |v|
+                options[:time] = v
+            end
+
+            opts.on(
+                "-p", "--program",
+                "Display the program received by #{FILENAME}"
+            ) do |v|
+                options[:show_program] = v
+            end
+
             opts.on("-r", "--repl",
                 "Engages the Attache repl",
             ) do |v|
                 options[:repl] = v
+            end
+
+            opts.on(
+                "-s", "--shunt",
+                "Display the result of the shunted program"
+            ) do |v|
+                options[:shunt] = v
+            end
+
+            opts.on(
+                "-t", "--tokenize",
+                "Display the tokens of the input program"
+            ) do |v|
+                options[:tokenize] = v
             end
 
             opts.on("-H", "--highlight",
@@ -81,24 +95,16 @@ class AttacheParser
                 options[:highlight] = v
             end
 
-            opts.on("-T", "--templat",
-                "Executes TemplAt code"
-            ) do |v|
-                options[:templat] = v
-            end
-
             opts.on("-S", "--serve-templat",
                 "Starts localhost:8000 with TemplAt code"
             ) do |v|
                 options[:serve_templat] = v
             end
 
-            opts.on_tail(
-                "-h", "--help",
-                "Show this help message"
+            opts.on("-T", "--templat",
+                "Executes TemplAt code"
             ) do |v|
-                puts opts
-                exit
+                options[:templat] = v
             end
         }
         parser.parse!(args)
@@ -111,6 +117,10 @@ class AttacheParser
 end
 
 options = AttacheParser.parse(ARGV)
+
+if options[:time]
+    $start_time = Time.now
+end
 
 def read_program(options)
     if options.has_key? :stdin
@@ -176,6 +186,11 @@ if options[:tokenize] || options[:shunt]
 else
     inst = AtState.new program
     inst.run
+end
+
+if options[:time]
+    $end_time = Time.now
+    puts "Time taken: #{$end_time - $start_time}"
 end
 
 # k.run
