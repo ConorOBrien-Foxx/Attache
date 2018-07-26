@@ -15,6 +15,7 @@ highlight_styles := <~
     comma                   -> "1",
     string                  -> "33",
     raw_string              -> "33",
+    format_string_bare      -> "33",
     format_string_begin     -> "33",
     format_string_end       -> "33",
     format_string_continue  -> "33",
