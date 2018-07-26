@@ -701,7 +701,7 @@ def pythagorean(n)
 end
 
 def slices(list, skew)
-    force_list(list).each_cons(skew).to_a
+    list.each_cons(skew).to_a
 end
 
 def resize(list, n)
