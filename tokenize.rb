@@ -284,6 +284,7 @@ class AtTokenizer
 
                 @i += token.raw.size
                 loop {
+                    # TODO: make an "empty" format string not "FORMAT_STRING_END"
                     token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/)
                     token.raw += @match
                     @i += @match.size

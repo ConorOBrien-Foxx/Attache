@@ -13,6 +13,11 @@ def open_func?(type)
     [:func_start, :named_func_start].include? type
 end
 
+FormatStringInformation = Struct.new(:token, :count) {
+    def inspect
+        "FSI(#{token}, #{count})"
+    end
+}
 def parse(code)
     # group expression
     stack = []
@@ -23,16 +28,50 @@ def parse(code)
     last_token = Token.new nil, nil, nil
     parens = []
 
+    format_string_stack = []
+
+    # di "tokenizer"
     tokenize(code).each { |ent|
         raw, type, start = ent
 
         next if type == :comment
 
+        # cls
+        # dh "current", ent
+        # darr "stack", stack
+        # darr "out", out
+        # darr "format", format_string_stack
+        # STDIN.gets
+
+        if type == :format_string_begin
+            format_string_stack.push FormatStringInformation.new(ent, 1)
+            stack.push Token.new(nil, :format_indicator, nil)
+            next
+
+        elsif type == :format_string_continue
+            flush(out, stack, [:format_indicator])
+            format_string_stack.last.count += 1
+            format_string_stack.last.token.raw += raw
+            next
+
+        elsif type == :format_string_end
+            format_string_stack.last.token.raw += raw
+            info = format_string_stack.pop
+            token = info.token
+            token.type = :format_string
+            flush(out, stack, [:format_indicator])
+            stack.pop
+            out << Token.new(info.count, :format_string_count, nil)
+            out << token
+            next
+
+        end
+
         is_data = $DATA.include?(type) || open_func?(type) # || type == :curry_open
         last_was_data = $DATA_SIGNIFIER.include? last_token.type
 
         # two adjacent datatypes mark a statement
-        if is_data && last_was_data || type == :statement_sep
+        if (is_data && last_was_data || type == :statement_sep) && format_string_stack.empty?
             flush(out, stack, [:func_start, :named_func_start])
         end
 
@@ -584,6 +623,7 @@ def ast(program)
 
     roots = []
     stack = []
+    format_string_info = []
     build = nil
     return nil if shunted.nil?
     shunted.each { |ent|
@@ -608,6 +648,14 @@ def ast(program)
             arg = stack.pop
             cur = Node.new ent, [arg]
             stack.push cur
+
+        elsif type == :format_string
+            count = format_string_info.pop
+            args = stack.pop(count)
+            stack.push Node.new ent, args
+
+        elsif type == :format_string_count
+            format_string_info.push ent.raw
 
         elsif $DATA.include? type
             stack.push ent
@@ -847,8 +895,10 @@ class AtState
         end
     end
 
-    def format_string(str)
-        str.gsub(/\$(\w+)/) { get_variable $1 }
+    def format_string(str, args)
+        str[2..-2].gsub(/\$\{\}/).with_index { |match, i|
+            args[i]
+        }
     end
 
     def get_value(obj)
@@ -869,9 +919,6 @@ class AtState
 
         elsif type == :raw_string
             raw[2..-2].gsub(/""/, '"')
-
-        elsif type == :format_string
-            format_string raw[2..-2]
 
         elsif @@extended_variables.has_key? raw
             @@extended_variables[raw]
@@ -993,10 +1040,11 @@ class AtState
 
         head, children = node
 
+        is_format_string = head.type == :format_string rescue false
         # special cases
         args = []
 
-        func = get_value head
+        func = is_format_string ? nil : get_value(head)
         if AtFunction === func
             held = func.held
             configurable = func.config
@@ -1047,6 +1095,10 @@ class AtState
         args = (args || []).flat_map { |e|
             Applicator === e ? e.value : [e]
         }
+
+        if head.type == :format_string
+            return format_string(head.raw, args)
+        end
 
         if func.is_a? Node
             func = evaluate_node func, blank_args, merge_with, check_error: check_error

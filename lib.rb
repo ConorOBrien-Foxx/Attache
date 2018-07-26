@@ -478,6 +478,15 @@ def dhash(name, h)
     $debug_level -= 4
     d "}"
 end
+def darr(name, a)
+    dh name, "["
+    $debug_level += 4
+    a.each_with_index { |e, i|
+        d "\x1b[36m#{i}\x1b[1m:\x1b[0m #{e.inspect}"
+    }
+    $debug_level -= 4
+    d "]"
+end
 
 
 def rotN(str, n)
