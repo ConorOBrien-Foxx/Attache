@@ -1096,7 +1096,7 @@ class AtState
             Applicator === e ? e.value : [e]
         }
 
-        if head.type == :format_string
+        if is_format_string
             return format_string(head.raw, args)
         end
 
