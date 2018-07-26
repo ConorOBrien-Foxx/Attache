@@ -917,7 +917,7 @@ class AtState
                 eval '"' + e + '"' rescue e
             }
 
-        elsif type == :raw_string
+        elsif type == :raw_string || type == :format_string_bare
             raw[2..-2].gsub(/""/, '"')
 
         elsif @@extended_variables.has_key? raw

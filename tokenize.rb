@@ -212,6 +212,7 @@ $DATA = [
     :string,
     :raw_string,
     :format_string,
+    :format_string_bare,
     :op_quote,
     :call_func,
     :curry_func,
@@ -283,13 +284,14 @@ class AtTokenizer
             elsif type == :format_string_begin
 
                 @i += token.raw.size
+                first_time = true
                 loop {
                     # TODO: make an "empty" format string not "FORMAT_STRING_END"
                     token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/)
                     token.raw += @match
                     @i += @match.size
                     if $FORMAT_STRING_END === @match
-                        token.type = :format_string_end
+                        token.type = first_time ? :format_string_bare : :format_string_end
                         break
                     end
                     inner = nil
@@ -306,6 +308,7 @@ class AtTokenizer
                     collect.each { |c| output << c }
                     token = inner
                     token.type = :format_string_continue
+                    first_time = false
                 }
 
             else
