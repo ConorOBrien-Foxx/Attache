@@ -294,9 +294,12 @@ class AtTokenizer
                     end
                     inner = nil
                     collect = []
+                    depth = 1
                     while running?
                         inner = step(collect)
-                        break if inner.raw == "}"
+                        depth += 1 if inner.raw == "{"
+                        depth -= 1 if inner.raw == "}"
+                        break if depth == 0
                     end
                     collect.pop
                     output << token
