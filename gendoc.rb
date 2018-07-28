@@ -423,9 +423,9 @@ index += "<p>This is an index of all documentation of the features of Attache. <
 class CustomRender < Redcarpet::Render::HTML
     def block_code(code, language)
         if language.downcase == "attache"
-            "<pre><code>#{highlight_html code}</code></pre>"
+            "<pre class=\"markdown\"><code>#{highlight_html code}</code></pre>"
         else
-            "<pre><code>#{code}</code></pre>"
+            "<pre class=\"markdown\"><code>#{code}</code></pre>"
         end
     end
 end
@@ -437,24 +437,52 @@ def render(md, title)
 <head>
     <meta charset="utf8">
     <link rel="STYLESHEET" href="../styles.css">
+    <script src="tutorial.js" type="text/javascript"></script>
     <title>#{title}</title>
 </head>
 <body>
+    <div class="sidenav" id="navigation">
+        <span class="close" onclick="closeNav('navigation')" style="cursor: pointer;">close &times;</span>
+        %s
+    </div>
+    <span onclick="openNav('navigation')" class="navopen">&#9776; navigation</span>
+    <div id="content">
     #{result}
+    </div>
 </body>
 </html>
     ).strip
 end
 
 index += "<h2>Tutorial</h2>\n<ul>\n"
-Dir["docs/tutorial/*.md"].each { |path|
-    base = File.basename path, ".md"
-    md = File.read path
-    md.match(/^\s*#\s*(.+?)$/m)
-    title = $1
-    coded = render(md, title)
-    index += "<li><a href=\"./tutorial/#{base}.html\">#{title}</a></li>\n"
-    File.write("docs/tutorial/#{base}.html", coded)
+tutorial_pages = []
+# TODO: index on side bar
+
+class PageInfo
+    def initialize(path)
+        @path = path
+        @base = File.basename path, ".md"
+        @md = File.read path
+        @md.match(/^\s*#\s*(.+?)$/m)
+        @title = $1
+        @md.match(/<!--\s*meta-?index:\s*(-?\d*\.?\d*)\s*-->/i)
+        @page_index = $1.to_i
+        @result = render(@md, @title)
+    end
+    attr_accessor :path, :page_index, :title, :result, :base
+end
+
+tutorial_pages = Dir["docs/tutorial/*.md"].map { |path| PageInfo.new path }
+nav = "<ul><li><a href=\"..\">Back to docs</a>"
+tutorial_pages.sort_by!(&:page_index)
+tutorial_pages.each { |page|
+    nav += "<li><a href=\"./#{page.base}.html\">#{page.title}</a></li>"
+    index += "<li><a href=\"./tutorial/#{page.base}.html\">#{page.title}</a></li>"
+}
+nav += "</ul>"
+
+tutorial_pages.each { |page|
+    File.write "docs/tutorial/#{page.base}.html", page.result % nav
 }
 index += "</ul>"
 

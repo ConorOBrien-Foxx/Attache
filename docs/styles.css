@@ -66,6 +66,61 @@ p {
     background-color: #E7E7E7;
 }
 
+/* sidenav stuff */
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #E7E7E7;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+.sidenav li {
+    height: 1.2em;
+    display: block;
+    overflow: hidden;
+    margin: 5px;
+}
+
+.sidenav .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 26px;
+    margin-left: 25px;
+    overflow: hidden;
+    height: 1.2em;
+    word-break: keep-all;
+    padding: 5px;
+    border-radius: 10px;
+}
+.sidenav .close:hover {
+    background: #FFF;
+    transition: 0.3s;
+}
+
+.navopen {
+    padding: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: white;
+    display: block;
+}
+.navopen:hover {
+    background: #E7E7E7;
+    transition: 0.3s;
+}
+#content {
+    margin-top: 45px;
+}
+
 /* obtained with https://meyerweb.com/eric/tools/color-blend/#E7E7E7:00FFFF:6:hex */
 .function.focused {
     background-color: #DBFFFF;
@@ -76,6 +131,13 @@ p {
 
 div.example {
     margin-left: 2em;
+}
+
+pre.markdown {
+    background: #EEE;
+    padding: 5px;
+    before: 0;
+    margin: 5px;
 }
 
 /* style */

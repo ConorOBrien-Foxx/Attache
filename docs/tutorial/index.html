@@ -2,43 +2,72 @@
 <head>
     <meta charset="utf8">
     <link rel="STYLESHEET" href="../styles.css">
+    <script src="tutorial.js" type="text/javascript"></script>
     <title>What is Attache?</title>
 </head>
 <body>
+    <div class="sidenav" id="navigation">
+        <span class="close" onclick="closeNav('navigation')" style="cursor: pointer;">close &times;</span>
+        <ul><li><a href="..">Back to docs</a><li><a href="./index.html">What is Attache?</a></li><li><a href="./thinking-functionally.html">Thinking Functionally</a></li></ul>
+    </div>
+    <span onclick="openNav('navigation')" class="navopen">&#9776; navigation</span>
+    <div id="content">
     <h1>What is Attache?</h1>
 
-<p>none of your business haha</p>
+<!-- meta-index: 0 -->
 
-<p>...jk, this place is a WIP.</p>
-<pre><code><code class="at_word">cancel</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">Difference</code><code class="at_operator">:</code><code class="at_word">Digits</code><code class="at_whitespace">
+<p>Attache can be summarized in three particular canons:</p>
 
-</code><code class="at_comment">?? could a pair be trivial?
-</code><code class="at_word">trivial</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace">
-        </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">%</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_whitespace"> </code><code class="at_operator">=</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_whitespace"> </code><code class="at_operator">%</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_whitespace">
-    </code><code class="at_operator">or</code><code class="at_whitespace">  </code><code class="at_word">y</code><code class="at_whitespace"> </code><code class="at_operator">%</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_whitespace"> </code><code class="at_operator">=</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_whitespace">
-    </code><code class="at_operator">or</code><code class="at_whitespace">  </code><code class="at_word">Rational</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">%</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_whitespace"> </code><code class="at_operator">%</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">=</code><code class="at_whitespace"> </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">//</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_whitespace">
+<ol>
+<li>Favor syntactic brevity over verbosity</li>
+<li>Prefer functional to declarative programming</li>
+<li>Minimize boilerplates</li>
+</ol>
 
-</code><code class="at_comment">?? does the pair represent a digit cancelling fraction?
-</code><code class="at_word">dcf</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_whitespace">
-    </code><code class="at_word">cancelled</code><code class="at_whitespace"> </code><code class="at_operator">.=</code><code class="at_whitespace"> </code><code class="at_word">false</code><code class="at_whitespace">
-    </code><code class="at_word">DoSafe</code><code class="at_bracket_open">[</code><code class="at_whitespace">
-        </code><code class="at_word">cancelled</code><code class="at_whitespace"> </code><code class="at_operator">.=</code><code class="at_whitespace"> </code><code class="at_word">cancel</code><code class="at_operator">@@</code><code class="at_abstract">__</code><code class="at_whitespace">
-    </code><code class="at_bracket_close">]</code><code class="at_whitespace">
+<p>In particular, each canon reflects problems apparent in other languages:</p>
 
-    </code><code class="at_word">cancelled</code><code class="at_whitespace">
-</code><code class="at_operator">and</code><code class="at_whitespace"> </code><code class="at_operator">#</code><code class="at_word">cancelled</code><code class="at_whitespace"> </code><code class="at_operator">=</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_whitespace">
-</code><code class="at_operator">and</code><code class="at_whitespace"> </code><code class="at_word">Rational</code><code class="at_operator">@@</code><code class="at_word">cancelled</code><code class="at_whitespace"> </code><code class="at_operator">=</code><code class="at_whitespace"> </code><code class="at_word">Rational</code><code class="at_operator">@@</code><code class="at_abstract">__</code><code class="at_whitespace">
-</code><code class="at_func_end">}</code><code class="at_whitespace">
+<ol>
+<li>Languages like Python and C++ tend to be burdened by their awkward approaches to functional programming. Simple constructs like maps and lambdas are rendered unwieldly. Consider <code>map(lambda x: x + 1, range(2, 5))</code> in Python, or some ugly use of <code>std::transform</code> in C++. Such languages tend to lack the necessary syntax for convenient functional programming.</li>
+<li>Functional programs tend to be closer to how we process information. This is no fault of declarative programming (D does declarative programming well, as far as intuition is concerned), but rather a strength of functional programming.</li>
+<li>Java. &#39;Nuff said.</li>
+</ol>
 
-</code><code class="at_word">PE33</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_whitespace">
-    </code><code class="at_word">dcf</code><code class="at_operator">@@</code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">not</code><code class="at_whitespace"> </code><code class="at_word">trivial</code><code class="at_operator">@@</code><code class="at_abstract">_</code><code class="at_whitespace">
-</code><code class="at_func_end">}</code><code class="at_whitespace">
+<p>So, how does Attache address these problems?</p>
 
-</code><code class="at_word">pairs</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">PE33</code><code class="at_whitespace"> </code><code class="at_operator">\</code><code class="at_whitespace"> </code><code class="at_word">TriangleRange</code><code class="at_bracket_open">[</code><code class="at_number">10</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">99</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+<ol>
+<li>Introduce more operators than the regular arithmetic ones, to include functional operators. Syntax that enables functional programming.</li>
+<li>Functions. Functions <em>everywhere</em>.</li>
+<li>It&#39;s not Java. Attache has no &quot;main&quot; function besides the immediate context.</li>
+</ol>
 
-</code><code class="at_word">prod</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">Prod</code><code class="at_bracket_open">[</code><code class="at_operator">&amp;</code><code class="at_word">Rational</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_word">pairs</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+<h2>What does Attache look like?</h2>
 
-</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">prod</code><code class="at_operator">.</code><code class="at_word">denominator</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+<p>Let&#39;s look at a few common programs.</p>
+
+<h3>Hello, World!</h3>
+<pre class="markdown"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code></code></pre>
+<h3>First <code>n</code> prime numbers</h3>
+<pre class="markdown"><code><code class="at_word">n</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">ReadInt</code><code class="at_bracket_open">[</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Primes</code><code class="at_bracket_open">[</code><code class="at_word">n</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code></code></pre>
+<h3>That python example from earlier</h3>
+
+<p>By that, I mean &quot;mapping increment over the range from 2 to 4&quot;</p>
+<pre class="markdown"><code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_number">4</code><code class="at_whitespace">
+</code></code></pre>
+<h3>Custom Fizzbuzz</h3>
+<pre class="markdown"><code><code class="at_word">range</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">100</code><code class="at_whitespace">
+</code><code class="at_comment">?? modify below to customize the output
+</code><code class="at_comment">?? format: `multiple -&gt; text`
+</code><code class="at_word">map</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">Tr</code><code class="at_operator">!</code><code class="at_whitespace"> </code><code class="at_word">List</code><code class="at_bracket_open">[</code><code class="at_curry_open">&lt;~</code><code class="at_whitespace">
+    </code><code class="at_number">3</code><code class="at_whitespace"> </code><code class="at_operator">-&gt;</code><code class="at_whitespace"> </code><code class="at_string">&quot;Fizz&quot;</code><code class="at_comma">,</code><code class="at_whitespace">
+    </code><code class="at_number">5</code><code class="at_whitespace"> </code><code class="at_operator">-&gt;</code><code class="at_whitespace"> </code><code class="at_string">&quot;Buzz&quot;</code><code class="at_comma">,</code><code class="at_whitespace">
+    </code><code class="at_number">7</code><code class="at_whitespace"> </code><code class="at_operator">-&gt;</code><code class="at_whitespace"> </code><code class="at_string">&quot;?!&quot;</code><code class="at_whitespace">
+</code><code class="at_curry_close">~&gt;</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+
+</code><code class="at_word">range</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_word">Join</code><code class="at_bracket_open">[</code><code class="at_word">Mask</code><code class="at_bracket_open">[</code><code class="at_word">map</code><code class="at_bracket_open">[</code><code class="at_number">0</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">map</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">or</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_word">Print</code><code class="at_whitespace">
+</code></code></pre>
+    </div>
 </body>
 </html>
