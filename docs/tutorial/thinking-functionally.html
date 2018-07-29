@@ -7,14 +7,47 @@
 </head>
 <body>
     <div class="sidenav" id="navigation">
-        <span class="close" onclick="closeNav('navigation')" style="cursor: pointer;">close &times;</span>
-        <ul><li><a href="..">Back to docs</a><li><a href="./index.html">What is Attache?</a></li><li><a href="./thinking-functionally.html">Thinking Functionally</a></li></ul>
-    </div>
-    <span onclick="openNav('navigation')" class="navopen">&#9776; navigation</span>
+        <span class="close" onclick="closeNav('navigation', 'content')" style="cursor: pointer;">close &times;</span><ul><li><a href="..">Back to docs</a></li><hr/><li><a href="./index.html">What is Attache?</a></li><li><a href="./thinking-functionally.html">Thinking Functionally</a></li></ul></div>
+    <span onclick="openNav('navigation', 'content')" class="navopen">&#9776; navigation</span>
     <div id="content">
     <h1>Thinking Functionally</h1>
 
 <!-- meta-index: 1 -->
+
+<p>If you started programming in a language like C or Java (before 1.8), then you&#39;re probably used to <em>imperative</em> (or <em>declarative</em>) programming. This typically involves constructs such as <code>if</code> statements and variants of <code>while</code> loops. Typically, this type of programming usually works by building up data from inputs.</p>
+
+<p>Functional programming differs from imperative programming since it&#39;s much better at generating data to be mapped and filtered. Attache is more of a functional language, which depends less on modifying the program&#39;s state directly with variables and more on using functions to transform data.</p>
+
+<p>To explore the difference, let&#39;s write a function to check if a number <code>n</code> is prime. In C, you might write something like this:</p>
+<pre class="markdown"><code>uint isqrt(uint);     // returns floor(sqrt(n))
+bool is_prime(uint n) {
+    if(n < 2) return false;
+    uint upper = isqrt(n);
+    for(uint i = 2; i < upper; i++) {
+        if(n % i == 0) return false;
+    }
+    return true;
+}
+</code></pre>
+<p>You <em>could</em> write a function that uses the same type of constructs, but it&#39;d look different. Attache lacks the <code>for</code> loop as a syntactic construct, as well as <code>if</code> or <code>while</code> loops. Such logic is achieved using functions. Emulating a <code>for</code> loop would be quite awkward without devising new functions, and this is an intentional design choice. This is how I would implement a prime-checking function in Attache:</p>
+<pre class="markdown"><code><code class="at_word">is_prime</code><code class="at_bracket_open">[</code><code class="at_word">n</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace">
+    </code><code class="at_word">n</code><code class="at_whitespace"> </code><code class="at_operator">&gt;</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_operator">and</code><code class="at_whitespace"> </code><code class="at_word">None</code><code class="at_bracket_open">[</code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_word">Sqrt</code><code class="at_bracket_open">[</code><code class="at_word">n</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_word">n</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code></code></pre>
+<p>This defines a function <code>is_prime</code> which takes a single argument <code>n</code> and checks if two conditions hold:</p>
+
+<ol>
+<li><code>n &gt; 1</code>. This covers the corner cases of <code>0</code> and <code>1</code>, since a prime must be more than <code>1</code> (the least prime being <code>2</code>).</li>
+<li><code>None[2:Sqrt[n] | n]</code> first constructs the range from <code>2</code> to <code>Sqrt[n]</code> using the range operator <code>:</code>. <code>a | b</code> operator tests whether or not <code>a</code> divides evenly into <code>b</code>. Attache vectorizes many arithmetic operators; i.e., operators &quot;reach&quot; into arrays. For example, <code>[1, 2, 3] + 4</code> is equivalent to  <code>[1 + 4, 2 + 4, 3 + 4] = [5, 6, 7]</code>. So, <code>2:Sqrt[n] | n</code> is roughly the same as <code>[2 | n, 3 | n, ..., Sqrt[n] | n]</code>. This gives an array of Boolean values (<code>true</code> or <code>false</code>). Then, <code>None[...]</code> checks that no value in the input array is truthy.</li>
+</ol>
+
+<p>In essence, this function asserts that <code>n</code> is greater than <code>1</code> and that no number in the range from <code>2</code> to the square root of <code>n</code> divides <code>n</code>. This function showcases Attache&#39;s minimal syntax:</p>
+
+<ul>
+<li>Functions can be defined the simple structure <code>name[a, b, c, ...] := body</code>. Compare this to other languages (Java, Python, Ruby, JavaScript) which often require some additional keyword to create a function.</li>
+<li>No keywords like <code>return</code> are necessary to yield the value; it is implied.</li>
+<li>Vectorizing allows the programmer to omit constructs like maps, overloading otherwise unused behaviour. Tripling each member in an array in most languages is something like <code>[1, 2, 3].map(e =&gt; e * 3)</code> or <code>map(lambda x: x * 3, [1, 2, 3])</code>; in Attache, this expression is simply <code>[1, 2, 3] * 3</code>.</li>
+<li>Operators exist for common operations: <code>:</code> for a range, <code>|</code> for divisibility, e.g.</li>
+</ul>
 
     </div>
 </body>

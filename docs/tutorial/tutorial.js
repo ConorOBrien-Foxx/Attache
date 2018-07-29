@@ -9,10 +9,12 @@ function idElement(elem) {
     }
 }
 
-function openNav(name) {
+function openNav(name, toClose) {
     idElement(name).style.width = "250px";
+    idElement(toClose).style.marginLeft = "250px";
 }
 
-function closeNav(name) {
+function closeNav(name, toClose) {
     idElement(name).style.width = "0";
+    idElement(toClose).style.marginLeft = "0";
 }

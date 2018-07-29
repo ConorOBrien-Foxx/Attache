@@ -422,7 +422,7 @@ index += "<p>This is an index of all documentation of the features of Attache. <
 # generate tutorial
 class CustomRender < Redcarpet::Render::HTML
     def block_code(code, language)
-        if language.downcase == "attache"
+        if language && language.downcase == "attache"
             "<pre class=\"markdown\"><code>#{highlight_html code}</code></pre>"
         else
             "<pre class=\"markdown\"><code>#{code}</code></pre>"
@@ -432,7 +432,7 @@ end
 $markdown = Redcarpet::Markdown.new(CustomRender.new, fenced_code_blocks: true)
 def render(md, title)
     result = $markdown.render md
-    %Q(
+    [%Q(
 <html lang="en">
 <head>
     <meta charset="utf8">
@@ -442,16 +442,16 @@ def render(md, title)
 </head>
 <body>
     <div class="sidenav" id="navigation">
-        <span class="close" onclick="closeNav('navigation')" style="cursor: pointer;">close &times;</span>
-        %s
+        <span class="close" onclick="closeNav('navigation', 'content')" style="cursor: pointer;">close &times;</span>
+    ), %Q(
     </div>
-    <span onclick="openNav('navigation')" class="navopen">&#9776; navigation</span>
+    <span onclick="openNav('navigation', 'content')" class="navopen">&#9776; navigation</span>
     <div id="content">
     #{result}
     </div>
 </body>
 </html>
-    ).strip
+    )].map &:strip
 end
 
 index += "<h2>Tutorial</h2>\n<ul>\n"
@@ -472,8 +472,10 @@ class PageInfo
     attr_accessor :path, :page_index, :title, :result, :base
 end
 
+#TODO: add "previous page" and "next page"
+
 tutorial_pages = Dir["docs/tutorial/*.md"].map { |path| PageInfo.new path }
-nav = "<ul><li><a href=\"..\">Back to docs</a>"
+nav = "<ul><li><a href=\"..\">Back to docs</a></li><hr/>"
 tutorial_pages.sort_by!(&:page_index)
 tutorial_pages.each { |page|
     nav += "<li><a href=\"./#{page.base}.html\">#{page.title}</a></li>"
@@ -482,7 +484,7 @@ tutorial_pages.each { |page|
 nav += "</ul>"
 
 tutorial_pages.each { |page|
-    File.write "docs/tutorial/#{page.base}.html", page.result % nav
+    File.write "docs/tutorial/#{page.base}.html", page.result.join(nav)
 }
 index += "</ul>"
 

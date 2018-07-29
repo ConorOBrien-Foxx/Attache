@@ -12,6 +12,7 @@ html, body {
 code, pre {
     font-family: 'Overpass Mono', Consolas, monospace;
     white-space: pre;
+    overflow: auto;
 }
 
 h2, h3 {
@@ -86,6 +87,16 @@ p {
     margin: 5px;
 }
 
+#content {
+    max-width: 800px;
+    transition: 0.5s;
+}
+
+#content p + p {
+    text-indent: 2em;
+    line-height: 27px;
+}
+
 .sidenav .close {
     position: absolute;
     top: 10px;
@@ -101,6 +112,9 @@ p {
 .sidenav .close:hover {
     background: #FFF;
     transition: 0.3s;
+}
+.sidenav hr {
+    width: 90%;
 }
 
 .navopen {
@@ -140,7 +154,7 @@ pre.markdown {
     margin: 5px;
 }
 
-/* style */
+/* attache style */
 .at_string, .at_raw_string, .at_reference, .at_abstract {
     color: #cc5555;
 }
