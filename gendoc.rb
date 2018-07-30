@@ -441,6 +441,9 @@ def render(md, title)
     <title>#{title}</title>
 </head>
 <body>
+    <header>
+        <h1>Programming in Attache</h1>
+    </header>
     <div class="sidenav" id="navigation">
         <span class="close" onclick="closeNav('navigation', 'content')" style="cursor: pointer;">close &times;</span>
     ), %Q(

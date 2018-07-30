@@ -101,6 +101,21 @@ p {
     margin-top: 5px;
 }
 
+header {
+    height: 60px;
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    background: #066;
+    color: #FFF;
+}
+header h1 {
+    margin: 0;
+    margin-top: 0.3em;
+}
+
 .sidenav .close {
     position: absolute;
     top: 10px;
@@ -137,7 +152,7 @@ p {
     background: #AFAFAF;
 }
 #content {
-    margin-top: 45px;
+    margin-top: 70px;
 }
 
 /* obtained with https://meyerweb.com/eric/tools/color-blend/#E7E7E7:00FFFF:6:hex */
