@@ -80,11 +80,14 @@ p {
     transition: 0.5s;
     padding-top: 60px;
 }
+.sidenav ul {
+    padding-left: 15px;
+}
 .sidenav li {
-    height: 1.2em;
     display: block;
-    overflow: hidden;
+    word-wrap: break-word;
     margin: 5px;
+    width: 225px;
 }
 
 #content {
@@ -95,6 +98,7 @@ p {
 #content p + p {
     text-indent: 2em;
     line-height: 27px;
+    margin-top: 5px;
 }
 
 .sidenav .close {
@@ -108,13 +112,14 @@ p {
     word-break: keep-all;
     padding: 5px;
     border-radius: 10px;
-}
-.sidenav .close:hover {
     background: #FFF;
     transition: 0.3s;
 }
+.sidenav .close:hover {
+    box-shadow: inset 0 0 5px #7E7E7E;
+}
 .sidenav hr {
-    width: 90%;
+    width: 225px;
 }
 
 .navopen {
@@ -124,12 +129,12 @@ p {
     position: fixed;
     top: 10px;
     left: 10px;
-    background: white;
+    background: #E7E7E7;
     display: block;
+    transition: 0.3s;
 }
 .navopen:hover {
-    background: #E7E7E7;
-    transition: 0.3s;
+    background: #AFAFAF;
 }
 #content {
     margin-top: 45px;
