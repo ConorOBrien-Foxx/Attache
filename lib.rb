@@ -232,7 +232,7 @@ module TimeChangeExtension
         self
     end
     alias :year     :years
-    alias :week     :years
+    alias :week     :weeks
     alias :day      :days
     alias :hour     :hours
     alias :minute   :minutes
