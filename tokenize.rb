@@ -1,12 +1,14 @@
 class Token
-    def initialize(raw=nil, type=nil, start=nil)
+    def initialize(raw=nil, type=nil, start=nil, line=nil, column=nil)
         @raw = raw
         @type = type
         @start = start
+        @line = line
+        @column = column
     end
 
-    attr_accessor :raw, :type, :start
-    @@words = %w(raw type start)
+    attr_accessor :raw, :type, :start, :line, :column
+    @@words = %w(raw type start line column)
 
     def [](n)
         raise "Indexing is deprecated. `Use inst.#{@@words[n]}` instead."
@@ -17,7 +19,9 @@ class Token
     end
 
     def to_ary
-        [@raw, @type, @start]
+        @@words.map { |word|
+            instance_variable_get "@#{word}"
+        }
     end
 
     def to_s
@@ -236,10 +240,23 @@ class AtTokenizer
         @build = []
         @match = nil
 
+        @line = 1
+        @column = 1
     end
 
     def running?
         @i < @code.size
+    end
+
+    def advance(n = 1)
+        n.times {
+            if @code[@i] == "\n"
+                @column = 0
+                @line += 1
+            end
+            @column += 1
+            @i += 1
+        }
     end
 
     def has_ahead?(entity)
@@ -255,26 +272,25 @@ class AtTokenizer
         loop {
             if has_ahead? skipping
                 build += @match
-                @i += @match.size
+                advance @match.size
             else
                 break if has_ahead? entity
                 build += @code[@i]
-                @i += 1
+                advance 1
             end
         }
         build
     end
 
     def step(output)
-
         $TYPES.each { |re, type|
             next unless has_ahead? re
-            token = Token.new(@match, type, @i)
+            token = Token.new(@match, type, @i, @line, @column)
             if type == :comment_open
                 token.type = :comment
 
                 depth = 1
-                @i += @match.size
+                advance @match.size
                 until depth.zero?
                     if has_ahead? $COMMENT_OPEN
                         depth += 1
@@ -284,18 +300,18 @@ class AtTokenizer
                         raise "no more characters while searching for end of comment"
                     end
                     token.raw += @match
-                    @i += @match.size
+                    advance @match.size
                 end
 
             elsif type == :format_string_begin
 
-                @i += token.raw.size
+                advance token.raw.size
                 first_time = true
                 loop {
                     # TODO: make an "empty" format string not "FORMAT_STRING_END"
                     token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/, /""/)
                     token.raw += @match
-                    @i += @match.size
+                    advance @match.size
                     if $FORMAT_STRING_END === @match
                         token.type = first_time ? :format_string_bare : :format_string_end
                         break
@@ -318,7 +334,7 @@ class AtTokenizer
                 }
 
             else
-                @i += @match.size
+                advance @match.size
             end
 
             output << token unless output.nil?
