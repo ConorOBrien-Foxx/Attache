@@ -25,5 +25,5 @@ REPL := {
             Unshift[previous, Entry[line, res]]
         ]
         Display[res]
-    }~>, redo->true][]
+    }~>, { Print["\e[31mInternal error: \e[1m" + S[_] + "\e[0m"]}, redo->true][]
 }
