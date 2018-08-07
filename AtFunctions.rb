@@ -4243,20 +4243,13 @@ module AtFunctionCatalog
             }
         },
         "Commonest" => lambda { |inst, ent, n=1|
-            list = inst.cast_list ent
-            counts = list.each_with_object(Hash.new(0)){ |m,h|
+            commonest = list.each_with_object(Hash.new(0)) { |m, h|
                 h[m] += 1
             }
-            by_count = counts.group_by{ |k,v|
-                v
-            }
-            by_count_descending = by_count.sort_by{ |k,v|
-                -k
-            }
-            commonest = by_count_descending.map{ |k,v|
-                items = v.map{ |k,v|
-                    k
-                }
+            .group_by(&:last)
+            .sort_by(&:last)
+            .reverse_each { |k, v|
+                v.map &:first
             }
             case n
                 when Array
