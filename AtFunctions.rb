@@ -3570,6 +3570,29 @@ module AtFunctionCatalog
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
+        #<<
+        # Folds the function <code>f</code> over the list <code>list</code>, optionally starting with <code>start</code>.
+        # @optional start
+        # @type f fn
+        # @type list [(*)]
+        # @type start (*)
+        # @return (*)
+        # @example Print[Fold[${ x + y }, [2, 3, 6, 7]]]
+        # @example ?? 18
+        # @example Print[Fold[${ $"f[${x}, ${y}]" }, 1:5]]
+        # @example ?? f[f[f[f[1, 2], 3], 4], 5]
+        # @example Print[Fold[Add, 123]]
+        # @example ?? 6
+        # @example Print[Fold[${ y + x }, "Hello, World!"]]
+        # @example ?? !dlroW ,olleH
+        # @example Print[Fold[Add, [1]]]
+        # @example ?? 1
+        # @example Display[Fold[Add, []]]
+        # @example ?? nil
+        # @example Display[Fold[Add, [], 0]]
+        # @example ?? 0
+        # @genre functional/list
+        #>>
         "Fold" => lambda { |inst, f, list=nil, start=nil|
             if list.nil?
                 lambda { |inst, list, start=nil|
@@ -3581,8 +3604,7 @@ module AtFunctionCatalog
                     @@functions["Fold"][inst, f, g[inst, list], start]
                 }
             else
-                # copy list
-                list = list.dup
+                list = inst.cast_list(list)
                 if start.nil?
                     start = list.shift
                 end
