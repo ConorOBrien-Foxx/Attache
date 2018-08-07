@@ -1,0 +1,10 @@
+Kolakoski[seed] := @Curry[[state, seed, n] -> {
+    Print[state]
+    Print[seed[state.i % #seed], n]
+    Print[#state.cache]
+    ??While[#state.cache <= n, 1]
+        ??to_repeat .= seed[state.i % #seed]
+        ??Push[state.cache, ...Repeat[to_repeat, cache@state.i]];;
+        ??state["i"] @= state.i + 1
+    state.cache@n
+}][ <~ cache -> Repeat#Id! seed@0, i -> 1 ~>, seed ]
