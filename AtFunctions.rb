@@ -4243,7 +4243,7 @@ module AtFunctionCatalog
             }
         },
         "Commonest" => lambda { |inst, ent, n=1|
-            list = cast_list ent
+            list = inst.cast_list ent
             counts = list.each_with_object(Hash.new(0)){ |m,h|
                 h[m] += 1
             }
@@ -4260,9 +4260,9 @@ module AtFunctionCatalog
             }
             case n
                 when Array
-                    n.map{ |i| commonest[i] }
+                    n.map{ |i| commonest[i > 0 ? i - 1 : i] }
                 else
-                    commonest[n]
+                    commonest[n > 0 ? n - 1 : n]
             end
         },
     }
