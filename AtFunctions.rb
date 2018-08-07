@@ -4244,15 +4244,17 @@ module AtFunctionCatalog
         },
         "Commonest" => lambda { |inst, ent, n=1|
             list = cast_list ent
-            by_count = list.each_with_object(Hash.new(0)){ |m,h|
+            counts = list.each_with_object(Hash.new(0)){ |m,h|
                 h[m] += 1
-            }.group_by{ |k,v|
+            }
+            by_count = counts.group_by{ |k,v|
                 v
             }
-            commonest = by_count.sort_by{ |k,v|
+            by_count_descending = by_count.sort_by{ |k,v|
                 -k
-            }.map{ |k,v|
-                v.map{ |k,v|
+            }
+            commonest = by_count_descending.map{ |k,v|
+                items = v.map{ |k,v|
                     k
                 }
             }
