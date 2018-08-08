@@ -1092,7 +1092,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Sqrt" => vectorize_monad { |inst, n|
-            CMath.sqrt n
+            CMath::sqrt n
         },
         #<<
         # Returns the cube root of <code>n</code>.
@@ -1101,7 +1101,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Cbrt" => vectorize_monad { |inst, n|
-            CMath.cbrt n
+            CMath::cbrt n
         },
         #<<
         # Returns the square of <code>n</code>.
