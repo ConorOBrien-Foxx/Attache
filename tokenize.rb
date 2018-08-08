@@ -63,7 +63,7 @@ $CURRY_CLOSE = /~>|»/
 $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
-    "."        => [99, :left],
+    "."        => [999, :left],
 
     ":"        => [30, :left],
     "::"       => [30, :left],
@@ -167,7 +167,7 @@ $PRECEDENCE = {
 
     ";;"       => [1, :left],
 }
-$PRECEDENCE_UNARY = Hash.new(Infinity)
+$PRECEDENCE_UNARY = Hash.new(99)
 $PRECEDENCE_UNARY["..."] = 0
 $PRECEDENCE_UNARY["…"] = 0
 
