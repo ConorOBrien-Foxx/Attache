@@ -664,7 +664,11 @@ NTS := @${
 }
 STN := @${
     md .= SplitAt[x]
-    Index[NTS_dict_head, md@0] + 52 * FromBase[Index[NTS_dict_after, Chars! md@1], #NTS_dict_after]
+    sum .= Index[NTS_dict_head, md@0]
+    If[md@1,
+        sum .= sum + 52 * FromBase[Index[NTS_dict_after, Chars! md@1], #NTS_dict_after]
+    ]
+    sum
 }
 
 ?? Generates a matrix of 1's and 0's
