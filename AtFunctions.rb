@@ -4240,6 +4240,10 @@ module AtFunctionCatalog
             dd "end debugging"
 
         },
+        "BigDecimal" => vectorize_monad { |inst, n|
+            require 'bigdecimal'
+            BigDecimal.new n
+        },
         "Error" => lambda { |inst, name, msg="An error has occured."|
             AtError.new name, msg
         },
