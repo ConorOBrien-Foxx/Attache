@@ -920,6 +920,15 @@ module AtFunctionCatalog
             CMath::log10 n
         },
         #<<
+        # Takes the base-<code>2</code> logarithm of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "Log2" => vectorize_monad { |inst, n|
+            CMath::log2 n
+        },
+        #<<
         # Takes the natural logarithm of <code>n</code>. Note that <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>ln</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msub><mi>log</mi><mi>e</mi></msub><mo>(</mo><mi>n</mi><mo>)</mo></math>.
         # @return number
         # @type n number
