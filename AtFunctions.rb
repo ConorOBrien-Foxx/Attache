@@ -811,7 +811,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Exp" => lambda { |inst, n|
-            Math::exp n
+            CMath::exp n
         },
         #<<
         # Returns the <code>n</code>th number in the Fibonacci sequence, starting with <code>f<sub>0</sub> = 0</code> and <code>f<sub>1</sub> = 1</code>.
@@ -917,7 +917,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Log" => vectorize_monad { |inst, n|
-            Math::log10 n
+            CMath::log10 n
         },
         #<<
         # Takes the natural logarithm of <code>n</code>. Note that <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>ln</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msub><mi>log</mi><mi>e</mi></msub><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -926,7 +926,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Ln" => vectorize_monad { |inst, n|
-            Math::log n
+            CMath::log n
         },
         #<<
         # Takes the base-<code>b</code> logarithm of <code>n</code>.
@@ -935,7 +935,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "LogBase" => vectorize_dyad { |inst, n, b|
-            force_number Math::log n, b
+            force_number CMath::log n, b
         },
         #<<
         # Takes the product of the elements of <code>args</code>.
@@ -1182,7 +1182,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcCos" => vectorize_monad { |inst, n|
-            Math::acos n
+            CMath::acos n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>cosh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1191,7 +1191,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcCosh" => vectorize_monad { |inst, n|
-            Math::acosh n
+            CMath::acosh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sin</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1200,7 +1200,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcSin" => vectorize_monad { |inst, n|
-            Math::asin n
+            CMath::asin n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sinh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1209,7 +1209,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcSinh" => vectorize_monad { |inst, n|
-            Math::asinh n
+            CMath::asinh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1218,7 +1218,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTan" => vectorize_monad { |inst, n|
-            Math::atan n
+            CMath::atan n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tanh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1227,7 +1227,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTanh" => vectorize_monad { |inst, n|
-            Math::atanh n
+            CMath::atanh n
         },
         #<<
         # Calculates the principal value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
@@ -1237,7 +1237,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTan2" => vectorize_dyad { |inst, y, x|
-            Math::atan2 y, x
+            CMath::atan2 y, x
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cos</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1246,7 +1246,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Cos" => vectorize_monad { |inst, n|
-            Math::cos n
+            CMath::cos n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cosh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1255,7 +1255,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Cosh" => vectorize_monad { |inst, n|
-            Math::cosh n
+            CMath::cosh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sin</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1264,7 +1264,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Sin" => vectorize_monad { |inst, n|
-            Math::sin n
+            CMath::sin n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sinh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1273,7 +1273,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Sinh" => vectorize_monad { |inst, n|
-            Math::sinh n
+            CMath::sinh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1282,7 +1282,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Tan" => vectorize_monad { |inst, n|
-            Math::tan n
+            CMath::tan n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1291,7 +1291,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Tanh" => vectorize_monad { |inst, n|
-            Math::tanh n
+            CMath::tanh n
         },
 
         ##-----------------##
