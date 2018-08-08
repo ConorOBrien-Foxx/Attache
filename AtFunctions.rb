@@ -1113,6 +1113,17 @@ module AtFunctionCatalog
             CMath::cbrt n
         },
         #<<
+        # Returns the <code>b</code>th root of <code>n</code>.
+        # @type n number
+        # @type b number
+        # @return number
+        # @genre numeric
+        #>>
+        "Root" => vectorize_dyad { |inst, b, n|
+            require 'bigdecimal'
+            force_number n ** (BigDecimal.new(1) / b)
+        },
+        #<<
         # Returns the square of <code>n</code>.
         # @type n number
         # @return number
