@@ -804,6 +804,9 @@ module AtFunctionCatalog
             args[0] = args[0].to_f
             args.inject(:/)
         },
+        "DivMod" => vectorize_dyad { |inst, d, m|
+            d.divmod m
+        },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>e</mi><mi>n</mi></msup></math>.
         # @type n number
@@ -3255,7 +3258,9 @@ module AtFunctionCatalog
             reform_list res, ent
         },
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
-            split_at inst.cast_list(str), inds
+            split_at(inst.cast_list(str), inds).map { |e|
+                reform_list e, str
+            }
         },
         #<<
         # Calculates the standard deviation of <code>list</code>.
