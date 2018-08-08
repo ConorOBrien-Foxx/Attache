@@ -12,4 +12,12 @@ Kolakoski[seed] := @Curry[[state, seed, n] -> {
     state.cache@n
 }][ <~ cache -> RepeatSelf[seed@0], i -> 1 ~>, seed ]
 
-A2 := A000002 := Kolakoski[1'2]
+?? A1
+A2      := A000002 := Kolakoski[1'2]        ?? offset: 0
+?? A3
+A4      := A000004 := C[0]
+A5      := A000005 := `#@Divisors
+A6      := A000006 := Floor@Sqrt@Prime
+A7      := A000007 := 0&`^
+?? A8 (partition of N into parts {...})
+?? A9 (partition of N)
