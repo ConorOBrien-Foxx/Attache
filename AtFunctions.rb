@@ -1095,6 +1095,15 @@ module AtFunctionCatalog
             CMath.sqrt n
         },
         #<<
+        # Returns the cube root of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "Cbrt" => vectorize_monad { |inst, n|
+            CMath.cbrt n
+        },
+        #<<
         # Returns the square of <code>n</code>.
         # @type n number
         # @return number
