@@ -1380,9 +1380,6 @@ module AtFunctionCatalog
         "Primes" => vectorize_monad { |inst, n|
             Prime.first n
         },
-        # "PrimePi" => vectorize_monad { |inst, n|
-
-        # },
         #<<
         # Returns the number of unique prime factors of <code>n</code>.
         # @return number
