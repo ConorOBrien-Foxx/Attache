@@ -21,3 +21,9 @@ A6      := A000006 := Floor@Sqrt@Prime
 A7      := A000007 := 0&`^
 ?? A8 (partition of N into parts {...})
 ?? A9 (partition of N)
+A10     := A000010 := EulerPhi
+?? A11
+?? A12
+A13     := A000013 := @([n] -> {
+    N[Fold[${ x + EulerPhi[2 * y] * 2^(n/y)/n/2 }, Divisors[n], 0]] or 1
+})
