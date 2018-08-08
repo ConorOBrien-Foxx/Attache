@@ -1,11 +1,15 @@
+RepeatSelf[n] := Repeat[n, n]
+
 Kolakoski[seed] := @Curry[[state, seed, n] -> {
-    Print[state]
-    Print[seed[state.i % #seed], n]
-    Print[#state.cache]
     While[#state.cache <= n,
-        to_repeat .= seed[state.i % #seed];;
-        Push[state.cache, ...Repeat[to_repeat, cache@state.i]];;
+        While[#state.cache <= state.i,
+            Push[state.cache, ...RepeatSelf[seed[state.i % #seed]]];;
+                state["i"] @= state.i + 1
+        ];;
+        Push[state.cache, ...Repeat[seed[state.i % #seed], state.cache@state.i]];;
         state["i"] @= state.i + 1
     ]
     state.cache@n
-}][ <~ cache -> Repeat#Id! seed@0, i -> 1 ~>, seed ]
+}][ <~ cache -> RepeatSelf[seed@0], i -> 1 ~>, seed ]
+
+A2 := A000002 := Kolakoski[1'2]
