@@ -652,6 +652,8 @@ ClassNamed[MatrixShapeGenerator]! {
     }
 }
 
+EulerPhi := @${ Sum[GCD&x => 1:x = 1] }
+
 ?? Generates a matrix of 1's and 0's
 DrawMatrix := Curry[[s, n] -> {
     m .= _3
