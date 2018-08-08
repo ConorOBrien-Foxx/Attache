@@ -659,9 +659,7 @@ NTS_dict_head  := alpha + ALPHA
 NTS := @${
     dm .= Reverse! DivMod[x, #NTS_dict_head]
     el .= Pop[dm]
-    Print[el]
     If[el, Push[dm, ...ToBase[el, #NTS_dict_after]]]
-    Print[dm]
     Join[NTS_dict_head[dm@0] ' NTS_dict_after[Behead! dm]]
 }
 STN := @${
