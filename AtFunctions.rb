@@ -3624,24 +3624,26 @@ module AtFunctionCatalog
         # @example ?? 0
         # @genre functional/list
         #>>
-        "Fold" => lambda { |inst, f, list=nil, start=nil|
-            if list.nil?
-                lambda { |inst, list, start=nil|
-                    @@functions["Fold"][inst, f, list, start]
-                }
-            elsif AtState.func_like? list
-                g = list
-                lambda { |inst, list, start=nil|
-                    @@functions["Fold"][inst, f, g[inst, list], start]
-                }
-            else
-                list = inst.cast_list(list)
-                if start.nil?
-                    start = list.shift
-                end
-
-                list.fold(inst, f, start)
-            end
+        "Fold" => curry(2) { |inst, f, list, start=NOT_PROVIDED|
+            @@functions["FoldList"][inst, f, list, start].last
+        },
+        #<<
+        # Cumulatively folds the function <code>f</code> over <code>ent</code>, optionally starting at <code>start</code>.
+        # @optional start
+        # @type f fn
+        # @type ent [(*)]
+        # @type start (*)
+        # @return [(*)]
+        # @genre functional/list
+        #>>
+        "FoldList" => curry(2) { |inst, f, ent, start=NOT_PROVIDED|
+            list = inst.cast_list(ent)
+            start = default_sentinel(start) { list.shift }
+            results = [start]
+            list.each { |e|
+                results << f[inst, results.last, e]
+            }
+            results
         },
         "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
             if AtState.func_like? list
