@@ -1554,6 +1554,9 @@ module AtFunctionCatalog
         "Numeric" => lambda { |inst, n|
             Numeric === n
         },
+        "IsSquare" => lambda { |inst, n|
+            n.sqrt.to_i ** 2 == n
+        },
 
         ##############################
         #### FUNCTIONAL FUNCTIONS ####
