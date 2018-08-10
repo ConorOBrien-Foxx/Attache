@@ -220,7 +220,13 @@ def parse(code)
         elsif type == :paren_close
             arities.pop
             temp = []
-            temp.push stack.pop while stack.last.type != :paren_open
+            loop {
+                if stack.empty?
+                    raise AttacheSyntaxError.new("Expected an open parenthesis to match #{raw.inspect}", ent.position)
+                end
+                break if stack.last.type == :paren_open
+                temp.push stack.pop
+            }
             stack.pop
 
             # if parens.pop
@@ -627,7 +633,7 @@ def ast(program)
     build = nil
     return nil if shunted.nil?
     shunted.each { |ent|
-        raw, type, start = ent
+        raw, type, start, line, column = ent
         if type == :call_func
             args = stack.pop(raw)
             func = stack.pop
@@ -637,7 +643,7 @@ def ast(program)
         elsif type == :curry_func
             args = stack.pop(raw)
             func = stack.pop
-            stack.push Token.new make_curry(args, func), :function, start
+            stack.push Token.new make_curry(args, func), :function, start, line, column
 
         elsif type == :operator
             args = stack.pop(2)
@@ -663,9 +669,11 @@ def ast(program)
         # elsif type == :discard
             # stack.push Node.new ent, [stack.pop]
 
+        elsif type == :paren_open
+            raise AttacheSyntaxError.new("Unmatched parenthesis: #{raw.inspect}", ent.position)
+
         else
-            STDERR.puts "Unhandled shunt type #{type}"
-            raise
+            raise AttacheUnimplementedError.new("Unhandled type during shunting: #{type}", ent.position)
         end
     }
     stack
