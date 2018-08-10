@@ -28,6 +28,10 @@ class Token
         "#{@type} #{@raw.inspect} @ #{@start}"
     end
 
+    def position
+        "#{line}:#{column}"
+    end
+
     def inspect
         "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
     end
@@ -126,6 +130,7 @@ $PRECEDENCE = {
     "in"       => [8, :left],
     "!in"      => [8, :left],
     "is_a"     => [8, :left],
+    "is_an"    => [8, :left],
 
     ".."       => [7, :left],
     "‥"        => [7, :left], # .. alias

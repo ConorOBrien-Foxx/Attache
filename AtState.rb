@@ -732,6 +732,27 @@ class Type
     end
 end
 
+class AttacheError < Exception
+    def initialize(message, line=nil)
+        @message = message
+        @line = line
+    end
+
+    def AttacheError.descendants
+        ObjectSpace.each_object(Class).select { |klass| klass < AttacheError }
+    end
+
+    def readable
+        "#{self.class.name}: #{@line ? "(#{@line})" : ""} #{@message}"
+    end
+end
+
+# when an operator is used incorrectly
+class AttacheOperatorError < AttacheError; end
+# for behaviour not yet implemented
+class AttacheUnimplementedError < AttacheError; end
+
+
 require_relative 'AtFunctions.rb'
 class AtState
     def AtState.truthy?(ent)
@@ -1105,6 +1126,9 @@ class AtState
         end
 
         if func.nil?
+            if head.type == :unary_operator
+                raise AttacheOperatorError.new("Operator #{head.raw.inspect} has no unary case.", head.position)
+            end
             STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
         end

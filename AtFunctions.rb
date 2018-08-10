@@ -4885,8 +4885,20 @@ module AtFunctionCatalog
         #>>
         "is_a" => lambda { |inst, el, klass|
             # https://www.strawpoll.me/15544904/r
-            el.parent == klass rescue false
+            # el.parent == klass rescue false
+            el.kind_of? klass rescue false
         },
+        #<<
+        # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
+        # @return bool
+        # @type el (*)
+        # @type klass class
+        # @genre operator/logic
+        #>>
+        "is_an" => lambda { |inst, el, klass|
+            @@operators["is_a"][inst, el, klass]
+        },
+
         #<<
         # Returns <code>a</code> if <code>a</code> is truthy, <code>b</code> otherwise. Short-circuits.
         # @type a (*)

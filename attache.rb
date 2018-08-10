@@ -201,7 +201,11 @@ if options[:tokenize] || options[:shunt]
     }
 else
     inst = AtState.new program
-    inst.run
+    begin
+        inst.run
+    rescue AttacheError => e
+        puts e.readable
+    end
 end
 
 if options[:time]
