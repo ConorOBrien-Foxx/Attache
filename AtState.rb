@@ -761,6 +761,8 @@ class AttacheOperatorError < AttacheError; end
 class AttacheUnimplementedError < AttacheError; end
 # a syntax error...
 class AttacheSyntaxError < AttacheError; end
+# when improper data is given to a function
+class AttacheValueError < AttacheError; end
 
 
 require_relative 'AtFunctions.rb'
@@ -861,6 +863,7 @@ class AtState
         @abstract_references = []
         @locals = [{}]
         @saved = []
+        @position = nil
         @in = input
         @out = output
         load_lib "std"
@@ -885,7 +888,7 @@ class AtState
     end
 
     attr_reader :stack
-    attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references
+    attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references, :position
 
     def error(message)
         STDERR.puts message
@@ -1070,6 +1073,9 @@ class AtState
         end
 
         head, children = node
+
+        position_holder = head == Node ? head.raw : head
+        @position = position_holder.position rescue nil
 
         is_format_string = head.type == :format_string rescue false
         # special cases

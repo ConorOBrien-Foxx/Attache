@@ -4332,12 +4332,19 @@ module AtFunctionCatalog
         # @examlpe ?? John Smith, 43
         #>>
         "." => lambda { |inst, obj, prop|
+            if Node === prop
+                raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
+            end
+
             if AtClassInstance === obj || Hash === obj
                 obj[prop.raw]
             elsif obj.respond_to? prop.raw.to_sym
                 obj.send prop.raw.to_sym
             else
-                raise "invalid operands to operator `.`: expected an object with properties, got #{obj}"
+                raise AttacheValueError.new(
+                    "`.` expected object to have properties",
+                    inst.position
+                )
             end
         },
         ":=" => lambda { |inst, var, val|
