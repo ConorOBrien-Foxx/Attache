@@ -185,8 +185,9 @@ def parse(code)
 
             loop {
                 if stack.empty?
-                    STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
-                    return nil
+                    raise AttacheSyntaxError.new("Unmatched closing brace: #{ent.raw}", ent.position)
+                    # STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
+                    # return nil
                 end
                 break if stack.last.type == :bracket_open
                 out.push stack.pop
@@ -251,8 +252,7 @@ def parse(code)
 
     offender = out.find { |raw, type| type == :bracket_open }
     if offender
-        STDERR.puts "Syntax Error: unmatched \"[\" (at token #{offender})"
-        nil
+        raise AttacheSyntaxError.new("Unmatched closing brace: #{offender.raw}", offender.position)
     else
         out
     end
@@ -751,6 +751,8 @@ end
 class AttacheOperatorError < AttacheError; end
 # for behaviour not yet implemented
 class AttacheUnimplementedError < AttacheError; end
+# a syntax error...
+class AttacheSyntaxError < AttacheError; end
 
 
 require_relative 'AtFunctions.rb'

@@ -200,8 +200,8 @@ if options[:tokenize] || options[:shunt]
         print_table table
     }
 else
-    inst = AtState.new program
     begin
+        inst = AtState.new program
         inst.run
     rescue AttacheError => e
         puts e.readable
