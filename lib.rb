@@ -2,6 +2,7 @@ require 'prime'
 require 'date'
 require 'matrix'
 require 'cmath'
+require "readline"
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -232,7 +233,7 @@ module TimeChangeExtension
         self
     end
     alias :year     :years
-    alias :week     :years
+    alias :week     :weeks
     alias :day      :days
     alias :hour     :hours
     alias :minute   :minutes
@@ -823,8 +824,9 @@ def getchar(safe=true)
 end
 
 def prompt_input(prompt=nil, input=STDIN)
-    print prompt unless prompt.nil? or not $stdin.tty?
-    input.gets.chomp rescue nil
+    # print prompt unless prompt.nil? or not $stdin.tty?
+    # input.gets.chomp rescue nil
+    Readline.readline(prompt || "", true)
 end
 
 $YES_NO = {

@@ -12,3 +12,30 @@ graves_add := hash_pair[graves]
 
 acutes := "AÁEÉIÍOÓUÚYÝaáeéiíoóuúyýCĆcćLĹlĺNŃnńÓŐóőRŔrŕSŚsśÚŰúűZŹzźÜǗüǘGǴgǵÅǺåǻÆǼæǽØǾøǿϒϓÇḈçḉĒḖēḗÏḮïḯKḰkḱMḾmḿÕṌõṍŌṒōṓPṔpṕṠṤṡṥŨṸũṹWẂwẃÂẤâấĂẮăắÊẾêếÔỐôốƠỚơớƯỨưứ"
 acutes_add := hash_pair[acutes]
+
+horns := "OƠoơUƯuư"
+horns_add := hash_pair[horns]
+
+macrons := "AĀaāEĒeēIĪiīOŌoōUŪuūYȲyȳGḠgḡ"
+macrons_add = hash_pair[macrons]
+
+tildes := "AÃNÑOÕaãnñoõIĨiĩUŨuũVṼvṽEẼeẽYỸyỹ"
+tildes_add = hash_pair[tildes]
+
+cedillas := "CÇcçGĢgģKĶkķLĻlļNŅnņRŖrŗSŞsşTŢtţEȨeȩDḐdḑHḨhḩ"
+cedillas_add := hash_pair[cedillas]
+
+palatal_hooks := "tƫbᶀdᶁfᶂgᶃkᶄlᶅmᶆnᶇpᶈrᶉsᶊvᶌxᶍzᶎ"
+palatal_hooks_add := hash_pair[palatal_hooks]
+
+left_hooks := "NƝnɲ"
+left_hooks_add := hash_pair[left_hooks]
+
+retroflex_hooks := "TƮlɭnɳtʈzʐaᶏeᶒiᶖuᶙ"
+retroflex_hooks_add := hash_pair[retroflex_hooks]
+
+fishhooks := "rɾ"
+fishhooks_add := hash_pair[fishhooks]
+
+hooks_above := "AẢaảEẺeẻIỈiỉOỎoỏUỦuủYỶyỷ"
+hooks_above_add := hash_pair[hooks_above]

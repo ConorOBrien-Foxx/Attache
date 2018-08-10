@@ -9,7 +9,7 @@ class AttacheParser
     def self.parse(args)
         options = {}
         # defaults
-        #none
+        options[:needs] = []
 
         parser = OptionParser.new { |opts|
             opts.program_name = FILENAME
@@ -60,6 +60,13 @@ class AttacheParser
                 "Times how long it takes to handle the program",
             ) do |v|
                 options[:time] = v
+            end
+
+            opts.on("-n", "--needs LIB",
+                String,
+                "Equivalent to having `Needs[LIB]` at the beginning of the program."
+            ) do |v|
+                options[:needs] << v
             end
 
             opts.on(
@@ -152,6 +159,10 @@ end
 
 if options[:repl]
     program += 'Needs["repl"]; REPL[]'
+end
+
+unless options[:needs].empty?
+    program = options[:needs].map { |e| "Needs[#{e.inspect}];" }.join + program
 end
 
 if options[:highlight]

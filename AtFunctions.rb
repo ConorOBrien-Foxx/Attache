@@ -804,6 +804,9 @@ module AtFunctionCatalog
             args[0] = args[0].to_f
             args.inject(:/)
         },
+        "DivMod" => vectorize_dyad { |inst, d, m|
+            d.divmod m
+        },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>e</mi><mi>n</mi></msup></math>.
         # @type n number
@@ -811,7 +814,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Exp" => lambda { |inst, n|
-            Math::exp n
+            CMath::exp n
         },
         #<<
         # Returns the <code>n</code>th number in the Fibonacci sequence, starting with <code>f<sub>0</sub> = 0</code> and <code>f<sub>1</sub> = 1</code>.
@@ -917,7 +920,16 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Log" => vectorize_monad { |inst, n|
-            Math::log10 n
+            CMath::log10 n
+        },
+        #<<
+        # Takes the base-<code>2</code> logarithm of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "Log2" => vectorize_monad { |inst, n|
+            CMath::log2 n
         },
         #<<
         # Takes the natural logarithm of <code>n</code>. Note that <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>ln</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msub><mi>log</mi><mi>e</mi></msub><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -926,7 +938,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Ln" => vectorize_monad { |inst, n|
-            Math::log n
+            CMath::log n
         },
         #<<
         # Takes the base-<code>b</code> logarithm of <code>n</code>.
@@ -935,7 +947,7 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "LogBase" => vectorize_dyad { |inst, n, b|
-            force_number Math::log n, b
+            force_number CMath::log n, b
         },
         #<<
         # Takes the product of the elements of <code>args</code>.
@@ -1092,7 +1104,27 @@ module AtFunctionCatalog
         # @genre numeric
         #>>
         "Sqrt" => vectorize_monad { |inst, n|
-            CMath.sqrt n
+            CMath::sqrt n
+        },
+        #<<
+        # Returns the cube root of <code>n</code>.
+        # @type n number
+        # @return number
+        # @genre numeric
+        #>>
+        "Cbrt" => vectorize_monad { |inst, n|
+            CMath::cbrt n
+        },
+        #<<
+        # Returns the <code>b</code>th root of <code>n</code>.
+        # @type n number
+        # @type b number
+        # @return number
+        # @genre numeric
+        #>>
+        "Root" => vectorize_dyad { |inst, b, n|
+            require 'bigdecimal'
+            force_number n ** (BigDecimal.new(1) / b)
         },
         #<<
         # Returns the square of <code>n</code>.
@@ -1173,7 +1205,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcCos" => vectorize_monad { |inst, n|
-            Math::acos n
+            CMath::acos n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>cosh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1182,7 +1214,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcCosh" => vectorize_monad { |inst, n|
-            Math::acosh n
+            CMath::acosh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sin</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1191,7 +1223,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcSin" => vectorize_monad { |inst, n|
-            Math::asin n
+            CMath::asin n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>sinh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1200,7 +1232,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcSinh" => vectorize_monad { |inst, n|
-            Math::asinh n
+            CMath::asinh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1209,7 +1241,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTan" => vectorize_monad { |inst, n|
-            Math::atan n
+            CMath::atan n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tanh</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1218,7 +1250,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTanh" => vectorize_monad { |inst, n|
-            Math::atanh n
+            CMath::atanh n
         },
         #<<
         # Calculates the principal value of <math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>tan</mi><mrow><mo>-</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>y</mi><mo>/</mo><mi>x</mi><mo>)</mo></math>, or <code>atan2(y, x)</code>.
@@ -1228,7 +1260,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "ArcTan2" => vectorize_dyad { |inst, y, x|
-            Math::atan2 y, x
+            CMath::atan2 y, x
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cos</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1237,7 +1269,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Cos" => vectorize_monad { |inst, n|
-            Math::cos n
+            CMath::cos n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>cosh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1246,7 +1278,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Cosh" => vectorize_monad { |inst, n|
-            Math::cosh n
+            CMath::cosh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sin</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1255,7 +1287,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Sin" => vectorize_monad { |inst, n|
-            Math::sin n
+            CMath::sin n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>sinh</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1264,7 +1296,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Sinh" => vectorize_monad { |inst, n|
-            Math::sinh n
+            CMath::sinh n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1273,7 +1305,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Tan" => vectorize_monad { |inst, n|
-            Math::tan n
+            CMath::tan n
         },
         #<<
         # Calculates <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>tan</mi><mo>(</mo><mi>n</mi><mo>)</mo></math>.
@@ -1282,7 +1314,7 @@ module AtFunctionCatalog
         # @genre numeric/trig
         #>>
         "Tanh" => vectorize_monad { |inst, n|
-            Math::tanh n
+            CMath::tanh n
         },
 
         ##-----------------##
@@ -1380,9 +1412,6 @@ module AtFunctionCatalog
         "Primes" => vectorize_monad { |inst, n|
             Prime.first n
         },
-        # "PrimePi" => vectorize_monad { |inst, n|
-
-        # },
         #<<
         # Returns the number of unique prime factors of <code>n</code>.
         # @return number
@@ -1524,6 +1553,9 @@ module AtFunctionCatalog
         #>>
         "Numeric" => lambda { |inst, n|
             Numeric === n
+        },
+        "IsSquare" => lambda { |inst, n|
+            n.sqrt.to_i ** 2 == n
         },
 
         ##############################
@@ -3229,7 +3261,9 @@ module AtFunctionCatalog
             reform_list res, ent
         },
         "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
-            split_at inst.cast_list(str), inds
+            split_at(inst.cast_list(str), inds).map { |e|
+                reform_list e, str
+            }
         },
         #<<
         # Calculates the standard deviation of <code>list</code>.
@@ -3570,25 +3604,49 @@ module AtFunctionCatalog
         ##---------------------------##
         ## List Functional Functions ##
         ##---------------------------##
-        "Fold" => lambda { |inst, f, list=nil, start=nil|
-            if list.nil?
-                lambda { |inst, list, start=nil|
-                    @@functions["Fold"][inst, f, list, start]
-                }
-            elsif AtState.func_like? list
-                g = list
-                lambda { |inst, list, start=nil|
-                    @@functions["Fold"][inst, f, g[inst, list], start]
-                }
-            else
-                # copy list
-                list = list.dup
-                if start.nil?
-                    start = list.shift
-                end
-
-                list.fold(inst, f, start)
-            end
+        #<<
+        # Folds the function <code>f</code> over the list <code>list</code>, optionally starting with <code>start</code>.
+        # @optional start
+        # @type f fn
+        # @type list [(*)]
+        # @type start (*)
+        # @return (*)
+        # @example Print[Fold[${ x + y }, [2, 3, 6, 7]]]
+        # @example ?? 18
+        # @example Print[Fold[${ $"f[${x}, ${y}]" }, 1:5]]
+        # @example ?? f[f[f[f[1, 2], 3], 4], 5]
+        # @example Print[Fold[Add, 123]]
+        # @example ?? 6
+        # @example Print[Fold[${ y + x }, "Hello, World!"]]
+        # @example ?? !dlroW ,olleH
+        # @example Print[Fold[Add, [1]]]
+        # @example ?? 1
+        # @example Display[Fold[Add, []]]
+        # @example ?? nil
+        # @example Display[Fold[Add, [], 0]]
+        # @example ?? 0
+        # @genre functional/list
+        #>>
+        "Fold" => curry(2) { |inst, f, list, start=NOT_PROVIDED|
+            @@functions["FoldList"][inst, f, list, start].last
+        },
+        #<<
+        # Cumulatively folds the function <code>f</code> over <code>ent</code>, optionally starting at <code>start</code>.
+        # @optional start
+        # @type f fn
+        # @type ent [(*)]
+        # @type start (*)
+        # @return [(*)]
+        # @genre functional/list
+        #>>
+        "FoldList" => curry(2) { |inst, f, ent, start=NOT_PROVIDED|
+            list = inst.cast_list(ent)
+            start = default_sentinel(start) { list.shift }
+            results = [start]
+            list.each { |e|
+                results << f[inst, results.last, e]
+            }
+            results
         },
         "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
             if AtState.func_like? list
@@ -4191,6 +4249,10 @@ module AtFunctionCatalog
             p arg
             dd "end debugging"
 
+        },
+        "BigDecimal" => vectorize_monad { |inst, n|
+            require 'bigdecimal'
+            BigDecimal.new n
         },
         "Error" => lambda { |inst, name, msg="An error has occured."|
             AtError.new name, msg
