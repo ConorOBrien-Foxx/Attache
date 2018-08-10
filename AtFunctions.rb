@@ -4337,7 +4337,7 @@ module AtFunctionCatalog
             elsif obj.respond_to? prop.raw.to_sym
                 obj.send prop.raw.to_sym
             else
-                raise 'idk'
+                raise "invalid operands to operator `.`: expected an object with properties, got #{obj}"
             end
         },
         ":=" => lambda { |inst, var, val|
