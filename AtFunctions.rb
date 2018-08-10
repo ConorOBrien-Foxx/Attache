@@ -3333,7 +3333,7 @@ module AtFunctionCatalog
                 }
                 res
             else
-                raise "unimplemented"
+                raise AttacheUnimplementedError.new("`UnSparse` is not defined for non-Hash arguments", inst.position)
             end
         },
         #<<
@@ -4399,8 +4399,7 @@ module AtFunctionCatalog
                 end
                 @@operators[":="][inst, var, val] if update
             else
-                p 'idek'
-                raise
+                raise AttacheUnimplementedError.new("::= is not defined for non-token first argument", inst.position)
             end
         },
         ".=" => lambda { |inst, var, val|
@@ -4432,8 +4431,7 @@ module AtFunctionCatalog
                 end
                 @@operators[".="][inst, var, val] if update
             else
-                p 'idek'
-                raise
+                raise AttacheUnimplementedError.new("::= is not defined for non-token first argument", inst.position)
             end
         },
         "@=" => held(true) { |inst, left, value|
@@ -5192,8 +5190,7 @@ module AtFunctionCatalog
             elsif AtState.func_like? b
                 lambda { |inst, *args| b[inst, *args, a] }
             else
-                STDERR.puts "idk#2"
-                raise
+                raise AttacheUnimplementedError.new("&: is not defined for non-functional arguments", inst.position)
             end
         },
         "=>" => @@functions["Map"],
@@ -5280,7 +5277,7 @@ module AtFunctionCatalog
             if AtState.func_like? a
                 a[inst, b]
             else
-                raise "Unimplemented: ncr/npr, idk"
+                raise AttacheUnimplementedError.new("a!b is not defined for non-functional arguments", inst.position)
             end
         },
     }
@@ -5335,7 +5332,7 @@ module AtFunctionCatalog
                     r[inst, last]
                 }
             else
-                raise "unimplemented"
+                raise AttacheUnimplementedError.new("/ is not defined for `#{r.class.name}`", inst.position)
             end
         },
         "\\" => lambda { |inst, f|
@@ -5344,7 +5341,7 @@ module AtFunctionCatalog
                     f[inst, last]
                 }
             else
-                raise "unimplemented"
+                raise AttacheUnimplementedError.new("\\ is not defined for `#{f.class.name}`", inst.position)
             end
         },
         # vectorize
