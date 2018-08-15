@@ -3,6 +3,10 @@ require_relative 'tokenize.rb'
 # require_relative 'AtClass.rb'
 # later in file
 
+def atstate_init(argv)
+    $ARGV = argv
+end
+
 FOLDER_LOCATION = File.dirname(__FILE__)
 
 def flush(out, stack, fin=[])
@@ -960,6 +964,9 @@ class AtState
 
         elsif type == :abstract
             get_blank(raw)
+
+        elsif type == :commandline_argument
+            $ARGV[raw[1] == "$" ? raw[1..-1].to_i : -raw[2..-1].to_i]
 
         else
             puts "Unidentified get_value thing #{type.inspect}"

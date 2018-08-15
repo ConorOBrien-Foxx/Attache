@@ -36,6 +36,7 @@ end
 $WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
+$COMMANDLINE_ARGUMENT = /\$\$?[0-9]+/
 $REFERENCE = /\$#$WORD/
 $ABSTRACT_REFERENCE = /\$+/
 $BRACKET_OPEN = /\[|do\b/
@@ -197,6 +198,7 @@ $TYPES = {
     $FORMAT_STRING_BEGIN => :format_string_begin,
     $STRING             => :string,
     $NUMBER             => :number,
+    $COMMANDLINE_ARGUMENT => :commandline_argument,
     $ABSTRACT           => :abstract,
     $NAMED_FUNC_START   => :named_func_start,
     $FUNC_END           => :func_end,
@@ -222,7 +224,8 @@ $DATA = [
     :curry_func,
     :function,
     :abstract,
-    :make_lambda
+    :make_lambda,
+    :commandline_argument
 ]
 $DATA_SIGNIFIER = $DATA + [
     :bracket_close,
