@@ -116,7 +116,6 @@ class AttacheParser
     end
 end
 
-atstate_init(ARGV)
 options = AttacheParser.parse(ARGV)
 
 if options[:time]
