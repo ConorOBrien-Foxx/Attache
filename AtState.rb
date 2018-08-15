@@ -965,8 +965,8 @@ class AtState
         elsif type == :abstract
             get_blank(raw)
 
-        elsif type == :commandline_argument
-            $ARGV[raw[1] == "$" ? raw[1..-1].to_i : -raw[2..-1].to_i]
+        elsif type == :counter_reference
+            ARGV[raw[1] == "$" ? raw[1..-1].to_i : -raw[2..-1].to_i]
 
         else
             puts "Unidentified get_value thing #{type.inspect}"
