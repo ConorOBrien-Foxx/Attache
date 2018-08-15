@@ -4251,11 +4251,10 @@ module AtFunctionCatalog
             .reverse_each { |k, v|
                 v.map &:first
             }
-            case n
-                when Array
-                    n.map{ |i| commonest[i > 0 ? i - 1 : i] }
-                else
-                    commonest[n > 0 ? n - 1 : n]
+            if Array === n
+                n.map { |i| commonest[i > 0 ? i - 1 : i] }
+            else
+                commonest[n > 0 ? n - 1 : n]
             end
         },
     }
