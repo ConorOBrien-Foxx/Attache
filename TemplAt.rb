@@ -14,12 +14,12 @@ def templat(str)
     load := {
         el .= _1
         content .= _2
-        
+
         document .= el.document
-        
+
         append .= {
             HTMLAddNext[el, ToHTML[_, document]]
-        }   
+        }
         delete .= {
             HTMLRemove => __
         }
@@ -37,16 +37,15 @@ EOT
     load = lambda { |*args|
         inst.variables["load"][inst, *args]
     }
-    
+
     parsed = Nokogiri::HTML(str)
-    
+
     parsed.css("attache").each { |el|
         content = el.children.map(&:text).join
         result = load[el, content].to_s
         # text = Nokogiri::XML::Text.new result, el.document
         # el.replace text
     }
-    
+
     parsed
 end
-
