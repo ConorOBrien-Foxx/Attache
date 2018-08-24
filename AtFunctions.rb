@@ -1195,6 +1195,49 @@ module AtFunctionCatalog
             @@functions["FromBase"][inst, n, 8]
         },
 
+        ##------------------##
+        ## Binary Functions ##
+        ##------------------##
+        "And" => lambda { |inst, a, b|
+            AtState.truthy?(a) && AtState.truthy?(b)
+        },
+        "Nand" => lambda { |inst, a, b|
+            !(AtState.truthy?(a) && AtState.truthy?(b))
+        },
+        "Or" => lambda { |inst, a, b|
+            AtState.truthy?(a) || AtState.truthy?(b)
+        },
+        "Nor" => lambda { |inst, a, b|
+            !(AtState.truthy?(a) || AtState.truthy?(b))
+        },
+        "Xor" => lambda { |inst, a, b|
+            AtState.truthy?(a) == AtState.truthy?(b)
+        },
+        "Xnor" => lambda { |inst, a, b|
+            AtState.truthy?(a) != AtState.truthy?(b)
+        },
+        "BitAnd" => lambda { |inst, a, b|
+            a & b
+        },
+        "BitOr" => lambda { |inst, a, b|
+            a | b
+        },
+        "BitXor" => lambda { |inst, a, b|
+            a ^ b
+        },
+        "BitNot" => lambda { |inst, a|
+            ~a
+        },
+        "BitNand" => lambda { |inst, a, b|
+            ~(a & b)
+        },
+        "BitNor" => lambda { |inst, a, b|
+            ~(a | b)
+        },
+        "BitXnor" => lambda { |inst, a, b|
+            ~(a ^ b)
+        },
+
         ##-------------------------##
         ## Trigonometric Functions ##
         ##-------------------------##
