@@ -3758,7 +3758,7 @@ module AtFunctionCatalog
             }
             reform_list res, list
         },
-        "Table" => lambda { |inst, f, as, bs=as|
+        "Table" => curry(2) { |inst, f, as, bs=as|
             as.map { |a|
                 bs.map { |b|
                     f[inst, a, b]
