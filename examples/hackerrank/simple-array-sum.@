@@ -1,0 +1,6 @@
+?? https://www.hackerrank.com/challenges/simple-array-sum/problem
+
+size := ReadInt[]
+list := ReadNumbers[]
+
+Print[Sum[list]]

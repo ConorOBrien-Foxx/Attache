@@ -1,0 +1,6 @@
+?? https://www.hackerrank.com/challenges/pangrams/problem
+
+input := Downcase! ReadLine[]
+missing := Complement[alpha, input]
+
+Print[If[#missing, "not ", ""] + "pangram"]

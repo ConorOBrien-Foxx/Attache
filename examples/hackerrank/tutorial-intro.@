@@ -1,0 +1,6 @@
+?? https://www.hackerrank.com/challenges/tutorial-intro/problem
+
+num'size := Twice[ReadInt]
+vals := ReadNumbers[]
+
+Print[Index[vals, num]]

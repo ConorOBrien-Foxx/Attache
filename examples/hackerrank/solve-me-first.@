@@ -1,0 +1,5 @@
+?? https://www.hackerrank.com/challenges/solve-me-first/problem
+
+ints := Twice[ReadInt]
+sum := Sum[ints]
+Print[sum]

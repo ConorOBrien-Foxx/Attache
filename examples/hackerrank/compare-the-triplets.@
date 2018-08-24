@@ -1,0 +1,11 @@
+?? https://www.hackerrank.com/challenges/compare-the-triplets/problem
+
+compare_triplets[a, b] := (
+    scores .= Sign[a - b];;
+    Count&scores => [Positive, Negative]
+)
+
+alice := ReadNumbers[]
+bob := ReadNumbers[]
+
+Print[compare_triplets[alice, bob]]

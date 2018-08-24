@@ -1,0 +1,5 @@
+?? https://www.hackerrank.com/challenges/maximizing-xor/problem
+
+fn := Max@Table[BitXor]@Range
+
+Print <| fn[...Twice[ReadInt]]
