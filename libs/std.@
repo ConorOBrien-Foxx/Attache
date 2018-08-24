@@ -735,3 +735,11 @@ Twice[f] := [f[], f[]]
 ??? @example ?? Answer: 11
 Thrice[f] := [f[], f[], f[]]
 ??>>
+
+??<<
+??? Reads a line of STDIN and converts each entry to a number, space-separated.
+??? @return [number]
+??? @genre IO
+ReadNumbers[] :=
+    ReadLine[] | Split | N
+??>>
