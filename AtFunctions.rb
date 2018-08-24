@@ -4347,6 +4347,21 @@ module AtFunctionCatalog
                 end
             }
         },
+        "Commonest" => lambda { |inst, ent, n=1|
+            commonest = list.each_with_object(Hash.new(0)) { |m, h|
+                h[m] += 1
+            }
+            .group_by(&:last)
+            .sort_by(&:last)
+            .reverse_each { |k, v|
+                v.map &:first
+            }
+            if Array === n
+                n.map { |i| commonest[i > 0 ? i - 1 : i] }
+            else
+                commonest[n > 0 ? n - 1 : n]
+            end
+        },
     }
 
     # operators with two arguments
