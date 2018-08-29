@@ -1,0 +1,8 @@
+PE43 := (All@~`|#Primes@Size)@Behead@(N => Slices&3)
+
+UniquePermutations := Unique@Permutations
+
+all_pandigital := UniquePermutations[1234567890]
+valid := PE43#`and#{#_ = 10} \ all_pandigital
+
+Print[Sum[valid]]

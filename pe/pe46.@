@@ -1,0 +1,9 @@
+OfOdd[x] := 2 * x + 1
+
+IsSquare := Integral@Sqrt
+PrimesUnder := Series&:Prime
+
+GoldbachDecomposable[n] :=
+	Any[IsSquare <| Halve <| n - PrimesUnder[n]]
+
+Print <| GenerateFirst[OfOdd, Not@GoldbachDecomposable #`and# IsComposite, 1]
