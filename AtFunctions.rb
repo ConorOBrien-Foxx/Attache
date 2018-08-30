@@ -1955,6 +1955,35 @@ module AtFunctionCatalog
                 cond[inst, i] ? f[inst, e] : e
             }
         },
+        "Over" => lambda { |inst, *opts|
+            
+            
+            opts.map! { |opt|
+                key = if String === opt.key
+                    inst.get_variable opt.key
+                else
+                    opt.key
+                end
+                unless AtState.func_like? key
+                    old = [*key]
+                    key = lambda { |inst, e| old.include? e }
+                end
+                opt.key = key
+                opt
+            }
+            
+            lambda { |inst, arr|
+                map_vector(inst, arr, with_index: true) { |inst, e, i|
+                    fn = opts.find { |opt| opt.key[inst, i] }
+                    if fn
+                        fn.value[inst, e]
+                    else
+                        e
+                    end
+                    
+                }
+            }
+        },
         #<<
         # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the list of intermediate steps.
         # @type f fn
