@@ -743,3 +743,11 @@ Thrice[f] := [f[], f[], f[]]
 ReadNumbers[] :=
     ReadLine[] | Split | N
 ??>>
+
+ClassNamed[Displayment]! {
+    value .= _1
+    
+    repr[] .= $"Displayment[${value}]"
+    
+    $string[] .= repr[]
+}

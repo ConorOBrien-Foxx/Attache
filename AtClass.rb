@@ -99,11 +99,12 @@ class AtClass
     def initialize(inst, body, parent=nil, name: "anon")
         @body = body
         @body.ascend = @body.descend = false
+        @parent = parent
         @inst = inst
         @name = name
     end
 
-    attr_reader :name
+    attr_reader :name, :body
 
     def create(*params)
         @inst.locals << {}
@@ -114,6 +115,14 @@ class AtClass
         }
 
         @inst.saved = []
+        
+        if @parent
+            sub = @parent.create *params
+            @inst.locals.last.merge! sub.vars
+            # @inst.locals.last.merge! sub.privates
+            @inst.locals.last.merge! sub.methods
+        end
+        
         @body[@inst, *params]
 
         scope = @inst.locals.pop

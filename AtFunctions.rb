@@ -468,8 +468,8 @@ module AtFunctionCatalog
         # @return class
         # @genre class
         #>>
-        "Class" => lambda { |inst, body|
-            AtClass.new inst, body
+        "Class" => lambda { |inst, body, parent=nil|
+            AtClass.new inst, body, parent
         },
         #<<
         # Creates a named class. Returns a function which acts similarly to <a href="#Class"><code>Class</code></a>.
@@ -477,10 +477,10 @@ module AtFunctionCatalog
         # @return fn
         # @genre class
         #>>
-        "ClassNamed" => held(true) { |inst, name|
+        "ClassNamed" => held(true) { |inst, name, parent=nil|
             #p name
             lambda { |inst, body|
-                inst.define name.raw, AtClass.new(inst, body, name: name.raw)
+                inst.define name.raw, AtClass.new(inst, body, parent, name: name.raw)
             }
         },
         #<<

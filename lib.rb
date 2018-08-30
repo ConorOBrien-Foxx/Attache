@@ -938,8 +938,9 @@ def split_at(array, indices)
     sections = []
     build = []
     array.each_with_index { |e, i|
+        i += 1
         build << e
-        if indices.index(i + 1)
+        if indices.index i
             sections << build
             build = []
         end
