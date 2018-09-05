@@ -3474,6 +3474,24 @@ module AtFunctionCatalog
             list.variance
         },
 
+        "Cells" => curry { |inst, rank, arr|
+            raise AttacheUnimplementedError.new("`Cells` is unimplemented.")
+        },
+        #<<
+        # Applies <code>f</code> at depths specified by each element in <code>ranks</code>.
+        # @type f fn
+        # @type ranks [number]
+        # @return fn
+        # @genre functional
+        #>>
+        "Rank" => curry { |inst, f, ranks|
+            raise AttacheUnimplementedError.new("`Rank` is unimplemented.")
+            lambda { |*args|
+                args.zip(ranks) { |arg, rank|
+
+                }
+            }
+        },
         "Shape" => lambda { |inst, arr|
             head = arr
             dims = []
