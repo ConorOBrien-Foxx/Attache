@@ -780,14 +780,19 @@ class AtState
         Type.of(ent)
     end
 
-    def set_op_quote(token, res)
+    def set_op_quote(token, res, arity=nil)
         op = token.raw[1..-1]
         hash = {
             1 => @@unary_operators,
             2 => @@operators,
         }
-        index = res.arity.negative? ? ~res.arity : res.arity
+        if arity.nil?
+            index = res.arity.negative? ? ~res.arity : res.arity
+        else
+            index = arity
+        end
         index = 2 if index > 2
+
         if index.zero?
             hash[1][op] = hash[2][op] = res
         else
@@ -908,26 +913,38 @@ class AtState
 
     def set_variable(var, val, dest=:define)
         if Node === var
-            #todo: pattern matching++
-            args = var.children.map { |e|
-                if Node === e
-                    e.children[0].raw
-                    STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
-                else
-                    e.raw
-                end
-            }
-            if ["'", "V"].include? var.head.raw
+            # set operator by arity
+            is_op_set = Token === var.head && var.head.raw == "/"
+            is_op_set &&= Token === var.children.first
+            is_op_set &&= var.children.first.type == :op_quote
+
+            if is_op_set
+                op, arity = var.children
+                arity = get_value arity
                 val = evaluate_node val
-                args.each_with_index { |arg, i|
-                    send dest, arg, val[i]
-                }
+                set_op_quote op, val, arity
             else
-                res = AtLambda.new [val], args
-                if var.head.type == :op_quote
-                    set_op_quote var.head, res
+                #todo: pattern matching++
+                args = var.children.map { |e|
+                    if Node === e
+                        e.children[0].raw
+                        STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
+                    else
+                        e.raw
+                    end
+                }
+                if ["'", "V"].include? var.head.raw
+                    val = evaluate_node val
+                    args.each_with_index { |arg, i|
+                        send dest, arg, val[i]
+                    }
                 else
-                    send dest, var.head.raw, res
+                    res = AtLambda.new [val], args
+                    if var.head.type == :op_quote
+                        set_op_quote var.head, res
+                    else
+                        send dest, var.head.raw, res
+                    end
                 end
             end
         else
@@ -1032,7 +1049,8 @@ class AtState
             ref = raw[1..-1]
             AtFunction.new(lambda { |inst, *args|
                 source = args.size == 1 ? @@unary_operators : @@operators
-                source[ref][inst, *args]
+                op = source[ref]
+                op[inst, *args]
             }, arity: 2)
 
         elsif type == :number
