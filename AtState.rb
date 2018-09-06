@@ -787,6 +787,7 @@ class AtState
             2 => @@operators,
         }
         index = res.arity.negative? ? ~res.arity : res.arity
+        index = 2 if index > 2
         if index.zero?
             hash[1][op] = hash[2][op] = res
         else
