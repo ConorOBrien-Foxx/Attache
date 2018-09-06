@@ -753,9 +753,9 @@ module AtFunctionCatalog
         #>>
         "Char" => lambda { |inst, arg|
             if arg.is_a? Array
-                arg.map(&:chr).join
+                arg.map { |e| e.chr Encoding::UTF_8 }.join
             else
-                arg.chr
+                arg.chr Encoding::UTF_8 
             end
         },
         #<<
