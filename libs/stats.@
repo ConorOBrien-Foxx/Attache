@@ -1,15 +1,10 @@
 (*
-SeparatePart := @Curry[[head, n] -> { 
+SeparatePart := @Curry[[head, n] -> {
     Replace[
         String[n], /$"${head}\.?", ""
     ] |> N
 }]
 *)
-
-SeparatePart := @Curry[[head, val] -> {
-    size .= 10 ^ Size[S[head]]
-    val % size
-}]
 
 ClassNamed[StemDisplay, Displayment]! {
     value .= StemLeafPlot@@__
@@ -20,7 +15,7 @@ ClassNamed[StemDisplay, Displayment]! {
             0 -> PadLeft&max_size@S,
             1 -> Join&sp
         ]
-    
+
     plot .= Join[plot, lf]
     repr .= {
         plot
@@ -31,6 +26,6 @@ StemLeafPlot := [data, units] -> {
     units ..= 1
     groups .= Group[Floor@`/&units, data]
     {
-        [_1, Sort! SeparatePart[_1, _2]]
+        [Floor[_1 * units / 10], _2 % 10]
     } &> SortBy[First, List[groups]]
 }

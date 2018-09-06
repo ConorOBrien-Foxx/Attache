@@ -1956,8 +1956,6 @@ module AtFunctionCatalog
             }
         },
         "Over" => lambda { |inst, *opts|
-            
-            
             opts.map! { |opt|
                 key = if String === opt.key
                     inst.get_variable opt.key
@@ -1971,7 +1969,7 @@ module AtFunctionCatalog
                 opt.key = key
                 opt
             }
-            
+
             lambda { |inst, arr|
                 map_vector(inst, arr, with_index: true) { |inst, e, i|
                     fn = opts.find { |opt| opt.key[inst, i] }
@@ -1980,7 +1978,7 @@ module AtFunctionCatalog
                     else
                         e
                     end
-                    
+
                 }
             }
         },
@@ -3474,6 +3472,28 @@ module AtFunctionCatalog
         },
         "Variance" => lambda { |inst, list|
             list.variance
+        },
+
+        "Shape" => lambda { |inst, arr|
+            head = arr
+            dims = []
+            while Array === head
+                dims << head.size
+                head = head.select { |e| Array === e }[0]
+            end
+            dims
+        },
+        "Dimension" => lambda { |inst, arr|
+            recurse = lambda { |arr, dims|
+                if Array === arr
+                    arr.map { |e|
+                        recurse[e, dims + [arr.size]]
+                    }.max
+                else
+                    dims
+                end
+            }
+            recurse[arr, []]
         },
 
         ##------------------##
