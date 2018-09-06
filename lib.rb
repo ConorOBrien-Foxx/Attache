@@ -46,7 +46,9 @@ class Train
                 #todo: expand
                 when 3
                     f, g, h = @train
-                    g[inst, f[inst, *args], h[inst, *args]]
+                    left = f[inst, *args]
+                    right = h[inst, *args]
+                    g[inst, left, right]
                 when 2
                     f, g = @train
                     f[inst, args.first, g[inst, *args]]
