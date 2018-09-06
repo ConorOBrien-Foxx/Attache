@@ -786,7 +786,12 @@ class AtState
             1 => @@unary_operators,
             2 => @@operators,
         }
-        hash[res.arity.negative? ? ~res.arity : res.arity][op] = res
+        index = res.arity.negative? ? ~res.arity : res.arity
+        if index.zero?
+            hash[1][op] = hash[2][op] = res
+        else
+            hash[index][op] = res
+        end
     end
 
     def AtState.falsey?(ent)
@@ -911,7 +916,7 @@ class AtState
                     e.raw
                 end
             }
-            if var.head.raw == "'"
+            if ["'", "V"].include? var.head.raw
                 val = evaluate_node val
                 args.each_with_index { |arg, i|
                     send dest, arg, val[i]

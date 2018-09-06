@@ -755,7 +755,7 @@ module AtFunctionCatalog
             if arg.is_a? Array
                 arg.map { |e| e.chr Encoding::UTF_8 }.join
             else
-                arg.chr Encoding::UTF_8 
+                arg.chr Encoding::UTF_8
             end
         },
         #<<
