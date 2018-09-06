@@ -4455,42 +4455,10 @@ module AtFunctionCatalog
             end
         },
         ":=" => lambda { |inst, var, val|
-            if Node === var
-                #todo: pattern matching++
-
-                args = var.children.map { |e|
-                    if Node === e
-                        e.children[0].raw
-                        STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
-                    else
-                        e.raw
-                    end
-                }
-                if var.head.raw == "'"
-                    val = inst.evaluate_node val
-                    args.each_with_index { |arg, i|
-                        inst.define arg, val[i]
-                    }
-                else
-                    res = AtLambda.new [val], args
-                    if var.head.type == :op_quote
-                        inst.set_op_quote var.head, res
-                    else
-                        inst.define var.head.raw, res
-                    end
-                end
-            else
-                res = inst.evaluate_node(val)
-                if var.type == :op_quote
-                    unless AtState.func_like? res
-                        res = lambda { |*discard| res }
-                    end
-                    inst.set_op_quote var, res
-                else
-                    name = var.raw
-                end
-                inst.define name, res
-            end
+            inst.set_global var, val
+        },
+        ".=" => lambda { |inst, var, val|
+            inst.set_local var, val
         },
         "≔" => held(true, true) { |inst, var, val|
             @@operators[":="][inst, var, val]
@@ -4507,24 +4475,6 @@ module AtFunctionCatalog
                 @@operators[":="][inst, var, val] if update
             else
                 raise AttacheUnimplementedError.new("::= is not defined for non-token first argument", inst.position)
-            end
-        },
-        ".=" => lambda { |inst, var, val|
-            #todo: expand like :=
-            #todo: abstract `.=` and `:=` logic
-            if Node === var
-                args = var.children.map(&:raw)
-                if var.head.raw == "'"
-                    args.each_with_index { |arg, i|
-                        inst.define_local arg, val[i]
-                    }
-                else
-                    res = AtLambda.new [val], args
-                    inst.define_local var.head.raw, res
-                end
-            else
-                name = var.raw
-                inst.define_local name, inst.evaluate_node(val)
             end
         },
         # only overwrite if nil/undefined

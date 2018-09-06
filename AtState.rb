@@ -900,6 +900,52 @@ class AtState
         # raise
     end
 
+    def set_variable(var, val, dest=:define)
+        if Node === var
+            #todo: pattern matching++
+            args = var.children.map { |e|
+                if Node === e
+                    e.children[0].raw
+                    STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
+                else
+                    e.raw
+                end
+            }
+            if var.head.raw == "'"
+                val = evaluate_node val
+                args.each_with_index { |arg, i|
+                    send dest, arg, val[i]
+                }
+            else
+                res = AtLambda.new [val], args
+                if var.head.type == :op_quote
+                    set_op_quote var.head, res
+                else
+                    send dest, var.head.raw, res
+                end
+            end
+        else
+            res = evaluate_node(val)
+            if var.type == :op_quote
+                unless AtState.func_like? res
+                    res = lambda { |*discard| res }
+                end
+                set_op_quote var, res
+            else
+                name = var.raw
+            end
+            send dest, name, res
+        end
+    end
+
+    def set_global(var, val)
+        set_variable var, val
+    end
+
+    def set_local(var, val)
+        set_variable var, val, :define_local
+    end
+
     def default_cell_type(type)
         case type
             when String
