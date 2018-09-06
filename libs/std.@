@@ -751,3 +751,18 @@ ClassNamed[Displayment]! {
     
     $string[] .= repr[]
 }
+
+base_alpha := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+ToBaseString := Join@{ base_alpha[_] }@ToBase
+FromBaseString[x, b] :=
+    FromBase[
+        Index[base_alpha, Chars! Upcase! x],
+        b
+    ]
+
+HexString   := ToBaseString&16
+UnHexString := FromBaseString&16
+BinString   := ToBaseString&2
+UnBinString := FromBaseString&2
+OctString   := ToBaseString&8
+UnOctString := FromBaseString&8
