@@ -1598,7 +1598,7 @@ module AtFunctionCatalog
             Numeric === n
         },
         "IsSquare" => lambda { |inst, n|
-            n.sqrt.to_i ** 2 == n
+            CMath::sqrt(n).to_i ** 2 == n
         },
 
         ##############################
