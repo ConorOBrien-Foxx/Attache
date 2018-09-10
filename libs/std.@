@@ -265,7 +265,7 @@ RawDivisors[n] :=
 ??? @genre numeric
 Divisors := @{
     d .= RawDivisors[_]
-    Concat[d, _ / d] |> Unique
+    Union[d, Reverse[_ / d]]
 }
 ??>>
 
