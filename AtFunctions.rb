@@ -3517,6 +3517,12 @@ module AtFunctionCatalog
         # @example     Person["Marie", 14],
         # @example     Person["Teressa", 16]
         # @example ]
+        # @example by_age := UniqueBy[.age]
+        # @example Print => by_age[people]
+        # @example ?? John, age 14
+        # @example ?? Riker, age 15
+        # @example ?? Amy, age 13
+        # @example ?? Teressa, age 16
         #>>
         "UniqueBy" => curry(2) { |inst, map, list, count=1|
             fl = inst.cast_list list
