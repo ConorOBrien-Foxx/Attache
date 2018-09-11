@@ -3413,6 +3413,10 @@ module AtFunctionCatalog
         # @optional fill
         #>>
         "UnSparse" => lambda { |inst, ent, fill=0|
+            if Array === ent && ent.all? { |e| Array === e && e.size == 2 }
+                ent = ent.to_h
+            end
+
             if Hash === ent
                 res = []
                 ent.each { |k, v|
@@ -5503,7 +5507,7 @@ module AtFunctionCatalog
         "." => held(HOLD_ALL) { |inst, property|
             lambda { |inst, ent| @@operators["."][inst, ent, property] }
         },
-        
+
         #<<
         # Forces <code>func</code> to use parent scope.
         # @type func fn
