@@ -4455,6 +4455,15 @@ module AtFunctionCatalog
                 commonest[n > 0 ? n - 1 : n]
             end
         },
+        "Reap" => held(HOLD_ALL) { |inst, expr, tag=nil|
+            reap_start inst.evaluate_node_safe(tag)
+            inst.evaluate_node_safe expr
+            reaper = reap_end
+            reaper.build
+        },
+        "Sow" => lambda { |inst, expr, tag=nil|
+            reap_sow expr, tag
+        },
     }
 
     # operators with two arguments
