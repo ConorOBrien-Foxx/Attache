@@ -1066,9 +1066,8 @@ module AtFunctionCatalog
             if opts.has_key? :RNG
                 random(n, m, random: opts[:RNG])
             else
-                randon(n, m)
+                random(n, m)
             end
-
         },
         #<<
         # Returns an RNG, seeded with <code>seed</code>, or a random value if unspecified.
@@ -1731,12 +1730,13 @@ module AtFunctionCatalog
         # @type n number
         # @return (*)
         # @genre functional
+        # @example rand := Configure[Random, RNG->RNG[10]]
         # @example Print[CallN[Random, 4, 3, 10]]
-        # @example ?? 4 random integers between 3 and 10
-        # @example ?? e.g.:
-        # @example ?? [5, 8, 10, 9]
+        # @example ?? [4, 8, 7, 10]
+        # @example Print[CallN[rand, 10, 0, 1]]
+        # @example ?? [1, 1, 0, 1, 0, 1, 1, 0, 1, 1]
         #>>
-        "CallN" => lambda { |inst, f, n, *args|
+        "CallN" => curry(3) { |inst, f, n, *args|
             res = []
             n.times {
                 res << f[inst, *args]
@@ -3258,9 +3258,10 @@ module AtFunctionCatalog
         # @param search if specified, treats <code>search</code> as the assumed value.
         # @return hash
         # @genre list
-        # @example vals := Do[ N@{ Random[] < 0.1 }, 100]
+        # @example rand := Configure[Random, RNG->RNG[104]]
+        # @example vals := Do[ N@{ rand[] < 0.1 }, 100]
         # @example Print[Sparse[vals]]
-        # @example ?? e.g.: {8=>1, 25=>1, 35=>1, 42=>1, 47=>1, 57=>1, 67=>1, 81=>1}
+        # @example ?? {11=>1, 32=>1, 35=>1, 43=>1, 51=>1, 55=>1, 67=>1, 71=>1, 86=>1}
         #>>
         "Sparse" => lambda { |inst, list, search=0|
             ret = {}

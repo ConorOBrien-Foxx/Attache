@@ -175,9 +175,11 @@ end
 
 class AtPseudoClass
     @@variables = []
+
     def self.variable(name)
         @@variables << name.to_s
     end
+
     def [](prop)
         if @@variables.index prop
             instance_variable_get "@" + prop
