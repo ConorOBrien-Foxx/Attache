@@ -3501,8 +3501,22 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         # @reforms
-        # @example Print[UniqueBy[Last, ["Hello!", "world", "no!", "1234", "I swear I lived", "azure"]]]
+        # @example words := ["Hello!", "world", "no!", "1234", "I swear I lived", "azure"]
+        # @example Print[UniqueBy[Last, words]]
         # @example ?? ["Hello!", "world", "1234", "azure"]
+        # @example ClassNamed[Person]! {
+        # @example     name .= _1
+        # @example     age .= _2
+        # @example     $string[] .= $"${name}, age ${age}"
+        # @example }
+        # @example people := [
+        # @example     Person["John", 14],
+        # @example     Person["Riker", 15],
+        # @example     Person["Jackson", 15],
+        # @example     Person["Amy", 13],
+        # @example     Person["Marie", 14],
+        # @example     Person["Teressa", 16]
+        # @example ]
         #>>
         "UniqueBy" => curry(2) { |inst, map, list, count=1|
             fl = inst.cast_list list
