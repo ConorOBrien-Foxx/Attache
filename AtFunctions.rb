@@ -3214,6 +3214,24 @@ module AtFunctionCatalog
                 ent[key] = val
             end
         },
+        #<<
+        # Converts <code>list</code> to a hash of sparse values.
+        # @type list [(*)]
+        # @type search (*)
+        # @optional search
+        # @param search if specified, treats <code>search</code> as the assumed value.
+        # @return hash
+        # @example 
+        #>>
+        "Sparse" => lambda { |inst, list, search=0|
+            ret = {}
+            list.each_with_index { |e, i|
+                if e != search
+                    ret[i] = e
+                end
+            }
+            ret
+        },
         "Keys" => lambda { |inst, hash|
             hash.keys
         },
@@ -3386,12 +3404,12 @@ module AtFunctionCatalog
         # @param fill default: <code>nil</code>.
         # @example test := <~ 0 -> 3, 2 -> 4, 6 -> 3 ~>
         # @example Print[UnSparse[test]]
-        # @example ?? [3, nil, 4, nil, nil, nil, 3]
-        # @example Print[UnSparse[test, 0]]
         # @example ?? [3, 0, 4, 0, 0, 0, 3]
+        # @example Print[UnSparse[test, nil]]
+        # @example ?? [3, nil, 4, nil, nil, nil, 3]
         # @optional fill
         #>>
-        "UnSparse" => lambda { |inst, ent, fill=nil|
+        "UnSparse" => lambda { |inst, ent, fill=0|
             if Hash === ent
                 res = []
                 ent.each { |k, v|

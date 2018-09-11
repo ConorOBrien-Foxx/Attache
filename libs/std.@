@@ -737,6 +737,21 @@ Thrice[f] := [f[], f[], f[]]
 ??>>
 
 ??<<
+??? Calls <code>f</code> <code>n</code> times with no arguments, collectin the results into an array.
+??? @type f fn
+??? @return [(*)]
+??? @genre functional
+Do[f, n] := 
+    If[n == nil,
+        f[],
+        If[n > 0,
+            f[] ' Do[f, n - 1],
+            []
+        ]
+    ]
+??>>
+
+??<<
 ??? Reads a line of STDIN and converts each entry to a number, space-separated.
 ??? @return [number]
 ??? @genre IO
