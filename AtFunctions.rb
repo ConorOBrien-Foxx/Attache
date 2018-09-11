@@ -3466,7 +3466,7 @@ module AtFunctionCatalog
             unique = if func.nil?
                 fl.uniq
             else
-                fl.uniq { |e| arg[func, e] }
+                fl.uniq { |e| func[inst, e] }
             end
             reform_list unique, list
         },
