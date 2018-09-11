@@ -3455,19 +3455,47 @@ module AtFunctionCatalog
         #<<
         # Returns the non-duplicated elements in <code>list</code>.
         # @type list [(*)]
-        # @type func fn
-        # @optional func
+        # @type count number
+        # @param count Limits the occurences of each element to <code>count</code>.
+        # @optional count
         # @return [(*)]
         # @genre list
         # @reforms
         #>>
-        "Unique" => lambda { |inst, list, func=nil|
+        "Unique" => lambda { |inst, list, count=1|
             fl = inst.cast_list list
-            unique = if func.nil?
-                fl.uniq
-            else
-                fl.uniq { |e| func[inst, e] }
-            end
+            occurrences = {}
+            unique = list.select { |e|
+                if occurrences[e].nil?
+                    occurrences[e] = count
+                end
+                occurrences[e] -= 1
+                occurrences[e] >= 0
+            }
+            reform_list unique, list
+        },
+        #<<
+        # Returns the non-duplicated elements in <code>list</code> according to the image of <code>map</code>.
+        # @type map fn
+        # @type list [(*)]
+        # @type count number
+        # @param count Limits the occurences of each element to <code>count</code>.
+        # @optional count
+        # @return [(*)]
+        # @genre list
+        # @reforms
+        #>>
+        "UniqueBy" => curry(2) { |inst, map, list, count=1|
+            fl = inst.cast_list list
+            occurrences = {}
+            unique = list.select { |e|
+                image = map[list, e]
+                if occurrences[image].nil?
+                    occurrences[image] = count
+                end
+                occurrences[image] -= 1
+                occurrences[image] >= 0
+            }
             reform_list unique, list
         },
         "Variance" => lambda { |inst, list|
