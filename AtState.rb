@@ -769,7 +769,9 @@ class AttacheSyntaxError < AttacheError; end
 class AttacheValueError < AttacheError; end
 
 
+require_relative 'AtClass.rb'
 require_relative 'AtFunctions.rb'
+
 class AtState
     def AtState.truthy?(ent)
         return true if AtState.func_like? ent
@@ -1332,6 +1334,3 @@ class AtState
 
     include AtFunctionCatalog
 end
-
-# aha
-require_relative 'AtClass.rb'

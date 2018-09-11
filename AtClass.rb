@@ -174,8 +174,10 @@ class AtClass
 end
 
 class AtPseudoClass
-    def [](inst, *args)
-        new *args
+    def [](prop)
+        lambda { |inst, *more|
+            send prop, *more
+        }
     end
 
     def inspect

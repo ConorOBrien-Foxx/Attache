@@ -10,6 +10,28 @@ def default_sentinel(*values, sentinel: AtFunctionCatalog::NOT_PROVIDED, &final)
     return final[] if final
     sentinel
 end
+
+class AtRNG < AtPseudoClass
+    def initialize(seed)
+        @seed = seed
+        @rng = Random.new seed
+    end
+
+    def test
+        "answer"
+    end
+
+    def rand(*args)
+        @rng.rand *args
+    end
+
+    def inspect
+        "RNG[#{@seed}]"
+    end
+
+    alias :to_s :inspect
+end
+
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
 
@@ -22,6 +44,7 @@ module AtFunctionCatalog
         "Configure",
         "Print",
         "Option",
+        "Random",
         "Safely",
         "Series",
         "SeriesIf",
@@ -1039,20 +1062,25 @@ module AtFunctionCatalog
         # @type n number
         # @type m number
         # @return number
-        # @genre numeric
+        # @genre numeric/random
         #>>
-        "Random" => vectorize_dyad { |inst, n=nil, m=nil|
-            random(n, m)
+        "Random" => vectorize_dyad { |inst, n=nil, m=nil, **opts|
+            if opts.has_key? :RNG
+                random(n, m, random: opts[:RNG])
+            else
+                randon(n, m)
+            end
+
         },
         #<<
         # Returns an RNG, seeded with <code>seed</code>, or a random value if unspecified.
         # @type seed number
         # @optional number
         # @return RNG
-        # @genre numeric
+        # @genre numeric/random
         #>>
         "RNG" => lambda { |inst, seed=Random.new_seed|
-            Random.new(seed)
+            AtRNG.new(seed)
         },
         #<<
         # Returns a fraction representing <code>a / b</code>.
@@ -3346,9 +3374,24 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Shuffle" => lambda { |inst, list|
-            shuffled = inst.cast_list(list).shuffle
-            reform_list shuffled, list
+        #<<
+        # Shuffles the contents of <code>list</code>.
+        # @type list [(*)]
+        # @return [(*)]
+        # @reforms
+        # @option RNG specifies which RNG to shuffle by.
+        # @genre list/random
+        #>>
+        "Shuffle" => configurable { |inst, list, **opts|
+            casted = inst.cast_list(list)
+
+            if opts.has_key? :RNG
+                casted.shuffle! random: opts[:RNG]
+            else
+                casted.shuffle!
+            end
+
+            reform_list casted, list
         },
         "SortBy" => curry { |inst, func, ent|
             list = inst.cast_list ent
@@ -4598,7 +4641,7 @@ module AtFunctionCatalog
                 raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
             end
 
-            if AtClassInstance === obj || Hash === obj
+            if AtClassInstance === obj || Hash === obj || AtPseudoClass === obj
                 obj[prop.raw]
             elsif obj.respond_to? prop.raw.to_sym
                 obj.send prop.raw.to_sym

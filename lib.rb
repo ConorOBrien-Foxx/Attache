@@ -622,13 +622,13 @@ def lcm(arr)
     end
 end
 
-def random(min=nil, max=nil)
+def random(min=nil, max=nil, random: Random)
     if min.nil?
-        rand
+        random.rand
     elsif max.nil?
-        rand(min)
+        random.rand(min)
     else
-        min + rand(max - min + 1)
+        min + random.rand(max - min + 1)
     end
 end
 
