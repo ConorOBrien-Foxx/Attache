@@ -3221,7 +3221,10 @@ module AtFunctionCatalog
         # @optional search
         # @param search if specified, treats <code>search</code> as the assumed value.
         # @return hash
-        # @example 
+        # @genre list
+        # @example vals := Do[ N@{ Random[] < 0.1 }, 100]
+        # @example Print[Sparse[vals]]
+        # @example ?? e.g.: {8=>1, 25=>1, 35=>1, 42=>1, 47=>1, 57=>1, 67=>1, 81=>1}
         #>>
         "Sparse" => lambda { |inst, list, search=0|
             ret = {}
