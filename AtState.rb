@@ -847,6 +847,7 @@ class AtState
         "TAU" => Math::PI * 2,
         "PAU" => Math::PI * 1.5,
         "argv" => ARGV[1..-1],
+        "erng" => AtRNG.new(42),
         "NOT_PROVIDED" => AtFunctionCatalog::NOT_PROVIDED,
         "NP" => AtFunctionCatalog::NOT_PROVIDED,
         # perhaps temporary

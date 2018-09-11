@@ -174,10 +174,20 @@ class AtClass
 end
 
 class AtPseudoClass
+    @@variables = []
+    def self.variable(name)
+        @@variables << name.to_s
+    end
     def [](prop)
-        lambda { |inst, *more|
-            send prop, *more
-        }
+        if @@variables.index prop
+            instance_variable_get "@" + prop
+        elsif respond_to? prop
+            lambda { |inst, *more|
+                send prop, *more
+            }
+        else
+            raise AttacheValueError.new("Unknown property #{prop.inspect}")
+        end
     end
 
     def inspect

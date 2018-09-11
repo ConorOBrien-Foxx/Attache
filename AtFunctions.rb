@@ -17,9 +17,7 @@ class AtRNG < AtPseudoClass
         @rng = Random.new seed
     end
 
-    def test
-        "answer"
-    end
+    variable :seed
 
     def rand(*args)
         @rng.rand *args
