@@ -5472,6 +5472,11 @@ module AtFunctionCatalog
                 n
             }
         },
+        # propda
+        "." => held(HOLD_ALL) { |inst, property|
+            lambda { |inst, ent| @@operators["."][inst, ent, property] }
+        },
+        
         #<<
         # Forces <code>func</code> to use parent scope.
         # @type func fn
