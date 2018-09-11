@@ -3461,11 +3461,28 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         # @reforms
+        # @example Print[Unique[ [1, 2, 3, 2, 4, 7, 6, 7] ]]
+        # @example ?? [1, 2, 3, 4, 7, 6]
+        # @example keep2 := Unique&2
+        # @example Print[keep2[ [1, 2, 2, 3, 3, 3, 4, 9, 9, 9, 9, 5] ]]
+        # @example ?? [1, 2, 2, 3, 3, 4, 9, 9, 5]
+        # @example Print[Unique["Hello, World!"]]
+        # @example ?? Helo, Wrd!
+        # @example Display => Unique["There are certain people here!", 0:8]
+        # @example ?? ""
+        # @example ?? "Ther actinpol!"
+        # @example ?? "There ar ctainpoplh!"
+        # @example ?? "There are crtain poplh!"
+        # @example ?? "There are certain popl hr!"
+        # @example ?? "There are certain peopl hr!"
+        # @example ?? "There are certain people hr!"
+        # @example ?? "There are certain people her!"
+        # @example ?? "There are certain people here!"
         #>>
-        "Unique" => lambda { |inst, list, count=1|
+        "Unique" => vectorize_dyad(RIGHT) { |inst, list, count=1|
             fl = inst.cast_list list
             occurrences = {}
-            unique = list.select { |e|
+            unique = fl.select { |e|
                 if occurrences[e].nil?
                     occurrences[e] = count
                 end
@@ -3484,12 +3501,14 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         # @reforms
+        # @example Print[UniqueBy[Last, ["Hello!", "world", "no!", "1234", "I swear I lived", "azure"]]]
+        # @example ?? ["Hello!", "world", "1234", "azure"]
         #>>
         "UniqueBy" => curry(2) { |inst, map, list, count=1|
             fl = inst.cast_list list
             occurrences = {}
             unique = list.select { |e|
-                image = map[list, e]
+                image = map[inst, e]
                 if occurrences[image].nil?
                     occurrences[image] = count
                 end
