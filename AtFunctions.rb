@@ -1045,6 +1045,16 @@ module AtFunctionCatalog
             random(n, m)
         },
         #<<
+        # Returns an RNG, seeded with <code>seed</code>, or a random value if unspecified.
+        # @type seed number
+        # @optional number
+        # @return RNG
+        # @genre numeric
+        #>>
+        "RNG" => lambda { |inst, seed=Random.new_seed|
+            Random.new(seed)
+        },
+        #<<
         # Returns a fraction representing <code>a / b</code>.
         # @return rational
         # @type a number

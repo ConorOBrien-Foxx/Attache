@@ -115,14 +115,14 @@ class AtClass
         }
 
         @inst.saved = []
-        
+
         if @parent
             sub = @parent.create *params
             @inst.locals.last.merge! sub.vars
             # @inst.locals.last.merge! sub.privates
             @inst.locals.last.merge! sub.methods
         end
-        
+
         @body[@inst, *params]
 
         scope = @inst.locals.pop
@@ -170,5 +170,15 @@ class AtClass
 
     def inspect
         "Class #{@name.inspect}"
+    end
+end
+
+class AtPseudoClass
+    def [](inst, *args)
+        new *args
+    end
+
+    def inspect
+        "Class #{name.inspect}"
     end
 end
