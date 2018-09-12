@@ -24,6 +24,7 @@ StemLeafPlot := [data, units] -> {
     } &> SortBy[First, List[groups]]
 }
 
+(*
 Interpolate[left, right, index, mode] := Switch[mode,
     $lower -> left,
     $higher -> right,
@@ -38,6 +39,14 @@ Percentile := Configurable[[p, list] -> {
     l'r .= CallEach[Floor'Ceiling, ind]
     Interpolate[l, r, ind % 1, mode]
 }]
+*)
+
+
+Percentile[p, list] := (
+    i .= #list * p / 100.0 - 1;;
+    k ' f .= Parts[i];;
+    (1 - f) * list[k] + f * list[k + 1]
+)
 
 FiveNumber := CallEach[
     [
