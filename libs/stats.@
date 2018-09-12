@@ -1,10 +1,4 @@
-(*
-SeparatePart := @Curry[[head, n] -> {
-    Replace[
-        String[n], /$"${head}\.?", ""
-    ] |> N
-}]
-*)
+?? statistics library
 
 ClassNamed[StemDisplay, Displayment]! {
     value .= StemLeafPlot@@__
@@ -29,3 +23,17 @@ StemLeafPlot := [data, units] -> {
         [Floor[_1 * units / 10], _2 % 10]
     } &> SortBy[First, List[groups]]
 }
+
+??Interpolate[n, mode]
+
+??Percentile[p, list] :=
+
+FiveNumber := CallEach[
+    [
+        Min,
+        {},
+        Median,
+        {},
+        Max
+    ]
+]

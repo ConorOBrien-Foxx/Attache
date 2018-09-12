@@ -1724,6 +1724,20 @@ module AtFunctionCatalog
             f[inst, *args]
         },
         #<<
+        # Vectorizes function calling over each function <code>f</code> in <code>fs</code> over <code>args</code>.
+        # @type args (*)
+        # @type fs [fn]
+        # @return (*)
+        #>>
+        "CallEach" => curry(2) { |inst, fs, *args|
+            if Tie === fs
+                fs = fs.to_a
+            end
+            vectorize_monad { |inst, f|
+                f[inst, *args]
+            } [inst, fs]
+        },
+        #<<
         # Calls <code>f</code> <code>n</code> times over <code>args</code>, storing the results in a list.
         # @type args (*)
         # @type f fn
