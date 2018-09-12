@@ -24,7 +24,12 @@ StemLeafPlot := [data, units] -> {
     } &> SortBy[First, List[groups]]
 }
 
-Interpolate[left, right, mode] := 
+Interpolate[left, right, index, mode] := Switch[mode,
+    $lower -> left,
+    $higher -> right,
+    $nearest -> If[index < 0.5, left, right],
+    $midpoint -> (left + right) / 2
+]
 
 ??Percentile[p, list] :=
 
