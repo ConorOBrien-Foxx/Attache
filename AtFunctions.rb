@@ -1757,6 +1757,22 @@ module AtFunctionCatalog
             }
             res
         },
+        "Configurable" => lambda { |inst, fn|
+            a = fn
+            configurable { |inst, *args, **opts|
+                a.call inst, args, opts
+            }
+        },
+        "GetOption" => lambda { |inst, name, *others|
+            opts = inst.get_variable("OPTIONS")
+            if opts.nil?
+                nil
+            elsif opts.has_key? name
+                opts[name]
+            else
+                others.find { |s| s != nil }
+            end
+        },
         #<<
         # Returns <code>fn</code>, fully curried according to <code>arity</code>.
         # @type f fn
@@ -4062,7 +4078,7 @@ module AtFunctionCatalog
 
             opts.sort.select { |e|
                 e.start_with? val
-            }.first
+            }.sort_by(&:size).first
         },
         #<<
         # Formats a string. Currently, uses Ruby's <a href="https://ruby-doc.org/core-2.0.0/String.html#method-i-25"><code>%</code></a> method on strings.

@@ -462,6 +462,7 @@ end
 
 class AtLambda
     ARG_CONST = "ARGUMENTS"
+    OPTS_CONST = "OPTIONS"
     def initialize(inner_ast, params=[], raw: [])
         @tokens = [*inner_ast]
         @params = params
@@ -490,44 +491,55 @@ class AtLambda
 
     attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw
 
-    def [](inst, *args)
-        inst.local_descend(@scope) if @descend
-        # define locals
-        inst.define_local ARG_CONST, args
-        inst.abstract_references << self
-        @params.each_with_index { |name, i|
-            inst.define_local name, args[i]
-        }
-
-        temp_scope = @scope.dup
-
-        res = @tokens.map.with_index { |token, i|
-
-            inner = inst.evaluate_node(token, args, @scope)
-
-            if @ascend && @descend
-                temp = inst.locals.last.dup
-                @params.each { |param|
-                    temp.delete param
-                }
-                temp_scope.merge! temp
+    def call(inst, args, opts=nil)
+            inst.local_descend(@scope) if @descend
+            # define locals
+            inst.define_local ARG_CONST, args
+            unless opts.nil?
+                inst.define_local OPTS_CONST, opts.map { |k, v| [k.to_s, v] } .to_h
             end
-
-            AtState.traverse(inner) { |atom|
-                if atom.kind_of? AtLambda
-                    atom.scope.merge! temp_scope
-                end
+            inst.abstract_references << self
+            @params.each_with_index { |name, i|
+                inst.define_local name, args[i]
             }
 
-            inner
-        }.last
+            temp_scope = @scope.dup
 
-        inst.abstract_references.pop
-        temp_scope = inst.local_ascend if @ascend
+            res = @tokens.map.with_index { |token, i|
 
-        @scope.merge! temp_scope
+                inner = inst.evaluate_node(token, args, @scope)
 
-        res
+                if @ascend && @descend
+                    temp = inst.locals.last.dup
+                    @params.each { |param|
+                        temp.delete param
+                    }
+                    temp_scope.merge! temp
+                end
+
+                AtState.traverse(inner) { |atom|
+                    if atom.kind_of? AtLambda
+                        atom.scope.merge! temp_scope
+                    end
+                }
+
+                inner
+            }.last
+
+            inst.abstract_references.pop
+            temp_scope = inst.local_ascend if @ascend
+
+            @scope.merge! temp_scope
+
+            res
+    end
+
+    def call_with_opts(inst, *args, **opts)
+        call inst, args, opts
+    end
+
+    def [](inst, *args)
+        call inst, args, nil
     end
 end
 
@@ -1147,6 +1159,8 @@ class AtState
         args = []
 
         func = is_format_string ? nil : get_value(head)
+
+        # 1st pass at characteristic checking
         if AtFunction === func
             held = func.held
             configurable = func.config
@@ -1159,7 +1173,12 @@ class AtState
             configurable = false
         end
 
+        # obtain value of head
+        if func.is_a? Node
+            func = evaluate_node func, blank_args, merge_with, check_error: check_error
+        end
 
+        # evaluate children
         children.map!.with_index { |child, i|
             raw, type = child
 
@@ -1176,6 +1195,13 @@ class AtState
             end
         }
         args.concat children
+
+        # second pass of held arguments
+        if AtFunction === func
+            configurable = func.config
+            held = func.held
+            func = func.fn
+        end
 
         # check if error occured
         if check_error
@@ -1194,18 +1220,17 @@ class AtState
             args = split[false]
         end
 
+        # reduce applicators
         args = (args || []).flat_map { |e|
             Applicator === e ? e.value : [e]
         }
 
+        # preemptively return format strings
         if is_format_string
             return format_string(head.raw, args)
         end
 
-        if func.is_a? Node
-            func = evaluate_node func, blank_args, merge_with, check_error: check_error
-        end
-
+        # error checking -- function/operator arity does not exist
         if func.nil?
             if head.type == :unary_operator
                 raise AttacheOperatorError.new("Operator #{head.raw.inspect} has no unary case.", head.position)
@@ -1214,7 +1239,7 @@ class AtState
             exit -3
         end
 
-
+        # infuse scopes
         if func.kind_of?(AtLambda) && !merge_with.nil?
             # di "func infusion"
             # dh "func", func.inspect
@@ -1223,7 +1248,8 @@ class AtState
             # dd "func infused"
         end
 
-        res = if head.is_a?(Token) && configurable
+        # call the function
+        res = if configurable
             func[self, *args, **config]
         else
             # special call function overloading
@@ -1236,6 +1262,7 @@ class AtState
                     else
                         func[self, *args]
                     end
+                # TODO: use an actual error
                 rescue ArgumentError => e
                     STDERR.puts "Argument error: #{head}"
                     raise e
