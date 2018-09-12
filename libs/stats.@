@@ -31,7 +31,9 @@ Interpolate[left, right, index, mode] := Switch[mode,
     $midpoint -> (left + right) / 2
 ]
 
-??Percentile[p, list] :=
+Percentile := Configurable[[p, list] -> {
+    GetOption[$interp]
+}]
 
 FiveNumber := CallEach[
     [
