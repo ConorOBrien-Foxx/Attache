@@ -24,7 +24,7 @@ StemLeafPlot := [data, units] -> {
     } &> SortBy[First, List[groups]]
 }
 
-??Interpolate[n, mode]
+Interpolate[left, right, mode] := 
 
 ??Percentile[p, list] :=
 

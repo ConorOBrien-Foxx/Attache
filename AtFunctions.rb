@@ -50,6 +50,11 @@ module AtFunctionCatalog
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
+    def self.hold_all_but(*ns)
+        a = HOLD_ALL.dup
+        ns.each { |k| a[k] = false }
+        a
+    end
     @@held_arguments = {
         "->" => [true, false],
         "→" => [true, false],
@@ -2161,6 +2166,19 @@ module AtFunctionCatalog
                 config.children
             }.find { |cond, value|
                 AtState.truthy? inst.evaluate_node cond
+            }
+            if res.nil?
+                res
+            else
+                inst.evaluate_node res[1]
+            end
+        },
+        "Switch" => held(hold_all_but(0)) { |inst, search, *pairs|
+            res = pairs.map { |config|
+                config.children
+            }.find { |cmp, value|
+                cmp = inst.evaluate_node cmp
+                @@operators["=="][inst, search, cmp]
             }
             if res.nil?
                 res
