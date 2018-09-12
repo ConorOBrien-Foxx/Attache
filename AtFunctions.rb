@@ -4571,6 +4571,16 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
+        "IntegerPart" => lambda { |inst, n|
+            n.floor
+        },
+        "FractionalPart" => lambda { |inst, n|
+            n - n.floor
+        },
+        "Parts" => lambda { |inst, n|
+            f = n.floor
+            [f, n - f]
+        },
         "Debug_" => lambda { |inst, arg|
             di "debugging function instance"
             p arg.raw

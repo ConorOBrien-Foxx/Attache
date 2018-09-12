@@ -28,11 +28,15 @@ Interpolate[left, right, index, mode] := Switch[mode,
     $lower -> left,
     $higher -> right,
     $nearest -> If[index < 0.5, left, right],
-    $midpoint -> (left + right) / 2
+    $midpoint -> (left + right) / 2,
+    $linear -> (left + (right - left) * index)
 ]
 
 Percentile := Configurable[[p, list] -> {
-    GetOption[$interp]
+    mode .= GetOption[$interp, $linear]
+    ind .= p / 100.0 * #list
+    l'r .= CallEach[Floor'Ceiling, ind]
+    Interpolate[l, r, ind % 1, mode]
 }]
 
 FiveNumber := CallEach[
