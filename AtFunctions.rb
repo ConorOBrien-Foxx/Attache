@@ -3323,6 +3323,13 @@ module AtFunctionCatalog
         "Keys" => lambda { |inst, hash|
             hash.keys
         },
+        "Skip" => vectorize_dyad(RIGHT) { |inst, ent, by|
+            list = inst.cast_list(ent)
+            filtered = list.select.with_index { |e, i|
+                i % by == 0
+            }
+            reform_list filtered, ent
+        },
         "SetMatrix" => lambda { |inst, mat, row, col, val|
             mat[row][col] = val
         },
