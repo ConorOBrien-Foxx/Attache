@@ -1132,3 +1132,14 @@ end
 def reap_end
     REAP_VALUES.pop
 end
+
+require 'bigdecimal'
+class BigDecimal
+    alias :old_to_s :to_s
+    def to_s(mode="F")
+        old_to_s mode
+    end
+    def inspect(*args)
+        to_s(*args) + "x"
+    end
+end

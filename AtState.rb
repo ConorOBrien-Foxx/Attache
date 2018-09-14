@@ -1017,7 +1017,6 @@ class AtState
         end
         raw.gsub!(/^\./, "0.")
         if modifiers.include? "x"
-            require 'bigdecimal'
             res = BigDecimal.new(raw)
         else
             res = eval raw
@@ -1336,11 +1335,11 @@ class AtState
         @@extended_variables[name] = value
     end
 
-    def cast_string(value)
+    def cast_string(value, *modes)
         if AtClassInstance === value && value.methods["$string"]
-            value.methods["$string"][self]
+            value.methods["$string"][self, *modes]
         else
-            value.to_s rescue "#{value}"
+            value.to_s(*modes) rescue "#{value}"
         end
     end
 

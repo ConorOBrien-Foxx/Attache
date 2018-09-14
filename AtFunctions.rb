@@ -4447,8 +4447,8 @@ module AtFunctionCatalog
         # @return string
         # @genre conversion
         #>>
-        "String" => lambda { |inst, ent|
-            inst.cast_string ent
+        "String" => lambda { |inst, ent, *modes|
+            inst.cast_string ent, *modes
         },
         "Strip" => lambda { |inst, str|
             str.strip
@@ -4589,7 +4589,6 @@ module AtFunctionCatalog
 
         },
         "BigDecimal" => vectorize_monad { |inst, n|
-            require 'bigdecimal'
             BigDecimal.new n
         },
         "Error" => lambda { |inst, name, msg="An error has occured."|
