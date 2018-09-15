@@ -56,6 +56,12 @@ class AttacheParser
                 options[:stdin] = v
             end
 
+            opts.on("-f", "--fast",
+                "Omits inclusion of std.@ for faster initialization"
+            ) do |v|
+                options[:fast] = v
+            end
+
             opts.on("-m", "--time",
                 "Times how long it takes to handle the program",
             ) do |v|
@@ -201,7 +207,7 @@ if options[:tokenize] || options[:shunt]
     }
 else
     begin
-        inst = AtState.new program
+        inst = AtState.new program, exclude_std: options[:fast]
         inst.run
     rescue AttacheError => e
         puts e.readable
