@@ -1,8 +1,59 @@
+def color_diff(diff, s=diff)
+    if diff < 0.05
+        "\x1b[32m#{s}\x1b[0m"
+    elsif diff < 0.1
+        "\x1b[33m#{s}\x1b[0m"
+    elsif diff < 0.3
+        "\x1b[31m#{s}\x1b[0m"
+    else
+        "\x1b[31;1m#{s}\x1b[0m"
+    end
+end
+$speed_check_source = nil
+$speed_indent = ""
+def new_source(val)
+    $speed_check_source = val
+    puts "#$speed_indent\x1b[1m<#{val}>\x1b[0m"
+end
+
+$speed_check_cache = ["start", Time.now]
+def speed_check(checkpoint)
+    now = Time.now
+    prev, before = $speed_check_cache
+    diff = now - before
+    repr = sprintf("%f", diff)
+    puts "#$speed_indent[#{color_diff(diff, repr)}] \x1b[36m#{checkpoint}\x1b[0m"
+    print "#$speed_indent...\r"
+    $speed_check_cache = [checkpoint, now]
+end
+
+$speed_sub_caches = []
+INDENT_COUNT = 2
+def cache_open(*args)
+    $speed_sub_caches << [$speed_check_cache, $speed_check_source]
+    new_source(*args)
+    $speed_check_cache = ["sub start", Time.now]
+    $speed_indent += " " * INDENT_COUNT
+end
+def cache_close
+    $speed_check_cache, $speed_check_source = $speed_sub_caches.pop
+    $speed_indent[-INDENT_COUNT..-1] = ""
+    puts "#$speed_indent\x1b[33;1m</#{$speed_check_source}>\x1b[0m"
+end
+
+def speed_diagnostic
+    puts "TODO: make an actual diagnostic"
+end
+
+new_source "lib.rb"
+
 require 'prime'
 require 'date'
 require 'matrix'
 require 'cmath'
 require "readline"
+
+speed_check "imports"
 
 # a bunch of function used in Attache
 # these are abstract functions not necessarily related to Attache
@@ -1132,3 +1183,5 @@ end
 def reap_end
     REAP_VALUES.pop
 end
+
+speed_check "EOF"

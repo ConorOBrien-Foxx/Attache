@@ -1,5 +1,9 @@
 require_relative 'lib.rb'
 require_relative 'tokenize.rb'
+
+new_source "AtState.rb"
+speed_check "imports"
+
 # require_relative 'AtClass.rb'
 # later in file
 
@@ -780,9 +784,12 @@ class AttacheSyntaxError < AttacheError; end
 # when improper data is given to a function
 class AttacheValueError < AttacheError; end
 
+speed_check "misc."
 
 require_relative 'AtClass.rb'
 require_relative 'AtFunctions.rb'
+
+speed_check "import AtClass and AtFunctions"
 
 class AtState
     def AtState.truthy?(ent)
@@ -870,7 +877,9 @@ class AtState
     @@extended_variables = {}
 
     def initialize(program, input=STDIN, output=STDOUT)
+        cache_open "AtState instance"
         @trees = ast(program)
+        speed_check "ast"
         if @trees.nil?
             exit
         end
@@ -881,18 +890,26 @@ class AtState
         @position = nil
         @in = input
         @out = output
+        speed_check "variable initialization"
         load_lib "std"
+        speed_check "load std.@"
+        cache_close
     end
 
     def load_lib(name)
+        cache_open "load lib"
         loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
+        speed_check "Dir[*]"
         if loc
             ext = File.extname loc
             case ext
                 when ".@"
-                    ast(File.read(loc, encoding: "utf-8")).each { |tree|
+                    file = File.read(loc, encoding: "utf-8")
+                    ast(file).each.with_index { |tree, node|
+                        cache_open "tree ##{node}"
                         evaluate_node tree
+                        cache_close
                     }
                 when ".rb"
                     require loc
@@ -900,6 +917,7 @@ class AtState
         else
             STDERR.puts "No such library #{name}"
         end
+        cache_close
     end
 
     attr_reader :stack
@@ -1136,6 +1154,7 @@ class AtState
     end
 
     def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
+        cache_open "evaluate node"
         unless node.is_a? Node
             raise "#{node.inspect} is not a token" unless node.is_a? Token
 
@@ -1158,7 +1177,11 @@ class AtState
         # special cases
         args = []
 
+        speed_check "initialization"
+
         func = is_format_string ? nil : get_value(head)
+
+        speed_check "get_value"
 
         # 1st pass at characteristic checking
         if AtFunction === func
@@ -1173,10 +1196,14 @@ class AtState
             configurable = false
         end
 
+        speed_check "characteristic check"
+
         # obtain value of head
         if func.is_a? Node
             func = evaluate_node func, blank_args, merge_with, check_error: check_error
         end
+
+        speed_check "head value"
 
         # evaluate children
         children.map!.with_index { |child, i|
@@ -1196,12 +1223,16 @@ class AtState
         }
         args.concat children
 
+        speed_check "children values"
+
         # second pass of held arguments
         if AtFunction === func
             configurable = func.config
             held = func.held
             func = func.fn
         end
+
+        speed_check "2nd pass of held"
 
         # check if error occured
         if check_error
@@ -1212,6 +1243,8 @@ class AtState
             }
         end
 
+        speed_check "check error"
+
         # filter ConfigureValue
         if configurable
             split = args.group_by { |e| e.is_a? ConfigureValue }
@@ -1220,10 +1253,14 @@ class AtState
             args = split[false]
         end
 
+        speed_check "configurable"
+
         # reduce applicators
         args = (args || []).flat_map { |e|
             Applicator === e ? e.value : [e]
         }
+
+        speed_check "reduced applicators"
 
         # preemptively return format strings
         if is_format_string
@@ -1247,21 +1284,29 @@ class AtState
             func.scope.merge! merge_with
             # dd "func infused"
         end
+        speed_check "scope infusion"
 
         # call the function
         res = if configurable
-            func[self, *args, **config]
+            res = func[self, *args, **config]
+            speed_check "configurable function called"
+            res
         else
             # special call function overloading
             if Array === func || Hash === func || String === func || class_has?(func, "$get")
-                @@functions["Get"][self, func, *args]
+                res = @@functions["Get"][self, func, *args]
+                speed_check "index overload"
+                res
             else
                 begin
                     if class_has? func, "$call"
-                        func["$call"][self, *args]
+                        res = func["$call"][self, *args]
+                        speed_check "call overload"
                     else
-                        func[self, *args]
+                        res = func[self, *args]
+                        speed_check "regular function called"
                     end
+                    res
                 # TODO: use an actual error
                 rescue ArgumentError => e
                     STDERR.puts "Argument error: #{head}"
@@ -1275,8 +1320,11 @@ class AtState
             # dh "func", func.inspect
             # dhash "merge_with", merge_with
             res.scope.merge! merge_with
+            speed_check "final scope infusion"
             # dd "res infused"
         end
+
+        cache_close
 
         res
     end
@@ -1347,3 +1395,5 @@ class AtState
 
     include AtFunctionCatalog
 end
+
+speed_check "class definition"

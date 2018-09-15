@@ -3,6 +3,9 @@
 require 'optparse'
 require_relative 'AtState.rb'
 
+new_source "attache.rb"
+speed_check "imports"
+
 class AttacheParser
     FILENAME = File.basename __FILE__
 
@@ -139,6 +142,8 @@ end
 
 program = read_program(options)
 
+speed_check "read program"
+
 if options[:serve_templat]
     require_relative 'TemplAt.rb'
     inst = AtState.new "Needs[$socket]\nServeTemplat[get_code]"
@@ -200,9 +205,12 @@ if options[:tokenize] || options[:shunt]
         print_table table
     }
 else
+    speed_check "pre-initialization"
     begin
         inst = AtState.new program
+        speed_check "instantiate program"
         inst.run
+        speed_check "run program"
     rescue AttacheError => e
         puts e.readable
     end
@@ -213,4 +221,5 @@ if options[:time]
     puts "Time taken: #{$end_time - $start_time}"
 end
 
+speed_diagnostic
 # k.run
