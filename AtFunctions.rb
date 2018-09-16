@@ -839,7 +839,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Exp" => lambda { |inst, n|
+        "Exp" => vectorize_monad { |inst, n|
             CMath::exp n
         },
         #<<
@@ -848,7 +848,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/series
         #>>
-        "Fibonacci" => lambda { |inst, n|
+        "Fibonacci" => vectorize_monad { |inst, n|
             nth_fibonacci(n)
         },
         #<<
