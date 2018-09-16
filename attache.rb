@@ -26,6 +26,13 @@ class AttacheParser
             end
 
             opts.on(
+                "-c", "--compile",
+                "Compiles the file, outputing the result"
+            ) do |v|
+                options[:compile] = v
+            end
+
+            opts.on(
                 "-d", "--debug",
                 "Debug the program"
             ) do |v|
@@ -208,7 +215,11 @@ if options[:tokenize] || options[:shunt]
 else
     begin
         inst = AtState.new program, exclude_std: options[:fast]
-        inst.run
+        if options[:compile]
+            inst.compile
+        else
+            inst.run
+        end
     rescue AttacheError => e
         puts e.readable
     end

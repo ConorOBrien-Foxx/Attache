@@ -884,6 +884,10 @@ class AtState
         load_lib "std" unless exclude_std
     end
 
+    def compile
+        raise "unimplemented"
+    end
+
     def load_lib(name)
         loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
@@ -1007,7 +1011,7 @@ class AtState
             args[i]
         }
     end
-    
+
     def parse_number(raw)
         raw = raw.dup
         modifiers = []
@@ -1024,7 +1028,7 @@ class AtState
         res *= 1i if modifiers.include? "i"
         res
     end
-    
+
     def get_value(obj)
         return obj unless obj.is_a? Token
 
