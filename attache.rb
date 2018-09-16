@@ -59,6 +59,12 @@ class AttacheParser
                 options[:stdin] = v
             end
 
+            opts.on("-f", "--fast",
+                "Omits inclusion of std.@ for faster initialization"
+            ) do |v|
+                options[:fast] = v
+            end
+
             opts.on("-m", "--time",
                 "Times how long it takes to handle the program",
             ) do |v|
@@ -207,7 +213,7 @@ if options[:tokenize] || options[:shunt]
 else
     speed_check "pre-initialization"
     begin
-        inst = AtState.new program
+        inst = AtState.new program, exclude_std: options[:fast]
         speed_check "instantiate program"
         inst.run
         speed_check "run program"

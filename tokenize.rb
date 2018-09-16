@@ -39,7 +39,7 @@ end
 
 $WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
-$NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))i?/
+$NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:i?x?|x?i?)/
 $REFERENCE = /\$#$WORD/
 $COUNTER_REFERENCE = /\$\$?[0-9]+/
 $ABSTRACT_REFERENCE = /\$+/

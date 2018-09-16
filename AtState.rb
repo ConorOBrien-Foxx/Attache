@@ -876,7 +876,7 @@ class AtState
     }
     @@extended_variables = {}
 
-    def initialize(program, input=STDIN, output=STDOUT)
+    def initialize(program, input=STDIN, output=STDOUT, exclude_std: false)
         cache_open "AtState instance"
         @trees = ast(program)
         speed_check "ast"
@@ -891,8 +891,10 @@ class AtState
         @in = input
         @out = output
         speed_check "variable initialization"
-        load_lib "std"
-        speed_check "load std.@"
+        unless exclude_std
+            load_lib "std"
+            speed_check "load std.@"
+        end
         cache_close
     end
 
@@ -1026,6 +1028,23 @@ class AtState
         }
     end
 
+    def parse_number(raw)
+        raw = raw.dup
+        modifiers = []
+        while !raw.empty? && "xi".index(raw[-1])
+            modifiers << raw[-1]
+            raw.chop!
+        end
+        raw.gsub!(/^\./, "0.")
+        if modifiers.include? "x"
+            res = BigDecimal.new(raw)
+        else
+            res = eval raw
+        end
+        res *= 1i if modifiers.include? "i"
+        res
+    end
+
     def get_value(obj)
         return obj unless obj.is_a? Token
 
@@ -1072,8 +1091,7 @@ class AtState
             }, arity: 2)
 
         elsif type == :number
-            # todo: fix this hack
-            eval raw.gsub(/^\./, "0.")
+            parse_number raw
 
         elsif type == :make_lambda
             AtLambda.new(ast(raw), raw: raw)
@@ -1367,11 +1385,11 @@ class AtState
         @@extended_variables[name] = value
     end
 
-    def cast_string(value)
+    def cast_string(value, *modes)
         if AtClassInstance === value && value.methods["$string"]
-            value.methods["$string"][self]
+            value.methods["$string"][self, *modes]
         else
-            value.to_s rescue "#{value}"
+            value.to_s(*modes) rescue "#{value}"
         end
     end
 
