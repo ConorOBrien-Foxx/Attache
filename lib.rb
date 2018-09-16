@@ -640,6 +640,7 @@ end
 
 def simplify_number(n)
     n = from_numlike n
+    return n if BigDecimal === n
     return n if n.abs == Infinity
     return n.to_i if n == n.to_i rescue nil
     return n
@@ -1131,4 +1132,15 @@ def reap_sow(value, tag=nil)
 end
 def reap_end
     REAP_VALUES.pop
+end
+
+require 'bigdecimal'
+class BigDecimal
+    alias :old_to_s :to_s
+    def to_s(mode="F")
+        old_to_s mode
+    end
+    def inspect(*args)
+        to_s(*args) + "x"
+    end
 end

@@ -57,6 +57,7 @@ FRACTRAN_EXAMPLES := <~
 
 ClassNamed[D2State]! {
     grid .= Grid[_1]
+    debug_state .= _2
     ip .= Point[0, 0]
     dip .= Point[1, 0]
     stack .= []
@@ -149,7 +150,7 @@ ClassNamed[D2State]! {
             advance[]
             next .= grid[ip.y][ip.x]
             amount .= pop[]
-            CallN[{exec[next]}, amount]
+            ForEach[1:amount, exec[next]]
         },
         "'" -> {
             advance[]
@@ -208,16 +209,28 @@ ClassNamed[D2State]! {
     }
 
     run .= {
-        While[running, step[]]
+        While[running, If[debug_state, debug[]] ;; step[]]
     }
 
-    $string .= {
-        Format["ip: %s\ndip: %s\n[[GRID]]\n%s\n[[/GRID]]", ip, dip, UnGrid[grid]]
+    debug_ .= ($string .= {
+        left_axis .= (#grid + 1)&sp
+        left_axis[ip.y] @= ">"
+        bot_axis .= (#grid[0])&sp
+        bot_axis[ip.x] @= "^"
+        fmt .= Join[Stitch[left_axis, Join => grid], lf] + Join[bot_axis]
+        Format["ip: %s\ndip: %s\n[[GRID]]\n%s\n[[/GRID]]\n[[STACK]]\n%s\n[[/STACK]]", ip, dip, fmt, stack]
+    })
+    
+    debug .= {
+        Cls[]
+        Print[debug_[] + lf]
+        Prompt["Press ENTER."]
     }
 }
 
-D2[code] := (
-    inst .= D2State[code];;
+D2[code, debug] := (
+    debug ..= false;;
+    inst .= D2State[code, debug];;
     inst.run[];;
     inst.stack
 )

@@ -3323,6 +3323,13 @@ module AtFunctionCatalog
         "Keys" => lambda { |inst, hash|
             hash.keys
         },
+        "Skip" => vectorize_dyad(RIGHT) { |inst, ent, by|
+            list = inst.cast_list(ent)
+            filtered = list.select.with_index { |e, i|
+                i % by == 0
+            }
+            reform_list filtered, ent
+        },
         "SetMatrix" => lambda { |inst, mat, row, col, val|
             mat[row][col] = val
         },
@@ -4447,8 +4454,8 @@ module AtFunctionCatalog
         # @return string
         # @genre conversion
         #>>
-        "String" => lambda { |inst, ent|
-            inst.cast_string ent
+        "String" => lambda { |inst, ent, *modes|
+            inst.cast_string ent, *modes
         },
         "Strip" => lambda { |inst, str|
             str.strip
@@ -4589,7 +4596,6 @@ module AtFunctionCatalog
 
         },
         "BigDecimal" => vectorize_monad { |inst, n|
-            require 'bigdecimal'
             BigDecimal.new n
         },
         "Error" => lambda { |inst, name, msg="An error has occured."|
