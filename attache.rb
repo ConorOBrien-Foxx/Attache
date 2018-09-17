@@ -27,7 +27,7 @@ class AttacheParser
 
             opts.on(
                 "-c", "--compile",
-                "Compiles the file, outputing the result"
+                "Compiles the file, writing the result to a <FILE>.@t"
             ) do |v|
                 options[:compile] = v
             end
@@ -142,15 +142,29 @@ if options[:time]
     $start_time = Time.now
 end
 
-def read_program(options)
-    if options.has_key? :stdin
-        STDIN.gets options[:stdin]
-    else
-        options[:program] || File.read(ARGV[0], encoding: "UTF-8") rescue ""
-    end
+def moment_identifier
+    require 'digest'
+    md5 = Digest::MD5.new
+    md5.update Time.now.to_f.to_s
+    md5.hexdigest
 end
 
-program = read_program(options)
+def read_program(options)
+    if options.has_key? :stdin
+        program = STDIN.gets options[:stdin]
+        name = "STDIN_#{moment_identifier}"
+    elsif options[:program]
+        program = options[:program]
+        name = "IMMEDIATE_#{moment_identifier}"
+    else
+        program = File.read(ARGV[0], encoding: "UTF-8") rescue ""
+        name = File.basename(ARGV[0], ".@")
+    end
+
+    [program, name]
+end
+
+program, program_name = read_program(options)
 
 if options[:serve_templat]
     require_relative 'TemplAt.rb'
@@ -216,7 +230,7 @@ else
     begin
         inst = AtState.new program, exclude_std: options[:fast]
         if options[:compile]
-            inst.compile
+            inst.compile program_name
         else
             inst.run
         end

@@ -884,7 +884,40 @@ class AtState
         load_lib "std" unless exclude_std
     end
 
-    def compile
+    def save_ast
+        def recur(t)
+            if Hash === t
+                t.each { |k, v|
+                    if recur v
+                        p k
+                        return true
+                    end
+                }
+            elsif Node === t
+                t.children.each { |v|
+                    if recur v
+                        p t.head, v
+                        return true
+                    end
+                }
+            elsif Proc === t
+                true
+            else
+                false
+            end
+        end
+        @trees.each { |a| recur a }
+        p 'no'
+        m = Marshal.dump @trees
+        puts "m.size: #{m.size}"
+        require 'zlib'
+        c = Zlib::Deflate.deflate m
+        puts "c.size: #{c.size}"
+    end
+
+    def compile(output)
+        puts "writing to #{output}.@c"
+        p save_ast
         raise "unimplemented"
     end
 
