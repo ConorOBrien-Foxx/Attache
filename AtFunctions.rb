@@ -1001,7 +1001,7 @@ module AtFunctionCatalog
             if BigDecimal === ent
                 ent.to_f
             elsif Complex === ent
-                Complex(ent.real.to_f, ent.imag.to_f) 
+                Complex(ent.real.to_f, ent.imag.to_f)
             else
                 e = force_number(ent)
                 e = e.to_f rescue e
