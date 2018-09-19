@@ -1113,7 +1113,7 @@ Reaper = Struct.new(:build, :tag) {
         super([], tag)
     end
     def <<(*vals)
-        build << vals
+        build.push *vals
     end
     def to_s
         "Reaper.new(#{build.inspect}, #{tag.inspect})"
