@@ -839,7 +839,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Exp" => lambda { |inst, n|
+        "Exp" => vectorize_monad { |inst, n|
             CMath::exp n
         },
         #<<
@@ -848,7 +848,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/series
         #>>
-        "Fibonacci" => lambda { |inst, n|
+        "Fibonacci" => vectorize_monad { |inst, n|
             nth_fibonacci(n)
         },
         #<<
@@ -985,7 +985,7 @@ module AtFunctionCatalog
             @@functions["Prod"][inst, args]
         },
         #<<
-        # Converts <code>ent</code> to an integer.
+        # Converts <code>ent</code> to an number.
         # @type ent [number]|string|number|(*)
         # @return number
         # @genre conversion
@@ -996,6 +996,16 @@ module AtFunctionCatalog
         #>>
         "N" => lambda { |inst, ent|
             force_number ent
+        },
+        "F" => lambda { |inst, ent|
+            if BigDecimal === ent
+                ent.to_f
+            elsif Complex === ent
+                Complex(ent.real.to_f, ent.imag.to_f)
+            else
+                e = force_number(ent)
+                e = e.to_f rescue e
+            end
         },
         #<<
         # Converts <code>n</code> to base <code>8</code>.

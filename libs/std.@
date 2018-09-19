@@ -741,7 +741,7 @@ Thrice[f] := [f[], f[], f[]]
 ??? @type f fn
 ??? @return [(*)]
 ??? @genre functional
-Do[f, n] := 
+Do[f, n] :=
     If[n == nil,
         f[],
         If[n > 0,
@@ -761,9 +761,9 @@ ReadNumbers[] :=
 
 ClassNamed[Displayment]! {
     value .= _1
-    
+
     repr[] .= $"Displayment[${value}]"
-    
+
     $string[] .= repr[]
 }
 

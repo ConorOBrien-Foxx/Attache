@@ -869,7 +869,7 @@ class AtState
     }
     @@extended_variables = {}
 
-    def initialize(program, input=STDIN, output=STDOUT)
+    def initialize(program, input=STDIN, output=STDOUT, exclude_std: false)
         @trees = ast(program)
         if @trees.nil?
             exit
@@ -881,7 +881,7 @@ class AtState
         @position = nil
         @in = input
         @out = output
-        load_lib "std"
+        load_lib "std" unless exclude_std
     end
 
     def load_lib(name)
