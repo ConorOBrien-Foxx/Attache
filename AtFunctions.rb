@@ -1743,6 +1743,7 @@ module AtFunctionCatalog
         # @type args (*)
         # @type fs [fn]
         # @return (*)
+        # @genre functional
         #>>
         "CallEach" => curry(2) { |inst, fs, *args|
             if Tie === fs
