@@ -1976,10 +1976,10 @@ module AtFunctionCatalog
         # @type init (*)
         # @return (*)
         # @genre functional
-        # @example Print[NestWhile[Halve, 100, Even]]
+        # @example Print[NestWhile[Halve, Even, 100]]
         # @example ?? 25
         #>>
-        "NestWhile" => lambda { |inst, f, init, cond|
+        "NestWhile" => lambda { |inst, f, cond, init|
             iter = init
             while cond[inst, iter]
                 iter = f[inst, iter]
@@ -1993,11 +1993,11 @@ module AtFunctionCatalog
         # @type init (*)
         # @return (*)
         # @genre functional
-        # @example Print[NestListWhile[Halve, 100, Even]]
+        # @example Print[NestListWhile[Halve, Even, 100]]
         # @example ?? [100, 50, 25]
         # @option first whether or not the input element <code>init</code> is included as the first element in the results. Default: <code>true</code>.
         #>>
-        "NestListWhile" => configurable { |inst, f, init, cond, **opts|
+        "NestListWhile" => configurable { |inst, f, cond, init, **opts|
             first = get_default opts, :first, true
             iter = init
             list = first ? [iter] : []
@@ -2072,10 +2072,8 @@ module AtFunctionCatalog
         # @example Print[dig_root_steps[1853]]
         # @example ?? [1853, 17, 8, 8]
         #>>
-        "PeriodicSteps" => lambda { |inst, f|
-            lambda { |inst, x|
-                periodicloop f.bind(inst), x
-            }
+        "PeriodicSteps" => curry { |inst, f, x|
+            periodicloop f.bind(inst), x
         },
         #<<
         # Returns a function which, given <code>(*) x</code>, applies <code>f</code> to <code>x</code> until a result occurs twice, then returns the final result.
@@ -2086,11 +2084,8 @@ module AtFunctionCatalog
         # @example Print[dig_root[1853]]
         # @example ?? 8
         #>>
-        "Periodic" => lambda { |inst, f|
-            # p "PERIODOC #{f}"
-            lambda { |inst, x|
-                periodicloop(f.bind(inst), x).last
-            }
+        "Periodic" => curry { |inst, f, x|
+            periodicloop(f.bind(inst), x).last
         },
         #<<
         # Bonds <code>larg</code> to the right side of <code>func</code>. That is, <code>Bond[func, rarg][...args]</code> is the same as <code>func[...args, rarg]</code>.
