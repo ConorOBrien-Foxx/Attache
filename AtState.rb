@@ -911,17 +911,38 @@ class AtState
         # raise
     end
 
+    @@attribute_map = {
+        "#" => :config,
+        "@" => :vector,
+        "&" => :curry,
+    }
     def set_variable(var, val, dest=:define)
         if Node === var
             # set operator by arity
-            is_op_set = Token === var.head && var.head.raw == "/"
+            head_token = Token === var.head
+            
+            attributes = []
+            if head_token
+                loop {
+                    index = @@attribute_map[var.head.raw]
+                    
+                    break if index.nil?
+                    
+                    attributes << index
+                    
+                    var = var.children.first
+                }
+            end
+            
+            is_op_set = head_token && var.head.raw == "/"
             is_op_set &&= Token === var.children.first
             is_op_set &&= var.children.first.type == :op_quote
-
+            
             if is_op_set
                 op, arity = var.children
                 arity = get_value arity
                 val = evaluate_node val
+                raise if is_vector #todo: fix
                 set_op_quote op, val, arity
             else
                 #todo: pattern matching++
@@ -940,6 +961,20 @@ class AtState
                     }
                 else
                     res = AtLambda.new [val], args
+                    
+                    attributes.each { |attr|
+                        old = res
+                        res = case attr
+                            when :curry
+                                curry(args.size) { |inst, *args| old[inst, *args] }
+                            when :vector
+                                vectorize { |inst, *args| old[inst, *args] }
+                            when :config
+                                configurable { |inst, *args, **config| old[inst, *args, **config] }
+                            else
+                                raise AttacheUnimplementedError.new("unknown attribute " + attr.to_s)
+                        end
+                    }
                     if var.head.type == :op_quote
                         set_op_quote var.head, res
                     else
