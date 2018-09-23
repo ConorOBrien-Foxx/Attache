@@ -4598,6 +4598,14 @@ module AtFunctionCatalog
             f = n.floor
             [f, n - f]
         },
+        "Insert" => lambda { |inst, arr, range, val|
+            arr = arr.dup
+            [*range].each { |r|
+                r += arr.size if r < 0
+                arr[r] = val if r < arr.size
+            }
+            arr
+        },
         "Debug_" => lambda { |inst, arg|
             di "debugging function instance"
             p arg.raw
