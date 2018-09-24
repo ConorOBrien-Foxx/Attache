@@ -3,6 +3,29 @@
 
 This page is meant to document the syntax of Attache as a reference.
 
+## Data
+
+Numbers are as you might expect, with a few, language-specific quirks:
+
+```attache
+3           ?? integer
+4.3         ?? system float
+7x          ?? extended precision
+2-4i        ?? complex number with integer parts
+3.4+2.9i    ?? complex number with float parts
+9x+12ix     ?? complex number with extended precision parts
+3//5        ?? fraction
+```
+
+There are various types of strings:
+
+```attache
+"Hello!"            ?? normal string
+"\x43"              ?? normal string with hex escape
+$"sum = ${3 + 4}"   ?? interpolated string
+```
+
+
 ## Operators
 
 Operators are either **unary** or **binary** (aka: monadic and dyadic). All operators can exist in either form, even though they may lack definitions for those forms. For example, while `%` is only defined dyadically, the monadic syntax is still available.
@@ -35,7 +58,7 @@ f2 := ${ x + 2*y }
 f3[x, y] := x + 2*y
 ```
 
-`f1` and `f2` are different versions of lambdas, while `f3` is an explicit definition. Under the hood, they all do much the same thing.
+`f1` and `f2` are different versions of lambdas, while `f3` is an explicit definition. Under the hood, they all do the same thing.
 
 You can overload operators:
 
@@ -55,5 +78,11 @@ Print[1 ~ 4]    ?? Other: 1; 4
 Print[~"q"]     ?? Unary: q
 
 ?? overload only one arity of an operator
-`!/2 := test
-`+/1 := test
+`!/2 := test    ?? overload binary factorial
+`+/1 := test    ?? overload unary plus
+
+Print[!3]       ?? 6
+Print[3!4]      ?? Other: 3; 4
+Print[+4]       ?? Unary: 4
+Print[3+4]      ?? 7
+```
