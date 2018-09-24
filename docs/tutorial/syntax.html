@@ -1,0 +1,49 @@
+<html lang="en">
+<head>
+    <meta charset="utf8">
+    <link rel="STYLESHEET" href="../styles.css">
+    <script src="tutorial.js" type="text/javascript"></script>
+    <title>Syntax in Attache</title>
+</head>
+<body>
+    <header>
+        <h1>Programming in Attache</h1>
+    </header>
+    <div class="sidenav" id="navigation">
+        <span class="close" onclick="closeNav('navigation', 'content')" style="cursor: pointer;">close &times;</span><ul><li><a href="..">Back to docs</a></li><hr/><li><a href="./index.html">What is Attache?</a></li><li><a href="./thinking-functionally.html">Thinking Functionally</a></li><li><a href="./writing-functionally.html">Writing Functionally</a></li><li><a href="./syntax.html">Syntax in Attache</a></li><li><a href="./project-euler.html">Solving Problems in Project Euler</a></li></ul></div>
+    <span onclick="openNav('navigation', 'content')" class="navopen">&#9776; navigation</span>
+    <div id="content">
+    <h1>Syntax in Attache</h1>
+
+<!-- meta-index: 10 -->
+
+<p>This page is meant to document the syntax of Attache as a reference.</p>
+
+<h2>Operators</h2>
+
+<p>Operators are either <strong>unary</strong> or <strong>binary</strong> (aka: monadic and dyadic). All operators can exist in either form, even though they may lack definitions for those forms. For example, while <code>%</code> is only defined dyadically, the monadic syntax is still available.</p>
+
+<h2>Defining variables</h2>
+
+<p>Early versions of Attache used the <code>Define</code> and <code>Local</code> functions to work with variables. Now, <code>:=</code> and <code>.=</code> serve those purposes. Usually, a variable assignment looks like this:</p>
+<pre class="markdown"><code><code class="at_word">age</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_number">14</code><code class="at_whitespace">
+</code></code></pre>
+<p>Here is an example showing the difference between <code>:=</code> (global assignment) and <code>.=</code> (local assignment):</p>
+<pre class="markdown"><code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_number">100</code><code class="at_whitespace">        </code><code class="at_comment">?? declared in the global scope
+</code><code class="at_func_start">{</code><code class="at_whitespace">               </code><code class="at_comment">?? begin a new scope
+</code><code class="at_whitespace">    </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_bracket_close">]</code><code class="at_whitespace">    </code><code class="at_comment">?? 100, global x
+</code><code class="at_whitespace">    </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">.=</code><code class="at_whitespace"> </code><code class="at_number">32</code><code class="at_whitespace">
+    </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_bracket_close">]</code><code class="at_whitespace">    </code><code class="at_comment">?? 32, local x    
+</code><code class="at_func_end">}</code><code class="at_bracket_open">[</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_bracket_close">]</code><code class="at_whitespace">        </code><code class="at_comment">?? 100, global x
+</code></code></pre>
+<p>You can define functions in a few different ways. The following are all equivalent ways of expressing <code>f(x, y) = x + 2y</code>:</p>
+<pre class="markdown"><code><code class="at_word">f1</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">*</code><code class="at_abstract">_2</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace">
+</code><code class="at_word">f2</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_named_func_start">${</code><code class="at_whitespace"> </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">*</code><code class="at_word">y</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace">
+</code><code class="at_word">f3</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">*</code><code class="at_word">y</code><code class="at_whitespace">
+</code></code></pre>
+<p><code>f1</code> and <code>f2</code> are different versions of lambdas, while <code>f3</code> is an explicit definition. Under the hood, they all do much the same thing.</p>
+
+    </div>
+</body>
+</html>
