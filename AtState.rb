@@ -1371,6 +1371,10 @@ class AtState
         raise "#{key} doesn't exist" if fn.nil?
         @@functions[name] = fn
     end
+    
+    def AtState.[](fn)
+        @@functions[fn]
+    end
 
     def AtState.variable(name, value)
         @@extended_variables[name] = value

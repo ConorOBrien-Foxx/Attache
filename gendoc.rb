@@ -26,13 +26,13 @@ $APPEND = [
 def vector_from_signature(sig)
     if sig.index "vector"
         after = case sig
-            when /monad/
+            when /monad/i
                 " monadically"
-            when /RIGHT/
+            when /RIGHT/i
                 " dyadically on the right"
-            when /LEFT/
+            when /LEFT/i
                 " dyadically on the left"
-            when /dyad/
+            when /dyad/i
                 " dyadically"
             else
                 ""
@@ -311,7 +311,11 @@ def generate(title)
         }
 
         sig = []
-        sig.push vector_from_signature v[:type]
+        if v[:info].has_key? :vectorizes
+            sig.push vector_from_signature "vector #{v[:info][:vectorizes]}"
+        else
+            sig.push vector_from_signature v[:type]
+        end
         if v[:info].has_key? :curries
             sig.push "Curries."
         else

@@ -6,6 +6,39 @@
     <link rel="STYLESHEET" href="styles.css">
     <script src="main.js" type="text/javascript"></script>
 </head>
-<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 1</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="S"><h2><code>S[<span class="type">(*)</span> e] &rarr; <span class="return">string</span> </code><span class="genre">(string)</span></h2>Alias for <a href="AtFunctions.html#String" target="_blank"><code>String</code></a>. <button class="source-button" id="S-button">toggle source</button><div id="S-source" class="code-source"><pre>AtState.alias "S", "String"
+<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 7</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(functional<span class="minimize"></span>)</td><td><code><a href="#MapLeft">MapLeft</a></code>, <code><a href="#MapRight">MapRight</a></code></td></tr><tr><td class="genre-source">(IO<span class="minimize"></span>)</td><td><code><a href="#Output">Output</a></code>, <code><a href="#Printf">Printf</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/prime</span>)</td><td><code><a href="#PrimePi">PrimePi</a></code>, <code><a href="#PrimesUnder">PrimesUnder</a></code></td></tr><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="MapLeft"><h2><code>MapLeft[<span class="type">fn</span> f, <span class="type">[(*)]</span> left, <span class="type">(*)</span> ...right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>left</code>, using <code>...right</code> as arguments. <button class="source-button" id="MapLeft-button">toggle source</button><div id="MapLeft-source" class="code-source"><pre>AtState.function "MapLeft", &curry(3) { |inst, fn, left, *right|
+    arr = inst.cast_list left
+    res = arr.map { |e|
+        fn[inst, e, *right]
+    }
+    reform_list res, arr
+}
+</pre></div></div><div class="function" id="MapRight"><h2><code>MapRight[<span class="type">fn</span> f, <span class="type">(*)</span> ...left, <span class="type">[(*)]</span> right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>right</code>, using <code>...left</code> as arguments. <button class="source-button" id="MapRight-button">toggle source</button><div id="MapRight-source" class="code-source"><pre>AtState.function "MapRight", &curry(3) { |inst, fn, *left, right|
+    arr = inst.cast_list right
+    res = arr.map { |e|
+        fn[inst, *left, e]
+    }
+    reform_list res, arr
+}
+</pre></div></div><div class="function" id="Output"><h2><code>Output[<span class="type">(*)</span> ...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(IO)</span></h2>Prints each element in <code>args</code>, separated by newlines, with no trailing newline. Returns <code>args</code>. <button class="source-button" id="Output-button">toggle source</button><div id="Output-source" class="code-source"><pre>AtState.function "Output", &lambda { |inst, args|
+    AtState["Print"][inst, *args, joiner: "\n", after: ""]
+}
+</pre></div></div><div class="function" id="PrimePi"><h2><code>PrimePi[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/prime)</span></h2><p><em>Vectorizes monadically.</em></p>Returns the number of prime numbers less than or equal to <code>n</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">PrimePi</code><code class="at_bracket_open">[</code><code class="at_number">0</code><code class="at_operator">:</code><code class="at_number">10</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">?? [0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kGkjmpgZkRhtYGRrExnLZ2ytEG@goAJGhjoIRGBmDkQkcxf7/DwA">Try it online!</a><button class="source-button" id="PrimePi-button">toggle source</button><div id="PrimePi-source" class="code-source"><pre>AtState.function "PrimePi", &vectorize_monad { |inst, n|
+    AtState["PrimesUnder"][inst, n].size
+}
+</pre></div></div><div class="function" id="PrimesUnder"><h2><code>PrimesUnder[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/prime)</span></h2><p><em>Vectorizes monadically.</em></p>Returns a list of the prime numbers less than or equal to <code>n</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">PrimesUnder</code><code class="at_bracket_open">[</code><code class="at_number">11</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">?? [2, 3, 5, 7, 11]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kGkjmphaH5qWkFkUbGsbGctnbK0Qb6SgY6yiY6iiY6ygABf//BwA">Try it online!</a><button class="source-button" id="PrimesUnder-button">toggle source</button><div id="PrimesUnder-source" class="code-source"><pre>AtState.function "PrimesUnder", &vectorize_monad { |inst, n|
+    AtState["Series"][
+        inst,
+        AtState["Prime"],
+        n,
+        include: true,
+    ]
+}
+</pre></div></div><div class="function" id="Printf"><h2><code>Printf[<span class="type">(*)</span> ...args] &rarr; <span class="return">nil</span> </code><span class="genre">(IO)</span></h2>Prints <code>Format[...args]</code> without a trailing newline. <button class="source-button" id="Printf-button">toggle source</button><div id="Printf-source" class="code-source"><pre>AtState.function "Printf", &lambda { |inst, *args|
+    print AtState["Format"][inst, *args]
+}
+</pre></div></div><div class="function" id="S"><h2><code>S[<span class="type">(*)</span> e] &rarr; <span class="return">string</span> </code><span class="genre">(string)</span></h2>Alias for <a href="AtFunctions.html#String" target="_blank"><code>String</code></a>. <button class="source-button" id="S-button">toggle source</button><div id="S-source" class="code-source"><pre>AtState.alias "S", "String"
 </pre></div></div></div></div></body>
 </html>
