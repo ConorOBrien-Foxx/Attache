@@ -1358,12 +1358,18 @@ class AtState
         end
 
         aliases.each { |ali|
-            @@functions[ali] = ali
+            @@functions[ali] = @@functions[name]
         }
 
         unless hold.nil?
             @@held_arguments[name] = hold
         end
+    end
+    
+    def AtState.alias(name, key)
+        fn = @@functions[key]
+        raise "#{key} doesn't exist" if fn.nil?
+        @@functions[name] = fn
     end
 
     def AtState.variable(name, value)

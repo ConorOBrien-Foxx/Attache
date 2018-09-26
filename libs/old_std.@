@@ -1,14 +1,6 @@
 ?? core library
 
 ??<<
-??? Alias for <a href="AtFunctions.html#String" target="_blank"><code>String</code></a>.
-??? @type e (*)
-??? @return string
-??? @genre string
-S := String
-??>>
-
-??<<
 ??? Returns a function with arguments <code>l</code> and <code>r</code> which
 ??? calls <code>f[e, r]</code> for each element <code>e</code> in <code>l</code>.
 ??? @type f fn

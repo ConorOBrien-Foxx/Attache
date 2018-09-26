@@ -410,8 +410,8 @@ end
 sources = %w(
     AtFunctions.rb
     libs/metattache.rb
+    libs/std.rb
     libs/ppcg.@
-    libs/std.@
     libs/visuals.@
 )
 
