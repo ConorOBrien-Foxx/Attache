@@ -20,9 +20,11 @@ Numbers are as you might expect, with a few, language-specific quirks:
 There are various types of strings:
 
 ```attache
-"Hello!"            ?? normal string
-"\x43"              ?? normal string with hex escape
-$"sum = ${3 + 4}"   ?? interpolated string
+"Hello!"                ?? normal string
+"\x43"                  ?? normal string with hex escape
+$"sum = ${3 + 4}"       ?? interpolated string
+`"C:\Users\attacher"    ?? raw string
+/`"[A-Z]\w+"            ?? regex-like string
 ```
 
 
