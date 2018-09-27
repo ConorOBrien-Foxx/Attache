@@ -40,6 +40,8 @@ class AtParser
     def read_token
         if @consume_queue.empty?
             @source.next
+        else
+            @consume_queue.shift
         end
     rescue StopIteration
         nil
@@ -53,6 +55,13 @@ class AtParser
         raw, type, start = ent
 
         return if type == :comment
+
+        if raw == "{" && @last_token.type == :word
+            ## call func
+            @consume_queue << Token.new("!", :operator)
+            @consume_queue << ent
+            return
+        end
 
         if type == :format_string_begin
             @format_string_stack.push FormatStringInformation.new(ent, 1)
@@ -97,14 +106,6 @@ class AtParser
         end
 
         if $DATA.include? type
-            @out.push ent
-
-        elsif raw == "{" && @last_token.type == :word
-            ## call func
-
-            p "oh"
-
-            @stack.push ent
             @out.push ent
 
         elsif open_func? type
