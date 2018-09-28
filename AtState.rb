@@ -46,7 +46,11 @@ class AtParser
     rescue StopIteration
         nil
     end
-
+    
+    def imp_call_start?(type)
+        [:word, :bracket_close, :func_end, :paren_close].include? type
+    end
+    
     def step
         ent = read_token
 
@@ -56,7 +60,7 @@ class AtParser
 
         return if type == :comment
 
-        if raw == "{" && [:word, :bracket_close, :func_end, :paren_close].include?(@last_token.type)
+        if raw == "{" && imp_call_start?(@last_token.type) && @last_token.line == ent.line
             ## call func
             @consume_queue << Token.new("!!", :operator)
             @consume_queue << ent
