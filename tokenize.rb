@@ -142,6 +142,8 @@ $PRECEDENCE = {
     "▷"       => [6, :left], # |> alias
     "<|"       => [6, :right],
     "◁"       => [6, :left], # <| alias
+    
+    "!!"       => [6, :right],
 
     "and"      => [6, :left],
     "∧"        => [6, :left], # and alias

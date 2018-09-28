@@ -5614,6 +5614,13 @@ module AtFunctionCatalog
                 raise AttacheUnimplementedError.new("a!b is not defined for non-functional arguments", inst.position)
             end
         },
+        "!!" => lambda { |inst, a, b|
+            if AtState.func_like? a
+                a[inst, b]
+            else
+                raise AttacheUnimplementedError.new("a!!b is not defined for non-functional arguments", inst.position)
+            end
+        },
     }
 
     @@unary_operators = {

@@ -56,9 +56,10 @@ class AtParser
 
         return if type == :comment
 
-        if raw == "{" && @last_token.type == :word
+        if raw == "{" && [:word, :bracket_close, :func_end, :paren_close].include?(@last_token.type)
             ## call func
-            @consume_queue << Token.new("!", :operator)
+            p [ent, ent.position]
+            @consume_queue << Token.new("!!", :operator)
             @consume_queue << ent
             return
         end
@@ -154,7 +155,7 @@ class AtParser
                     if top_type == :unary_operator
                         top_prec = $PRECEDENCE_UNARY[top_raw]
                     end
-
+                    
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
                     @out.push @stack.pop
                 }
