@@ -138,18 +138,18 @@ $PRECEDENCE = {
     "..."      => [70, :left],
     "…"        => [70, :left], # ... alias
 
-    "|>"       => [60, :left],
-    "▷"       => [60, :left], # |> alias
-    "<|"       => [60, :right],
-    "◁"       => [60, :left], # <| alias
+    "|>"       => [65, :left],
+    "▷"       => [65, :left], # |> alias
+    "<|"       => [65, :right],
+    "◁"       => [65, :left], # <| alias
     
     "!!"       => [60, :left],
 
-    "and"      => [60, :left],
-    "∧"        => [60, :left], # and alias
-    "nor"      => [60, :left],
-    "⊽"        => [60, :left], # nor alias
-    "not"      => [60, :left],
+    "and"      => [55, :left],
+    "∧"        => [55, :left], # and alias
+    "nor"      => [55, :left],
+    "⊽"        => [55, :left], # nor alias
+    "not"      => [55, :left],
     "xor"      => [50, :left],
     "⊻"        => [50, :left], # xor alias
     "or"       => [50, :left],
