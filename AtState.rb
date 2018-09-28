@@ -58,7 +58,6 @@ class AtParser
 
         if raw == "{" && [:word, :bracket_close, :func_end, :paren_close].include?(@last_token.type)
             ## call func
-            p [ent, ent.position]
             @consume_queue << Token.new("!!", :operator)
             @consume_queue << ent
             return

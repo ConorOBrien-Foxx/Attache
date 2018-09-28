@@ -68,114 +68,114 @@ $CURRY_CLOSE = /~>|»/
 $STATEMENT_SEP = /;/
 
 $PRECEDENCE = {
-    "."        => [999, :left],
+    "."        => [99999, :left],
 
-    ":"        => [30, :left],
-    "::"       => [30, :left],
+    ":"        => [300, :left],
+    "::"       => [300, :left],
 
-    "`"        => [28, :left],
+    "`"        => [280, :left],
 
-    "&"        => [26, :left],
-    "&:"       => [26, :left],
-    "~"        => [25, :left],
-    "@"        => [24, :left],
-    "@@"       => [24, :left],
-    "@%"       => [24, :left],
-    "&>"       => [20, :right],
-    "=>"       => [20, :right],
-    "@>"       => [20, :right],
-    "⇒"       => [20, :right], # => alias
-    "\\"       => [20, :right],
-    "#"        => [20, :left],
-    "''"       => [20, :left],
-    "'"        => [20, :left],
-    "##"       => [19, :left],
+    "&"        => [260, :left],
+    "&:"       => [260, :left],
+    "~"        => [250, :left],
+    "@"        => [240, :left],
+    "@@"       => [240, :left],
+    "@%"       => [240, :left],
+    "&>"       => [200, :right],
+    "=>"       => [200, :right],
+    "@>"       => [200, :right],
+    "⇒"       => [200, :right], # => alias
+    "\\"       => [200, :right],
+    "#"        => [200, :left],
+    "''"       => [200, :left],
+    "'"        => [200, :left],
+    "##"       => [190, :left],
 
 
 
-    "∩"        => [18, :left], # Intersection alias
-    "∪"        => [17, :left], # Union alias
-    "∆"        => [17, :left], # symmetric difference
-    "Ø"        => [17, :left], # setwise difference
-    "^^"       => [17, :left], # similar to the above
-    "⩓"        => [17, :left], # ^^ alias
+    "∩"        => [180, :left], # Intersection alias
+    "∪"        => [170, :left], # Union alias
+    "∆"        => [170, :left], # symmetric difference
+    "Ø"        => [170, :left], # setwise difference
+    "^^"       => [170, :left], # similar to the above
+    "⩓"        => [170, :left], # ^^ alias
 
-    "!"        => [16, :right],
-    "^"        => [15, :right],
-    "?"        => [15, :left],
-    "*"        => [13, :left],
-    "/"        => [13, :left],
-    "//"       => [13, :left],
-    "⁄"        => [13, :left], # // alias (fraction slash)
-    "%"        => [13, :left],
-    "|"        => [12, :left],
-    "+"        => [11, :left],
-    "-"        => [11, :left],
-    "±"        => [11, :left],
-    "<:"       => [10, :left],
-    "↞"       => [10, :left],
+    "!"        => [160, :right],
+    "^"        => [150, :right],
+    "?"        => [150, :left],
+    "*"        => [130, :left],
+    "/"        => [130, :left],
+    "//"       => [130, :left],
+    "⁄"        => [130, :left], # // alias (fraction slash)
+    "%"        => [130, :left],
+    "|"        => [120, :left],
+    "+"        => [110, :left],
+    "-"        => [110, :left],
+    "±"        => [110, :left],
+    "<:"       => [100, :left],
+    "↞"       => [100, :left],
 
-    "="        => [9, :left],
-    "=/="      => [9, :left],
-    "/="       => [9, :left],
-    "≠"        => [9, :left], # /= alias
-    "=="       => [9, :left],
-    "is"       => [9, :left], # == alias
-    "<"        => [9, :left],
-    ">"        => [9, :left],
-    "<="       => [9, :left],
-    "≤"        => [9, :left], # <= alias
-    ">="       => [9, :left],
-    "≥"        => [9, :left], # >= alias
+    "="        => [90, :left],
+    "=/="      => [90, :left],
+    "/="       => [90, :left],
+    "≠"        => [90, :left], # /= alias
+    "=="       => [90, :left],
+    "is"       => [90, :left], # == alias
+    "<"        => [90, :left],
+    ">"        => [90, :left],
+    "<="       => [90, :left],
+    "≤"        => [90, :left], # <= alias
+    ">="       => [90, :left],
+    "≥"        => [90, :left], # >= alias
 
-    "in"       => [8, :left],
-    "!in"      => [8, :left],
-    "is_a"     => [8, :left],
-    "is_an"    => [8, :left],
+    "in"       => [80, :left],
+    "!in"      => [80, :left],
+    "is_a"     => [80, :left],
+    "is_an"    => [80, :left],
 
-    ".."       => [7, :left],
-    "‥"        => [7, :left], # .. alias
-    "..."      => [7, :left],
-    "…"        => [7, :left], # ... alias
+    ".."       => [70, :left],
+    "‥"        => [70, :left], # .. alias
+    "..."      => [70, :left],
+    "…"        => [70, :left], # ... alias
 
-    "|>"       => [6, :left],
-    "▷"       => [6, :left], # |> alias
-    "<|"       => [6, :right],
-    "◁"       => [6, :left], # <| alias
+    "|>"       => [60, :left],
+    "▷"       => [60, :left], # |> alias
+    "<|"       => [60, :right],
+    "◁"       => [60, :left], # <| alias
     
-    "!!"       => [6, :right],
+    "!!"       => [60, :left],
 
-    "and"      => [6, :left],
-    "∧"        => [6, :left], # and alias
-    "nor"      => [6, :left],
-    "⊽"        => [6, :left], # nor alias
-    "not"      => [6, :left],
-    "xor"      => [5, :left],
-    "⊻"        => [5, :left], # xor alias
-    "or"       => [5, :left],
-    "∨"        => [5, :left], # or alias
-    "nand"     => [5, :left],
-    "⊼"        => [5, :left], # nand alias
+    "and"      => [60, :left],
+    "∧"        => [60, :left], # and alias
+    "nor"      => [60, :left],
+    "⊽"        => [60, :left], # nor alias
+    "not"      => [60, :left],
+    "xor"      => [50, :left],
+    "⊻"        => [50, :left], # xor alias
+    "or"       => [50, :left],
+    "∨"        => [50, :left], # or alias
+    "nand"     => [50, :left],
+    "⊼"        => [50, :left], # nand alias
 
-    "->"       => [4, :left],
-    "→"        => [4, :left], # -> alias
+    "->"       => [40, :left],
+    "→"        => [40, :left], # -> alias
 
-    "else"     => [3, :left],
-    ":>"       => [3, :left],
-    "↠"       => [3, :left], # :> alias
-    "typeof"   => [3, :left],
-    "parentof" => [3, :left],
+    "else"     => [30, :left],
+    ":>"       => [30, :left],
+    "↠"       => [30, :left], # :> alias
+    "typeof"   => [30, :left],
+    "parentof" => [30, :left],
 
-    ":="       => [2, :right],
-    "::="      => [2, :right],
-    "≔"       => [2, :right],
-    ".="       => [2, :right],
-    "..="      => [2, :right],
-    "@="       => [2, :right],
+    ":="       => [20, :right],
+    "::="      => [20, :right],
+    "≔"       => [20, :right],
+    ".="       => [20, :right],
+    "..="      => [20, :right],
+    "@="       => [20, :right],
 
-    ";;"       => [1, :left],
+    ";;"       => [10, :left],
 }
-$PRECEDENCE_UNARY = Hash.new(99)
+$PRECEDENCE_UNARY = Hash.new(999)
 $PRECEDENCE_UNARY["..."] = 0
 $PRECEDENCE_UNARY["…"] = 0
 
