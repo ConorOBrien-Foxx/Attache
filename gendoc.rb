@@ -223,6 +223,7 @@ def generate(title)
     end
 
     result = ""
+    dictionary = ""
     $toc = Hash.new { |h, k| h[k] = [] }
 
     final.sort { |(k1, v1), (k2, v2)|
@@ -372,11 +373,14 @@ def generate(title)
 
         result += "<button class=\"source-button\" id=\"#{id}-button\">toggle source</button>"
         result += "<div id=\"#{id}-source\" class=\"code-source\"><pre>"
-        result += v[:source].join
         result += "</pre></div>"
+
+        dictionary += "SOURCE_LIST[#{id.inspect}] = #{v[:source].join.inspect};\n"
 
         result += "</div>"
     }
+
+    result += "<script>var SOURCE_LIST = {};\n#{dictionary}</script>"
 
     toc_result = "<h2>Table of Contents</h2><p><em>Function count: #{final.size}</em></p><p>Click on genres to show all functions in that genre.</p><table id=\"toc\">"
     $toc.sort_by { |e| e[0].downcase }.each { |genre, names|
