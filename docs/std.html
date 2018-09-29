@@ -6,7 +6,7 @@
     <link rel="STYLESHEET" href="styles.css">
     <script src="main.js" type="text/javascript"></script>
 </head>
-<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 7</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(functional<span class="minimize"></span>)</td><td><code><a href="#MapLeft">MapLeft</a></code>, <code><a href="#MapRight">MapRight</a></code></td></tr><tr><td class="genre-source">(IO<span class="minimize"></span>)</td><td><code><a href="#Output">Output</a></code>, <code><a href="#Printf">Printf</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/prime</span>)</td><td><code><a href="#PrimePi">PrimePi</a></code>, <code><a href="#PrimesUnder">PrimesUnder</a></code></td></tr><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="MapLeft"><h2><code>MapLeft[<span class="type">fn</span> f, <span class="type">[(*)]</span> left, <span class="type">(*)</span> ...right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>left</code>, using <code>...right</code> as arguments. <button class="source-button" id="MapLeft-button">toggle source</button><div id="MapLeft-source" class="code-source"><pre>AtState.function "MapLeft", &curry(3) { |inst, fn, left, *right|
+<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 8</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(functional<span class="minimize"></span>)</td><td><code><a href="#MapLeft">MapLeft</a></code>, <code><a href="#MapRight">MapRight</a></code></td></tr><tr><td class="genre-source">(IO<span class="minimize"></span>)</td><td><code><a href="#Output">Output</a></code>, <code><a href="#Printf">Printf</a></code></td></tr><tr><td class="genre-source">(list<span class="minimize">/matrix</span>)</td><td><code><a href="#PadMatrix">PadMatrix</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/prime</span>)</td><td><code><a href="#PrimePi">PrimePi</a></code>, <code><a href="#PrimesUnder">PrimesUnder</a></code></td></tr><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="MapLeft"><h2><code>MapLeft[<span class="type">fn</span> f, <span class="type">[(*)]</span> left, <span class="type">(*)</span> ...right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>left</code>, using <code>...right</code> as arguments. <button class="source-button" id="MapLeft-button">toggle source</button><div id="MapLeft-source" class="code-source"><pre>AtState.function "MapLeft", &curry(3) { |inst, fn, left, *right|
     arr = inst.cast_list left
     res = arr.map { |e|
         fn[inst, e, *right]
@@ -22,6 +22,31 @@
 }
 </pre></div></div><div class="function" id="Output"><h2><code>Output[<span class="type">(*)</span> ...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(IO)</span></h2>Prints each element in <code>args</code>, separated by newlines, with no trailing newline. Returns <code>args</code>. <button class="source-button" id="Output-button">toggle source</button><div id="Output-source" class="code-source"><pre>AtState.function "Output", &lambda { |inst, args|
     AtState["Print"][inst, *args, joiner: "\n", after: ""]
+}
+</pre></div></div><div class="function" id="PadMatrix"><h2><code>PadMatrix[<span class="type">[[(*)]]</span> ragged, <span class="type">(*)</span> padwith?, <span class="type">fn</span> padf?] &rarr; <span class="return">[[(*)]]</span> </code><span class="genre">(list/matrix)</span></h2>Makes <code>ragged</code> a rectangular matrix, padding to the right with <code>padwith</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Display</code><code class="at_bracket_open">[</code><code class="at_word">PadMatrix</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">??  1 2 3 4 5
+</code><code class="at_comment">??  2 3 4 5 0
+</code><code class="at_comment">??  3 4 5 0 0
+</code><code class="at_comment">??  4 5 0 0 0
+</code><code class="at_comment">??  5 0 0 0 0
+</code><code class="at_word">Display</code><code class="at_bracket_open">[</code><code class="at_word">PadMatrix</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_operator">:</code><code class="at_number">5</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">9</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">PadLeft</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">??  1 2 3 4 5
+</code><code class="at_comment">??  9 2 3 4 5
+</code><code class="at_comment">??  9 9 3 4 5
+</code><code class="at_comment">??  9 9 9 4 5
+</code><code class="at_comment">??  9 9 9 9 5</code></code></div><a href="https://tio.run/##SywpSUzOSP3/3yWzuCAnsTI6IDHFN7GkKLMi2tDK1Mo0NpbL3l5BwVDBSMFYwUTBFMyDshUMwDwoG8qDsqE8KBvIw2G@joKljgJQzCc1rQSrXZZoPEs0niUaz1LB9P9/AA">Try it online!</a><button class="source-button" id="PadMatrix-button">toggle source</button><div id="PadMatrix-source" class="code-source"><pre>AtState.function "PadMatrix", &lambda { |inst, ragged, pad_with=0, pad_fn=NP|
+    pad_fn = default_sentinel(pad_fn, AtState["PadRight"])
+
+    list = inst.cast_list(ragged)
+    max_size = list.map { |e|
+        AtState["Size"][inst, e]
+    }.max
+
+    result = list.map { |ent|
+        pad_fn[inst, ent, max_size, pad_with]
+    }
+
+    reform_list result, ragged
 }
 </pre></div></div><div class="function" id="PrimePi"><h2><code>PrimePi[<span class="type">number</span> n] &rarr; <span class="return">number</span> </code><span class="genre">(numeric/prime)</span></h2><p><em>Vectorizes monadically.</em></p>Returns the number of prime numbers less than or equal to <code>n</code>. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">PrimePi</code><code class="at_bracket_open">[</code><code class="at_number">0</code><code class="at_operator">:</code><code class="at_number">10</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_comment">?? [0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68kGkjmpgZkRhtYGRrExnLZ2ytEG@goAJGhjoIRGBmDkQkcxf7/DwA">Try it online!</a><button class="source-button" id="PrimePi-button">toggle source</button><div id="PrimePi-source" class="code-source"><pre>AtState.function "PrimePi", &vectorize_monad { |inst, n|

@@ -3,7 +3,7 @@
 
 # NOTE: prefer `inst.cast_list` over `force_list`
 
-def default_sentinel(*values, sentinel: AtFunctionCatalog::NOT_PROVIDED, &final)
+def default_sentinel(*values, sentinel: NP, &final)
     values.each { |e|
         return e if e != sentinel
     }
@@ -5764,3 +5764,5 @@ module AtFunctionCatalog
         },
     }
 end
+
+NP = AtFunctionCatalog::NOT_PROVIDED

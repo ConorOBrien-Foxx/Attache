@@ -94,3 +94,49 @@ AtState.function "Output", &lambda { |inst, args|
     AtState["Print"][inst, *args, joiner: "\n", after: ""]
 }
 ##>>
+
+"
+PadMatrix[ragged, padwith, padf] := (
+    padwith ..= 0;;
+    padf ..= PadRight;;
+    maxlen .= Max[Size => ragged];;
+    padf<~_, maxlen, padwith~> => ragged
+)
+"
+
+##<<
+## Makes <code>ragged</code> a rectangular matrix, padding to the right with <code>padwith</code>.
+## @type ragged [[(*)]]
+## @type padwith (*)
+## @type padf fn
+## @optional padwith
+## @optional padf
+## @return [[(*)]]
+## @genre list/matrix
+## @example Display[PadMatrix[1:5:5]]
+## @example ??  1 2 3 4 5
+## @example ??  2 3 4 5 0
+## @example ??  3 4 5 0 0
+## @example ??  4 5 0 0 0
+## @example ??  5 0 0 0 0
+## @example Display[PadMatrix[1:5:5, 9, PadLeft]]
+## @example ??  1 2 3 4 5
+## @example ??  9 2 3 4 5
+## @example ??  9 9 3 4 5
+## @example ??  9 9 9 4 5
+## @example ??  9 9 9 9 5
+AtState.function "PadMatrix", &lambda { |inst, ragged, pad_with=0, pad_fn=NP|
+    pad_fn = default_sentinel(pad_fn, AtState["PadRight"])
+
+    list = inst.cast_list(ragged)
+    max_size = list.map { |e|
+        AtState["Size"][inst, e]
+    }.max
+
+    result = list.map { |ent|
+        pad_fn[inst, ent, max_size, pad_with]
+    }
+
+    reform_list result, ragged
+}
+##>>

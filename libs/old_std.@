@@ -1,43 +1,6 @@
 ?? core library
 
 ??<<
-??? Prints each element in <code>args</code>, separated by newlines, with no trailing newline. Returns <code>args</code>.
-??? @type args (*)...
-??? @return [(*)]
-??? @genre IO
-Output := Configure[Print, joiner->lf, after->es]@@Tie
-??>>
-
-??<<
-??? Makes <code>ragged</code> a rectangular matrix, padding to the right with <code>padwith</code>.
-??? @type ragged [[(*)]]
-??? @type padwith (*)
-??? @type padf fn
-??? @optional padwith
-??? @optional padf
-??? @return [[(*)]]
-??? @genre list/matrix
-??? @example Display[PadMatrix[1:5:5]]
-??? @example ??  1 2 3 4 5
-??? @example ??  2 3 4 5 0
-??? @example ??  3 4 5 0 0
-??? @example ??  4 5 0 0 0
-??? @example ??  5 0 0 0 0
-??? @example Display[PadMatrix[1:5:5, 9, PadLeft]]
-??? @example ??  1 2 3 4 5
-??? @example ??  9 2 3 4 5
-??? @example ??  9 9 3 4 5
-??? @example ??  9 9 9 4 5
-??? @example ??  9 9 9 9 5
-PadMatrix[ragged, padwith, padf] := (
-    padwith ..= 0;;
-    padf ..= PadRight;;
-    maxlen .= Max[Size => ragged];;
-    padf<~_, maxlen, padwith~> => ragged
-)
-??>>
-
-??<<
 ??? Returns an array of base <code>base</code> digits of the numbers found in
 ??? <code>Range[...args]</code>
 ??? @type base number
