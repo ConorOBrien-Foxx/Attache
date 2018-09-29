@@ -262,3 +262,110 @@ AtState.function "ChopInto", &lambda { |inst, x, n|
     ]]
 }
 ##>>
+
+##<<
+## Returns the distance between points <code>p1</code> and <code>p2</code> on the
+## Euclidean plane.
+## @type p1 [(*)]
+## @type p2 [(*)]
+## @return number
+## @genre number
+## @example Print[Distance[ [1, 2], [1, 4] ]]
+## @example ?? 2.0
+## @example Print[Distance[ Point[0, 0], Point[5, 12] ]]
+## @example ?? 13.0
+## @example Print[Distance[ -3-4i, 3+4i ]]
+## @example ?? 10.0
+## @example Print[Distance[ [0, 0], [1, 1] ]]
+## @example ?? 1.4142135623730951
+AtState.function "Distance", &lambda { |inst, p1, p2|
+    AtState["Norm"][inst,
+        AtState["-"][inst, p1, p2]
+    ]
+}
+##>>
+
+##<<
+## Returns the norm of <code>x</code>.
+## @type x [(*)]
+## @return number
+## @genre list
+## @example Print[Norm[3'4]]
+## @example ?? 5.0
+## @example Print[Norm[-2+1i]]
+## @example ?? 2.23606797749979
+AtState.function "Norm", &lambda { |inst, x|
+    list = inst["Flat",
+        inst["CellReplace",
+            AtState["IsImaginary"],
+            AtState["ReIm"],
+            x
+        ]
+    ]
+
+    inst["Sqrt",
+        inst["Sum",
+            inst["^",
+                list,
+                2
+            ]
+        ]
+    ]
+}
+##>>
+
+##<<
+## Replaces all cells in <code>list</code> matching <code>cond</code> with <code>with</code>.
+## @curries
+## @type cond (*)
+## @type with (*)
+## @type list [(*)]
+## @return [(*)]
+## @genre list
+## @example mat1 := Identity[4]
+## @example Display[CellReplace[0, 9, mat1]]
+## @example ??  1 9 9 9
+## @example ??  9 1 9 9
+## @example ??  9 9 1 9
+## @example ??  9 9 9 1
+## @example mat2 := Integers[3, 3]
+## @example Display[CellReplace[Odd, Square, mat2]]
+## @example ??  0  1  2
+## @example ??  9  4 25
+## @example ??  6 49  8
+## @example Print[CellReplace[Positive, `-, -4:4]]
+## @example ?? [-4, -3, -2, -1, 0, -1, -2, -3, -4]
+AtState.function "CellReplace", &curry { |inst, cond, with, list|
+    cond = inst["MakeFunction", cond, AtState["=="]]
+    with = inst["MakeFunction", with]
+
+    inst["@>",
+        lambda { |inst, el|
+            if AtState.truthy? cond[inst, el]
+                with[inst, el]
+            else
+                el
+            end
+        },
+        list
+    ]
+}
+##>>
+
+##<<
+## Returns <code>x</code> if it is a function, otherwise returns a constant function
+## returning <code>x</code>.
+## @type x (*)
+## @type bonder fn
+## @optional bonder
+## @param bonder If specified, returns a function with <code>x</code> as its left argument instead of a constant function.
+## @return fn
+## @genre functional
+AtState.function "MakeFunction", &lambda { |inst, x, bonder=NP|
+    bonder = default_sentinel(bonder, lambda { |inst, e, *args|
+        e
+    })
+
+    inst["typeof", x] == Type::FUNCTION ? x : inst["&", x, bonder]
+}
+##>>

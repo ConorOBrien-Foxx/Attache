@@ -1382,6 +1382,10 @@ class AtState
         }
     end
 
+    def [](name, *args)
+        AtState[name][self, *args]
+    end
+
     def AtState.variable(name, value)
         @@extended_variables[name] = value
     end
