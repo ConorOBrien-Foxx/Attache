@@ -368,10 +368,10 @@ MakeFunction[x, bonder] := (
 CellReplace := Curry[[cond, with, list] -> {
     cond .= MakeFunction[cond, `==]
     with .= MakeFunction[with]
-    {
-        If[cond[_],
-            with[_],
-            _
+    ${
+        If[cond[x],
+            with[x],
+            x
         ]
     } @> list
 }]
