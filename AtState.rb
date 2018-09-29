@@ -920,24 +920,24 @@ class AtState
         if Node === var
             # set operator by arity
             head_token = Token === var.head
-            
+
             attributes = []
             if head_token
                 loop {
                     index = @@attribute_map[var.head.raw]
-                    
+
                     break if index.nil?
-                    
+
                     attributes << index
-                    
+
                     var = var.children.first
                 }
             end
-            
+
             is_op_set = head_token && var.head.raw == "/"
             is_op_set &&= Token === var.children.first
             is_op_set &&= var.children.first.type == :op_quote
-            
+
             if is_op_set
                 op, arity = var.children
                 arity = get_value arity
@@ -961,7 +961,7 @@ class AtState
                     }
                 else
                     res = AtLambda.new [val], args
-                    
+
                     attributes.each { |attr|
                         old = res
                         res = case attr
@@ -1042,7 +1042,7 @@ class AtState
             args[i]
         }
     end
-    
+
     def parse_number(raw)
         raw = raw.dup
         modifiers = []
@@ -1059,7 +1059,7 @@ class AtState
         res *= 1i if modifiers.include? "i"
         res
     end
-    
+
     def get_value(obj)
         return obj unless obj.is_a? Token
 
@@ -1365,15 +1365,21 @@ class AtState
             @@held_arguments[name] = hold
         end
     end
-    
+
     def AtState.alias(name, key)
         fn = @@functions[key]
         raise "#{key} doesn't exist" if fn.nil?
         @@functions[name] = fn
     end
-    
+
     def AtState.[](fn)
-        @@functions[fn]
+        @@functions[fn] || lambda { |inst, x, y=:none|
+            if y == :none
+                @@unary_operators[fn][inst, x]
+            else
+                @@operators[fn][inst, x, y]
+            end
+        }
     end
 
     def AtState.variable(name, value)

@@ -6,7 +6,47 @@
     <link rel="STYLESHEET" href="styles.css">
     <script src="main.js" type="text/javascript"></script>
 </head>
-<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 8</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(functional<span class="minimize"></span>)</td><td><code><a href="#MapLeft">MapLeft</a></code>, <code><a href="#MapRight">MapRight</a></code></td></tr><tr><td class="genre-source">(IO<span class="minimize"></span>)</td><td><code><a href="#Output">Output</a></code>, <code><a href="#Printf">Printf</a></code></td></tr><tr><td class="genre-source">(list<span class="minimize">/matrix</span>)</td><td><code><a href="#PadMatrix">PadMatrix</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/prime</span>)</td><td><code><a href="#PrimePi">PrimePi</a></code>, <code><a href="#PrimesUnder">PrimesUnder</a></code></td></tr><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="MapLeft"><h2><code>MapLeft[<span class="type">fn</span> f, <span class="type">[(*)]</span> left, <span class="type">(*)</span> ...right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>left</code>, using <code>...right</code> as arguments. <button class="source-button" id="MapLeft-button">toggle source</button><div id="MapLeft-source" class="code-source"><pre>AtState.function "MapLeft", &curry(3) { |inst, fn, left, *right|
+<body><div id="content"><h1>libs/std.rb</h1><p><a href="./index.html">Return to the index.</a><p><h2>Table of Contents</h2><p><em>Function count: 17</em></p><p>Click on genres to show all functions in that genre.</p><table id="toc"><tr><td class="genre-source">(functional<span class="minimize"></span>)</td><td><code><a href="#MapLeft">MapLeft</a></code>, <code><a href="#MapRight">MapRight</a></code></td></tr><tr><td class="genre-source">(IO<span class="minimize"></span>)</td><td><code><a href="#Output">Output</a></code>, <code><a href="#Printf">Printf</a></code></td></tr><tr><td class="genre-source">(list<span class="minimize"></span>)</td><td><code><a href="#ChopInto">ChopInto</a></code></td></tr><tr><td class="genre-source">(list<span class="minimize">/matrix</span>)</td><td><code><a href="#PadMatrix">PadMatrix</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/bases</span>)</td><td><code><a href="#BaseBelow">BaseBelow</a></code>, <code><a href="#BaseRange">BaseRange</a></code>, <code><a href="#BinBelow">BinBelow</a></code>, <code><a href="#BinRange">BinRange</a></code>, <code><a href="#HexBelow">HexBelow</a></code>, <code><a href="#HexRange">HexRange</a></code>, <code><a href="#OctBelow">OctBelow</a></code>, <code><a href="#OctRange">OctRange</a></code></td></tr><tr><td class="genre-source">(numeric<span class="minimize">/prime</span>)</td><td><code><a href="#PrimePi">PrimePi</a></code>, <code><a href="#PrimesUnder">PrimesUnder</a></code></td></tr><tr><td class="genre-source">(string<span class="minimize"></span>)</td><td><code><a href="#S">S</a></code></td></tr></table><div id="functions"><div class="function" id="BaseBelow"><h2><code>BaseBelow[<span class="type">number</span> base, <span class="type">number</span> n] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>base</code> digits less than <code>base ^ n</code>. <button class="source-button" id="BaseBelow-button">toggle source</button><div id="BaseBelow-source" class="code-source"><pre>AtState.function "BaseBelow", &lambda { |inst, base, n|
+    AtState["BaseRange"][inst, base, base**n - 1]
+}
+</pre></div></div><div class="function" id="BaseRange"><h2><code>BaseRange[<span class="type">number</span> base, <span class="type">number</span> ...args] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>base</code> digits of the numbers found in <code>Range[...args]</code> <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_word">BaseRange</code><code class="at_bracket_open">[</code><code class="at_number">2</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">0</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">10</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">?? [0, 0, 0, 1]
+</code><code class="at_comment">?? [0, 0, 1, 0]
+</code><code class="at_comment">?? [0, 0, 1, 1]
+</code><code class="at_comment">?? [0, 1, 0, 0]
+</code><code class="at_comment">?? [0, 1, 0, 1]
+</code><code class="at_comment">?? [0, 1, 1, 0]
+</code><code class="at_comment">?? [0, 1, 1, 1]
+</code><code class="at_comment">?? [1, 0, 0, 0]
+</code><code class="at_comment">?? [1, 0, 0, 1]
+</code><code class="at_comment">?? [1, 0, 1, 0]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM69EwdZOwSmxODUoMS89NdpIR8FAR8HQIJbL3l4h2gDMAwkg8w2BJBofIW8I0YLGR5E3RJNH6DeE2WeAxkeRB@v//x8A">Try it online!</a><button class="source-button" id="BaseRange-button">toggle source</button><div id="BaseRange-source" class="code-source"><pre>AtState.function "BaseRange", &lambda { |inst, base, *args|
+    range = AtState["Range"][inst, *args].map { |el|
+        AtState["ToBase"][inst, el, base]
+    }
+    AtState["PadMatrix"][inst, range, 0, AtState["PadLeft"]]
+}
+</pre></div></div><div class="function" id="BinBelow"><h2><code>BinBelow[<span class="type">number</span> n] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>2</code> digits less than <code>2 ^ n</code>. <button class="source-button" id="BinBelow-button">toggle source</button><div id="BinBelow-source" class="code-source"><pre>AtState.function "BinBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 2, n]
+}
+</pre></div></div><div class="function" id="BinRange"><h2><code>BinRange[<span class="type">number</span> ...args] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>2</code> digits of the numbers found in <code>Range[...args]</code> <button class="source-button" id="BinRange-button">toggle source</button><div id="BinRange-source" class="code-source"><pre>AtState.function "BinRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 2, n]
+}
+</pre></div></div><div class="function" id="ChopInto"><h2><code>ChopInto[<span class="type">[(*)]</span> x, <span class="type">number</span> n] &rarr; <span class="return">[[(*)]]</span> </code><span class="genre">(list)</span></h2>Splits <code>x</code> into <code>n</code> groups. <h3>Example</h3><div class="example"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">ChopInto</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">6</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
+</code><code class="at_comment">?? [[1, 2], [3, 4], [5, 6]]</code></code></div><a href="https://tio.run/##SywpSUzOSP3/P6AoM68k2jkjv8AzryQ/2tDKTEfBODaWy95eITraUEfBKFZHIdpYR8EERJvqKJjFxv7/DwA">Try it online!</a><button class="source-button" id="ChopInto-button">toggle source</button><div id="ChopInto-source" class="code-source"><pre>AtState.function "ChopInto", &lambda { |inst, x, n|
+    AtState["Chop"][inst, x, AtState["Ceiling"][
+        inst, AtState["/"][inst,
+            AtState["#"][inst, x],
+            n
+        ]
+    ]]
+}
+</pre></div></div><div class="function" id="HexBelow"><h2><code>HexBelow[<span class="type">number</span> n] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>16</code> digits less than <code>16 ^ n</code>. <button class="source-button" id="HexBelow-button">toggle source</button><div id="HexBelow-source" class="code-source"><pre>AtState.function "HexBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 16, n]
+}
+</pre></div></div><div class="function" id="HexRange"><h2><code>HexRange[<span class="type">number</span> ...args] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>16</code> digits of the numbers found in <code>Range[...args]</code> <button class="source-button" id="HexRange-button">toggle source</button><div id="HexRange-source" class="code-source"><pre>AtState.function "HexRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 16, n]
+}
+</pre></div></div><div class="function" id="MapLeft"><h2><code>MapLeft[<span class="type">fn</span> f, <span class="type">[(*)]</span> left, <span class="type">(*)</span> ...right] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(functional)</span></h2><p><em>Curries. Reforms result.</em></p>Maps <code>fn</code> over <code>left</code>, using <code>...right</code> as arguments. <button class="source-button" id="MapLeft-button">toggle source</button><div id="MapLeft-source" class="code-source"><pre>AtState.function "MapLeft", &curry(3) { |inst, fn, left, *right|
     arr = inst.cast_list left
     res = arr.map { |e|
         fn[inst, e, *right]
@@ -19,6 +59,12 @@
         fn[inst, *left, e]
     }
     reform_list res, arr
+}
+</pre></div></div><div class="function" id="OctBelow"><h2><code>OctBelow[<span class="type">number</span> n] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>8</code> digits less than <code>8 ^ n</code>. <button class="source-button" id="OctBelow-button">toggle source</button><div id="OctBelow-source" class="code-source"><pre>AtState.function "OctBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 8, n]
+}
+</pre></div></div><div class="function" id="OctRange"><h2><code>OctRange[<span class="type">number</span> ...args] &rarr; <span class="return">[[number]]</span> </code><span class="genre">(numeric/bases)</span></h2>Returns an array of base <code>8</code> digits of the numbers found in <code>Range[...args]</code> <button class="source-button" id="OctRange-button">toggle source</button><div id="OctRange-source" class="code-source"><pre>AtState.function "OctRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 8, n]
 }
 </pre></div></div><div class="function" id="Output"><h2><code>Output[<span class="type">(*)</span> ...args] &rarr; <span class="return">[(*)]</span> </code><span class="genre">(IO)</span></h2>Prints each element in <code>args</code>, separated by newlines, with no trailing newline. Returns <code>args</code>. <button class="source-button" id="Output-button">toggle source</button><div id="Output-source" class="code-source"><pre>AtState.function "Output", &lambda { |inst, args|
     AtState["Print"][inst, *args, joiner: "\n", after: ""]

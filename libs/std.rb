@@ -140,3 +140,125 @@ AtState.function "PadMatrix", &lambda { |inst, ragged, pad_with=0, pad_fn=NP|
     reform_list result, ragged
 }
 ##>>
+
+##<<
+## Returns an array of base <code>base</code> digits of the numbers found in
+## <code>Range[...args]</code>
+## @type base number
+## @type args number...
+## @return [[number]]
+## @genre numeric/bases
+## @example Print => BaseRange[2, 0, 10]
+## @example ?? [0, 0, 0, 1]
+## @example ?? [0, 0, 1, 0]
+## @example ?? [0, 0, 1, 1]
+## @example ?? [0, 1, 0, 0]
+## @example ?? [0, 1, 0, 1]
+## @example ?? [0, 1, 1, 0]
+## @example ?? [0, 1, 1, 1]
+## @example ?? [1, 0, 0, 0]
+## @example ?? [1, 0, 0, 1]
+## @example ?? [1, 0, 1, 0]
+AtState.function "BaseRange", &lambda { |inst, base, *args|
+    range = AtState["Range"][inst, *args].map { |el|
+        AtState["ToBase"][inst, el, base]
+    }
+    AtState["PadMatrix"][inst, range, 0, AtState["PadLeft"]]
+}
+##>>
+
+##<<
+## Returns an array of base <code>base</code> digits less than
+## <code>base ^ n</code>.
+## @type base number
+## @type n number
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "BaseBelow", &lambda { |inst, base, n|
+    AtState["BaseRange"][inst, base, base**n - 1]
+}
+##>>
+
+##<<
+## Returns an array of base <code>2</code> digits of the numbers found in
+## <code>Range[...args]</code>
+## @type args number...
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "BinRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 2, n]
+}
+##>>
+
+##<<
+## Returns an array of base <code>8</code> digits of the numbers found in
+## <code>Range[...args]</code>
+## @type args number...
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "OctRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 8, n]
+}
+##>>
+
+##<<
+## Returns an array of base <code>16</code> digits of the numbers found in
+## <code>Range[...args]</code>
+## @type args number...
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "HexRange", &lambda { |inst, n|
+    AtState["BaseRange"][inst, 16, n]
+}
+##>>
+
+##<<
+## Returns an array of base <code>2</code> digits less than
+## <code>2 ^ n</code>.
+## @type n number
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "BinBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 2, n]
+}
+##>>
+
+##<<
+## Returns an array of base <code>8</code> digits less than
+## <code>8 ^ n</code>.
+## @type n number
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "OctBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 8, n]
+}
+##>>
+
+##<<
+## Returns an array of base <code>16</code> digits less than
+## <code>16 ^ n</code>.
+## @type n number
+## @return [[number]]
+## @genre numeric/bases
+AtState.function "HexBelow", &lambda { |inst, n|
+    AtState["BaseBelow"][inst, 16, n]
+}
+##>>
+
+##<<
+## Splits <code>x</code> into <code>n</code> groups.
+## @type x [(*)]
+## @type n number
+## @return [[(*)]]
+## @genre list
+## @example Print[ChopInto[1:6, 3]]
+## @example ?? [[1, 2], [3, 4], [5, 6]]
+AtState.function "ChopInto", &lambda { |inst, x, n|
+    AtState["Chop"][inst, x, AtState["Ceiling"][
+        inst, AtState["/"][inst,
+            AtState["#"][inst, x],
+            n
+        ]
+    ]]
+}
+##>>
