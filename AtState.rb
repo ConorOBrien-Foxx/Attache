@@ -872,7 +872,7 @@ class AtState
     def initialize(program, input=STDIN, output=STDOUT, exclude_std: false)
         @trees = ast(program)
         if @trees.nil?
-            exit
+            raise "error: ast returned nil"
         end
         @variables = @@default_variables.dup
         @abstract_references = []

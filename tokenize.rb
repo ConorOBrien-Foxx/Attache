@@ -7,6 +7,25 @@ class Token
         @column = column
     end
 
+    def Token.parse(str)
+        require 'json'
+        type, start, line, col, raw = str.split(/\s+/, 5) + Array.new(5) { "" }
+        raw = JSON::parse raw
+        type = type.to_sym
+        start, line, col = [start, line, col].map { |e|
+            if e.empty?
+                nil
+            else
+                e.to_i rescue nil
+            end
+        }
+        Token.new(raw, type, start, line, col)
+    end
+
+    def to_parse
+        "#{@type} #{@start} #{@line} #{@column} #{@raw.inspect}"
+    end
+
     attr_accessor :raw, :type, :start, :line, :column
     @@words = %w(raw type start line column)
 
@@ -358,8 +377,12 @@ class AtTokenizer
 end
 
 def tokenize(code)
-    tokenizer = AtTokenizer.new(code)
-    Enumerator.new { |enum|
-        tokenizer.run(enum)
-    }
+    if Enumerable === code
+        code.to_enum
+    else
+        tokenizer = AtTokenizer.new(code)
+        Enumerator.new { |enum|
+            tokenizer.run(enum)
+        }
+    end
 end
