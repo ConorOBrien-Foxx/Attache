@@ -369,3 +369,13 @@ AtState.function "MakeFunction", &lambda { |inst, x, bonder=NP|
     inst["typeof", x] == Type::FUNCTION ? x : inst["&", x, bonder]
 }
 ##>>
+
+##<<
+## Returns the real and imaginary portions of <code>n</code>.
+## @return [number]
+## @type n (*)
+## @genre numeric
+AtState.function "ReIm", &lambda { |inst, n|
+    [inst["Re", n], inst["Im", n]]
+}
+##>>

@@ -123,14 +123,6 @@ MaskMatrix[fs, mask, list] := (
 )
 
 ??<<
-??? Returns the real and imaginary portions of <code>n</code>.
-??? @return [number]
-??? @type n (*)
-??? @genre numeric
-ReIm := Re#V#Im
-??>>
-
-??<<
 ??? Returns all overlapping slices of size <code>2</code> in <code>list</code>.
 ??? @type list [(*)]
 ??? @return [(*)]
