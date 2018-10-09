@@ -102,6 +102,12 @@ class AttacheParser
                 options[:tokenize] = v
             end
 
+            opts.on("-D", "--token-dump",
+                "Writes the tokens of the program as a parseable string"
+            ) do |v|
+                options[:dump] = v
+            end
+
             opts.on("-H", "--highlight",
                 "Performs syntax highlighting on the code"
             ) do |v|
@@ -118,6 +124,12 @@ class AttacheParser
                 "Executes TemplAt code"
             ) do |v|
                 options[:templat] = v
+            end
+
+            opts.on("-U", "--un-token-dump",
+                "Forms a program given the output of `#{FILENAME} -D`"
+            ) do |v|
+                options[:undump] = v
             end
         }
         parser.parse!(args)
@@ -187,6 +199,10 @@ if options[:ast]
     ast(program).each { |node| puts node.to_s }
 end
 
+if options[:dump]
+    puts tokenize(program).map(&:to_parse)
+end
+
 if options[:tokenize] || options[:shunt]
     iter = {}
     iter[:tokenize] = :tokenize   if options[:tokenize]
@@ -207,7 +223,12 @@ if options[:tokenize] || options[:shunt]
     }
 else
     begin
-        inst = AtState.new program, exclude_std: options[:fast]
+        opts = Hash(exclude_std: options[:fast])
+        if options[:undump]
+            inst = AtState.from_token_dump program, **opts
+        else
+            inst = AtState.new program, **opts
+        end
         inst.run
     rescue AttacheError => e
         puts e.readable

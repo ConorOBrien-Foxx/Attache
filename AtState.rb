@@ -884,6 +884,13 @@ class AtState
         load_lib "std" unless exclude_std
     end
 
+    def AtState.from_token_dump(dump, *args)
+        tokens = dump.lines.map { |e|
+            Token.parse e
+        }
+        AtState.new(tokens, *args)
+    end
+
     def load_lib(name)
         loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
