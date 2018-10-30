@@ -4069,11 +4069,19 @@ module AtFunctionCatalog
             }
         },
         "Select" => curry { |inst, f, list|
-            iter = inst.cast_list list
-            res = iter.select { |e|
-                AtState.truthy? f[inst, e]
-            }
-            reform_list res, list
+            if AtState.func_like? list
+                lambda { |inst, arg|
+                    @@functions["Select"][inst, f,
+                        list[inst, arg]
+                    ]
+                }
+            else
+                iter = inst.cast_list list
+                res = iter.select { |e|
+                    AtState.truthy? f[inst, e]
+                }
+                reform_list res, list
+            end
         },
         "Table" => curry(2) { |inst, f, as, bs=as|
             as.map { |a|
