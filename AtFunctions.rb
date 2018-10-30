@@ -3434,6 +3434,9 @@ module AtFunctionCatalog
                 }
             end
         },
+        "Sorted" => lambda { |inst, list|
+            !@@functions["Delta"][inst, list].any?(&:negative?)
+        },
         #<<
         # Shuffles the contents of <code>list</code>.
         # @type list [(*)]
@@ -3490,7 +3493,7 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Subsslices" => lambda { |inst, list, n=list.size, exclude=[]|
+        "Subslices" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
             if n < 0
                 n = (list.size + n) % list.size
@@ -3499,6 +3502,22 @@ module AtFunctionCatalog
             exclude = [*exclude]
             res.concat @@functions["Slices"][inst, list, (1..n).to_a]
             res.delete_if { |e| exclude.include? e.size }
+        },
+        "WithoutOnce" => lambda { |inst, a, b|
+            b.each { |e|
+                a = @@functions["RemoveFirst"][inst, a, e]
+            }
+            a
+        },
+        # i.e. "radation hardened"
+        "Radiations" => lambda { |inst, list, n=list.size|
+            @@functions["Subslices"][inst, list, n].map { |sub|
+                @@functions["WithoutOnce"][inst, list, sub]
+            }
+        },
+        # same as Combinations
+        "Subsets" => lambda { |inst, list|
+            @@functions["Combinations"][inst, list]
         },
         "Sum" => lambda { |inst, list|
             list = inst.cast_list(list)
