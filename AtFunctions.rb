@@ -3490,7 +3490,7 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
+        "Subsslices" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
             if n < 0
                 n = (list.size + n) % list.size
