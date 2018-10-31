@@ -46,11 +46,11 @@ class AtParser
     rescue StopIteration
         nil
     end
-    
+
     def imp_call_start?(type)
         [:word, :bracket_close, :func_end, :paren_close].include? type
     end
-    
+
     def step
         ent = read_token
 
@@ -158,7 +158,7 @@ class AtParser
                     if top_type == :unary_operator
                         top_prec = $PRECEDENCE_UNARY[top_raw]
                     end
-                    
+
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
                     @out.push @stack.pop
                 }
@@ -970,6 +970,7 @@ class AtState
                 val = evaluate_node val
                 raise if is_vector #todo: fix
                 set_op_quote op, val, arity
+                return val
             else
                 #todo: pattern matching++
                 args = var.children.map { |e|
@@ -985,6 +986,7 @@ class AtState
                     args.each_with_index { |arg, i|
                         send dest, arg, val[i]
                     }
+                    return val
                 else
                     res = AtLambda.new [val], args
 
@@ -1006,6 +1008,7 @@ class AtState
                     else
                         send dest, var.head.raw, res
                     end
+                    return res
                 end
             end
         else
@@ -1019,6 +1022,7 @@ class AtState
                 name = var.raw
             end
             send dest, name, res
+            return res
         end
     end
 
