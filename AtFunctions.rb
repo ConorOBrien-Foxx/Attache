@@ -5711,7 +5711,7 @@ module AtFunctionCatalog
         "\\" => lambda { |inst, f|
             if AtState.func_like? f
                 lambda { |inst, first, *args|
-                    f[inst, last]
+                    f[inst, first]
                 }
             else
                 raise AttacheUnimplementedError.new("\\ is not defined for `#{f.class.name}`", inst.position)
