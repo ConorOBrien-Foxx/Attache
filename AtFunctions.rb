@@ -1895,7 +1895,7 @@ module AtFunctionCatalog
         "InvocationIndex" => lambda { |inst, func|
             i = -1
             lambda { |inst, *args|
-                func[inst, *args, @@functions["Succ"][inst, i]]
+                func[inst, *args, i = @@functions["Succ"][inst, i]]
             }
         },
         #<<

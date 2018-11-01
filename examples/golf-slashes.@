@@ -6,7 +6,7 @@ escape_slashes := Replace<~_, /"\\\\|/", "\\\\\\$&"~>
 format_replace := Format<~"/%s/%s/"~>:escape_slashes
 
 find_candidate := [str, id, min, max] -> {
-    subs .= Flat[min:max :> Join => str&Slices]
+    subs .= Flat[min:max :> str&Slices]
     
     candidates .= subs :> {
         format_replace[id, _] + Replace[str, _, id]
@@ -21,6 +21,7 @@ golf_slashes := [code] -> {
     code .= Replace[code, /"/|\\\\", "\\$&"]
     Print[code]
     unused .= Complement[ascii, code, "/\\ "]
+    Print[unused]
     base .= 2
     
     Fixpoint[InvocationIndex[{
