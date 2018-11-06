@@ -641,7 +641,7 @@ module AtFunctionCatalog
                 value = f[inst, i]
                 unless value.nil?
                     break if config[:include] ? value > max : value >= max
-                    collect.push value if cond[inst, value]
+                    collect.push value if AtState.truthy? cond[inst, value]
                 end
                 i = @@functions["Succ"][inst, i]
             }
@@ -665,7 +665,7 @@ module AtFunctionCatalog
             collect = []
 
             inst.cast_list(list).each { |el|
-                break unless cond[inst, el]
+                break unless AtState.truthy? cond[inst, el]
                 collect << el
             }
 
@@ -1980,9 +1980,9 @@ module AtFunctionCatalog
         # @example Print[NestWhile[Halve, Even, 100]]
         # @example ?? 25
         #>>
-        "NestWhile" => lambda { |inst, f, cond, init|
+        "NestWhile" => curry { |inst, f, cond, init|
             iter = init
-            while cond[inst, iter]
+            while AtState.truthy? cond[inst, iter]
                 iter = f[inst, iter]
             end
             iter
@@ -2002,7 +2002,7 @@ module AtFunctionCatalog
             first = get_default opts, :first, true
             iter = init
             list = first ? [iter] : []
-            while cond[inst, iter]
+            while AtState.truthy? cond[inst, iter]
                 iter = f[inst, iter]
                 list << iter
             end
@@ -3594,7 +3594,7 @@ module AtFunctionCatalog
 
             (a..b).each { |y|
                 (a...y).each { |x|
-                    pairs << [x, y] if cond[inst, x, y]
+                    pairs << [x, y] if AtState.truthy? cond[inst, x, y]
                 }
             }
 
