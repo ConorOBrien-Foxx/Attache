@@ -4690,14 +4690,14 @@ module AtFunctionCatalog
             }
         },
         "Commonest" => lambda { |inst, ent, n=1|
-            commonest = list.each_with_object(Hash.new(0)) { |m, h|
+            commonest = ent.each_with_object(Hash.new(0)) { |m, h|
                 h[m] += 1
             }
             .group_by(&:last)
-            .sort_by(&:last)
-            .reverse_each { |k, v|
+            .sort_by(&:first)
+            .map { |k, v|
                 v.map &:first
-            }
+            }.reverse!
             if Array === n
                 n.map { |i| commonest[i > 0 ? i - 1 : i] }
             else
