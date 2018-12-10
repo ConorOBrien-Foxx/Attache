@@ -781,3 +781,7 @@ BinString   := ToBaseString&2
 UnBinString := FromBaseString&2
 OctString   := ToBaseString&8
 UnOctString := FromBaseString&8
+
+?? expected value
+E[dist] :=
+    Sum[`* &> dist]
