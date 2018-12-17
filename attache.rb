@@ -2,6 +2,7 @@
 
 require 'optparse'
 require_relative 'AtState.rb'
+require_relative 'AtCompiler.rb'
 
 class AttacheParser
     FILENAME = File.basename __FILE__
@@ -226,14 +227,15 @@ if options[:tokenize] || options[:shunt]
         }
         print_table table
     }
+elsif options[:compile]
+    tr = ToRuby.new(program)
+    # p tr
+    tr.parse_all
+    File.write(program_name, tr.to_s)
 else
     begin
         inst = AtState.new program, exclude_std: options[:fast]
-        if options[:compile]
-            inst.compile program_name
-        else
-            inst.run
-        end
+        inst.run
     rescue AttacheError => e
         puts e.readable
     end
