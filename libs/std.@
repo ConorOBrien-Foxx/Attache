@@ -785,3 +785,5 @@ UnOctString := FromBaseString&8
 ?? expected value
 E[dist] :=
     Sum[`* &> dist]
+
+HashFrom := Hash@Stitch
