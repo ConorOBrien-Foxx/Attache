@@ -79,3 +79,14 @@ ClassNamed[NormalDistribution] {
 
 ND := NormalDistribution
 SND := ND[1, 0]
+
+?? Box–Muller transform
+RandomNormalQueue := []
+RandomNormal[numtrials] := (
+    numtrials ..= 0;;
+    While[#RandomNormalQueue < numtrials,
+        u'v .= Twice[Random];;
+        Push[RandomNormalQueue, ...Sqrt[-2 * Ln[u]] * CallEach[Cos'Sin, 2*PI*v]]
+    ];;
+    Pop[RandomNormalQueue, numtrials]
+)

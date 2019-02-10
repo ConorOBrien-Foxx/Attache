@@ -541,8 +541,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Pop" => lambda { |inst, list|
-            list.pop
+        "Pop" => lambda { |inst, list, count=nil|
+            list.pop *count
         },
         #<<
         # Pops a member from the start of <code>list</code>, modifying it. Returns that element.
@@ -550,8 +550,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Shift" => lambda { |inst, list|
-            list.shift
+        "Shift" => lambda { |inst, list, count=nil|
+            list.shift *count
         },
         #<<
         # Pushes <code>args</code> to the end of <code>list</code>, modifying it. Returns <code>list</code>.
