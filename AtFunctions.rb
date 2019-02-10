@@ -232,12 +232,15 @@ module AtFunctionCatalog
         # @genre data
         #>>
         "Hash" => lambda { |inst, *opts|
-            res = {}
-            # p opts
-            opts.each { |k, v|
-                res[k] = v
-            }
-            res
+            if opts.size == 1 && !(ConfigureValue === opts[0])
+                Hash[*opts]
+            else
+                res = {}
+                opts.each { |k, v|
+                    res[k] = v
+                }
+                res
+            end
         },
         # "Hold" => lambda { |inst, fn|
         #     if AtState.func_like? fn
@@ -3489,7 +3492,8 @@ module AtFunctionCatalog
                 }.join "\n"
             else
                 zipwith(*args.map { |e| deep_copy e }) { |*args|
-                    args.reject(&:nil?).inject(:concat)
+                    args.map { |e| [*e] }
+                        .inject([], :concat)
                 }
             end
         },
