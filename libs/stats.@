@@ -62,6 +62,19 @@ Erf[z] := (
     Sign[z] * ans
 )
 
+?? Box–Muller transform
+RandomNormalQueue := []
+RandomNormal[numtrials] := (
+    If[numtrials = nil,
+        RandomNormal[1][0],
+        While[#RandomNormalQueue < numtrials,
+            u'v .= Twice[Random];;
+            Push[RandomNormalQueue, ...Sqrt[-2 * Ln[u]] * CallEach[Cos'Sin, 2*PI*v]]
+        ];;
+        Pop[RandomNormalQueue, numtrials]
+    ]
+)
+
 ClassNamed[NormalDistribution] {
     mean .= _1
     dev .= _2
@@ -75,18 +88,24 @@ ClassNamed[NormalDistribution] {
     CDF[x] .= 0.5 + 0.5 * Erf[x / Sqrt[2]]
     
     P[lower, upper] .= CDF[upper] - CDF[lower]
+    
+    ?? scaling RandomNormal[]
+    ?? doesn't currently work
+    Random .= {
+        (RandomNormal[] + mean) / Sqrt[1 + mean^2] * dev
+    }
 }
+
+(*
+
+N[0, 1] -> N[m, d]
+
+N(0, 1) + K -> N(K, Sqrt(1 + k^2))
+
+Sqrt(1 + k^2) * H = SD
+Sqrt(1 + K^2) / SD = H
+
+*)
 
 ND := NormalDistribution
 SND := ND[1, 0]
-
-?? Box–Muller transform
-RandomNormalQueue := []
-RandomNormal[numtrials] := (
-    numtrials ..= 0;;
-    While[#RandomNormalQueue < numtrials,
-        u'v .= Twice[Random];;
-        Push[RandomNormalQueue, ...Sqrt[-2 * Ln[u]] * CallEach[Cos'Sin, 2*PI*v]]
-    ];;
-    Pop[RandomNormalQueue, numtrials]
-)
