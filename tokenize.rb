@@ -26,8 +26,8 @@ class Token
         }
     end
 
-    def to_s
-        "#{@type} #{@raw.inspect} @ #{@start}"
+    def to_s(color: true)
+        "#{@type} #{color_inspect(@raw, color: color)} @ #{@start}"
     end
 
     def position
