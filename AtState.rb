@@ -316,6 +316,7 @@ end
 LEFT  = 0b01
 RIGHT = 0b10
 
+# def vectorize_dyad_multi(lr = LEFT | RIGHT, &fn)
 def vectorize_dyad(lr = LEFT | RIGHT, &fn)
     left  = lr & LEFT  != 0
     right = lr & RIGHT != 0
@@ -354,6 +355,15 @@ def vectorize_dyad(lr = LEFT | RIGHT, &fn)
         end
     }
 end
+
+# # for argument arity checking
+# # NOTE: does not correctly handle implied arguments
+# def vectorize_dyad(lr = LEFT | RIGHT, &fn)
+#     vdm = vectorize_dyad_multi(lr, &fn)
+#     lambda { |inst, x, y|
+#         vdm[inst, x, y]
+#     }
+# end
 
 def vectorize(&fn)
     monadic = vectorize_monad { |*a| fn[*a] }
@@ -763,6 +773,8 @@ class AttacheUnimplementedError < AttacheError; end
 class AttacheSyntaxError < AttacheError; end
 # when improper data is given to a function
 class AttacheValueError < AttacheError; end
+# for bad arguments
+class AttacheArgumentError < AttacheError; end
 
 
 require_relative 'AtFunctions.rb'
@@ -1172,7 +1184,7 @@ class AtState
                         func[self, *args]
                     end
                 rescue ArgumentError => e
-                    STDERR.puts "Argument error: #{head}"
+                    raise AttacheArgumentError.new("Argument error: #{head}", head.position)
                     raise e
                 end
             end
