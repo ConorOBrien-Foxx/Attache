@@ -26,6 +26,13 @@ class AttacheParser
             end
 
             opts.on(
+                "-A", "--ast-no-color",
+                "Display the AST parsed from the program, without color"
+            ) do |v|
+                options[:ast_no_color] = v
+            end
+
+            opts.on(
                 "-d", "--debug",
                 "Debug the program"
             ) do |v|
@@ -185,6 +192,10 @@ end
 
 if options[:ast]
     ast(program).each { |node| puts node.to_s }
+end
+
+if options[:ast_no_color]
+    ast(program).each { |node| puts node.to_s(color: false) }
 end
 
 if options[:tokenize] || options[:shunt]

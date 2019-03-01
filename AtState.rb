@@ -1,6 +1,7 @@
 require_relative 'lib.rb'
 require_relative 'tokenize.rb'
 # require_relative 'AtClass.rb'
+# require_relative 'AtFunctions.rb'
 # later in file
 
 def atstate_init(argv)
@@ -450,17 +451,17 @@ class Node
         [@head.clone, @children.clone]
     end
 
-    def to_s(depth = 0)
+    def to_s(depth = 0, color: true)
         res = ""
         res += " " * DISP_WIDTH * depth
-        res += NODE_PREFIX + @head.inspect
+        res += NODE_PREFIX + @head.inspect(color: color)
         res += "\n"
         depth += 1
         @children.each_with_index { |child, i|
             if child.is_a? Node
-                res += child.to_s(depth)
+                res += child.to_s(depth, color: color)
             else
-                res += " " * DISP_WIDTH * depth + LEAF_PREFIX + child.inspect
+                res += " " * DISP_WIDTH * depth + LEAF_PREFIX + child.inspect(color: color)
             end
             res += "\n"
         }
@@ -468,8 +469,8 @@ class Node
         res.chomp
     end
 
-    def inspect
-        "#Node<#{@head}>{#{@children.inspect}}"
+    def inspect(color: true)
+        (color ? "#\x1b[33mNode\x1b[0m<" : "#Node<") + "#{@head}>{#{@children.inspect}}"
         # if @head.type == :operator
             # @children.map(&:raw).join @head.raw
         # else

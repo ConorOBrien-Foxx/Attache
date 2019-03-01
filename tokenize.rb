@@ -1,3 +1,5 @@
+require_relative 'color_inspect.rb'
+
 class Token
     def initialize(raw=nil, type=nil, start=nil, line=nil, column=nil)
         @raw = raw
@@ -24,16 +26,16 @@ class Token
         }
     end
 
-    def to_s
-        "#{@type} #{@raw.inspect} @ #{@start}"
+    def to_s(color: true)
+        "#{@type} #{color_inspect(@raw, color: color)} @ #{@start}"
     end
 
     def position
         "#{line}:#{column}"
     end
 
-    def inspect
-        "#\x1b[33mToken\x1b[0m<" + to_ary.map(&:inspect).join(", ") + ">"
+    def inspect(color: true)
+        (color ? "#\x1b[33mToken\x1b[0m<" : "#Token<") + to_ary.map { |item| color_inspect(item, color: color) }.join(", ") + ">"
     end
 end
 
