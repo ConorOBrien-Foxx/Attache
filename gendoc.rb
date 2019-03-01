@@ -109,12 +109,13 @@ def get_info_rb(input)
         group = group.lines
 
         begin
-            last = group.index { |e| e.strip == "#>>" } + 1
+            last = group.index { |e|
+                e.strip == "#>>"
+            } + 1
         rescue NoMethodError => e
-            STDERR.puts "NoMethodError: #{e}"
-            puts group
+            # invalid comment group
+            # TODO: more intelligent solution
             next
-            # exit
         end
 
         head, *body, tail, signature = group[0..last]
