@@ -5,17 +5,17 @@ def color_inspect(item, color: true)
     elsif item.is_a? Hash
         return "[#{item.map { |key, value| color_inspect(key, color: color) + " => " + color_inspect(value, color: color) }.join(", ") }]"
     end
-    if item.is_a? String
-        color ? "\x1b[32m#{item.inspect}\x1b[0m" : item.inspect
-    elsif [Integer, Symbol, TrueClass, FalseClass].any? { |type| item.is_a? type }
-        color ? "\x1b[35m#{item.inspect}\x1b[0m" : item.inspect
+    if item.method(:inspect).parameters.any? { |param| param == [:key, :color] }
+        string = item.inspect(color: color)
+        return string if color
     else
-        args = item.method(:inspect).parameters[0]
-        if args && args.include?(:color)
-            string = item.inspect(color: color)
-        else
-            string = item.inspect
-        end
+        string = item.inspect
+    end
+    if item.is_a? String
+        color ? "\x1b[32m#{string}\x1b[0m" : string
+    elsif [Integer, Symbol, TrueClass, FalseClass].any? { |type| item.is_a? type }
+        color ? "\x1b[35m#{string}\x1b[0m" : string
+    else
         color ? string.sub(/^#(\w+)</) { |_, e| "#\x1b[33m#{e}\x1b[0m<" } : string
     end
 end
