@@ -1068,7 +1068,9 @@ class AtState
     end
 
     def format_string(str, args)
-        str[2..-2].gsub(/\$\{\}/).with_index { |match, i|
+        str[2..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
+            eval '"' + e + '"' rescue e
+        }.gsub(/\$\{\}/).with_index { |match, i|
             args[i]
         }
     end
@@ -1106,7 +1108,12 @@ class AtState
                 eval '"' + e + '"' rescue e
             }
 
-        elsif type == :raw_string || type == :format_string_bare
+        elsif type == :format_string_bare
+            raw[2..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
+                eval '"' + e + '"' rescue e
+            }
+
+        elsif type == :raw_string
             raw[2..-2].gsub(/""/, '"')
 
         elsif @@extended_variables.has_key? raw
