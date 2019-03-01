@@ -613,13 +613,19 @@ def make_curry(args, func)
         abstracts = []
         to_remove = []
 
-        args.each { |el|
-            if Token === el && el.type == :abstract
-                n = get_abstract_number(el.raw)
-                abstracts[n] = others[n]
-                to_remove.push n
-            end
+        fill_abstracts = -> args {
+            args.each { |el|
+                if Token === el && el.type == :abstract
+                    n = get_abstract_number(el.raw)
+                    abstracts[n] = others[n]
+                    to_remove.push n
+                elsif el.is_a? Node
+                    fill_abstracts[el.children]
+                end
+            }
         }
+
+        fill_abstracts[args]
 
         not_provided = to_remove - (0...others.size).to_a
 
@@ -628,20 +634,26 @@ def make_curry(args, func)
 
             inst.evaluate_node Node.new(func, args + others), abstracts
         else
-            next_args = args.map { |el|
-                if Token === el && el.type == :abstract
-                    n = get_abstract_number(el.raw)
-                    ind = not_provided.index n
-                    if ind
-                        dest = n - others.size + 1
-                        Token.new "_#{dest}", :abstract, nil
+            update_abstracts = -> args {
+                args.map { |el|
+                    if Token === el && el.type == :abstract
+                        n = get_abstract_number(el.raw)
+                        ind = not_provided.index n
+                        if ind
+                            dest = n - others.size + 1
+                            Token.new "_#{dest}", :abstract, nil
+                        else
+                            abstracts[n]
+                        end
+                    elsif el.is_a? Node
+                        Node.new(el.head, update_abstracts[el.children])
                     else
-                        abstracts[n]
+                        el
                     end
-                else
-                    el
-                end
+                }
             }
+
+            next_args = update_abstracts[args]
 
             make_curry(next_args, func)
         end
@@ -1068,7 +1080,9 @@ class AtState
     end
 
     def format_string(str, args)
-        str[2..-2].gsub(/\$\{\}/).with_index { |match, i|
+        str[2..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
+            eval '"' + e + '"' rescue e
+        }.gsub(/\$\{\}/).with_index { |match, i|
             args[i]
         }
     end
@@ -1106,7 +1120,12 @@ class AtState
                 eval '"' + e + '"' rescue e
             }
 
-        elsif type == :raw_string || type == :format_string_bare
+        elsif type == :format_string_bare
+            raw[2..-2].gsub(/""/, '"').gsub(/\\x.{2}|\\./) { |e|
+                eval '"' + e + '"' rescue e
+            }
+
+        elsif type == :raw_string
             raw[2..-2].gsub(/""/, '"')
 
         elsif @@extended_variables.has_key? raw
