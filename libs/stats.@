@@ -34,18 +34,78 @@ Interpolate[left, right, index, mode] := Switch[mode,
 
 Percentile := Configurable[[p, list] -> {
     mode .= GetOption[$interp, $linear]
-    ind .= p / 100.0 * #list
-    l'r .= list[CallEach[Floor'Ceiling, ind]]
-    Print[ind, ind%1]
-    Interpolate[l, r, ind % 1 - 0.5, mode]
+    ind .= p / 100.0 * (#list - 1)
+    l'r .= Sort[list][CallEach[Floor'Ceiling, ind]]
+    Interpolate[l, r, ind % 1, mode]
 }]
 
 FiveNumber := CallEach[
     [
         Min,
-        {},
+        25&Percentile,
         Median,
-        {},
+        75&Percentile,
         Max
     ]
 ]
+
+FiveNumberSummary[list] := HashFrom[
+    $minimum'$quartile1'$median'$quartile3'$maximum,
+    FiveNumber[list]
+]
+
+?? uses horner's method
+ErfCoefs := [1.00002368, 0.37409196, 0.09678418, -0.18628806, 0.27886807, -1.13520398, 1.48851587, -0.82215223, 0.17087277]
+Erf[z] := (
+    t .= 1 / (1 + 0.5 * Abs[z]);;
+    ans .= 1 - t * Exp[-z*z - 1.26551223 + t * FoldRight[${y + t * x}, ErfCoefs]];;
+    Sign[z] * ans
+)
+
+?? Box–Muller transform
+RandomNormalQueue := []
+RandomNormal[numtrials] := (
+    If[numtrials = nil,
+        RandomNormal[1][0],
+        While[#RandomNormalQueue < numtrials,
+            u'v .= Twice[Random];;
+            Push[RandomNormalQueue, ...Sqrt[-2 * Ln[u]] * CallEach[Cos'Sin, 2*PI*v]]
+        ];;
+        Pop[RandomNormalQueue, numtrials]
+    ]
+)
+
+ClassNamed[NormalDistribution] {
+    mean .= _1
+    dev .= _2
+    
+    $add[other] .= NormalDistribution[mean + other.mean, Sqrt[dev^2 + other.dev^2]]
+    $sub[other] .= NormalDistribution[mean - other.mean, Sqrt[dev^2 + other.dev^2]]
+
+    $string[] .= $"N(${mean}, ${dev})"
+    
+    ?? normalCdf(x) = 1/2 + 1/2 * erf(x / sqrt(2))
+    CDF[x] .= 0.5 + 0.5 * Erf[x / Sqrt[2]]
+    
+    P[lower, upper] .= CDF[upper] - CDF[lower]
+    
+    ?? scaling RandomNormal[]
+    ?? doesn't currently work
+    Random .= {
+        (RandomNormal[] + mean) / Sqrt[1 + mean^2] * dev
+    }
+}
+
+(*
+
+N[0, 1] -> N[m, d]
+
+N(0, 1) + K -> N(K, Sqrt(1 + k^2))
+
+Sqrt(1 + k^2) * H = SD
+Sqrt(1 + K^2) / SD = H
+
+*)
+
+ND := NormalDistribution
+SND := ND[1, 0]

@@ -123,6 +123,77 @@ MaskMatrix[fs, mask, list] := (
 )
 
 ??<<
+??? Returns the real and imaginary portions of <code>n</code>.
+??? @return [number]
+??? @type n (*)
+??? @genre numeric
+ReIm := Re#V#Im
+??>>
+
+??<<
+??? Returns <code>x</code> if it is a function, otherwise returns a constant function
+??? returning <code>x</code>.
+??? @type x (*)
+??? @type bonder fn
+??? @optional bonder
+??? @param bonder If specified, returns a function with <code>x</code> as its left argument instead of a constant function.
+??? @return fn
+??? @genre functional
+MakeFunction[x, bonder] := (
+    bonder ..= {_};;
+    If[typeof x is $function, x, x&bonder]
+)
+??>>
+
+??<<
+??? Replaces all cells in <code>list</code> matching <code>cond</code> with <code>with</code>.
+??? @curries
+??? @type cond (*)
+??? @type with (*)
+??? @type list [(*)]
+??? @return [(*)]
+??? @genre list
+??? @example mat1 := Identity[4]
+??? @example Display[CellReplace[0, 9, mat1]]
+??? @example ??  1 9 9 9
+??? @example ??  9 1 9 9
+??? @example ??  9 9 1 9
+??? @example ??  9 9 9 1
+??? @example mat2 := Integers[3, 3]
+??? @example Display[CellReplace[Odd, Square, mat2]]
+??? @example ??  0  1  2
+??? @example ??  9  4 25
+??? @example ??  6 49  8
+??? @example Print[CellReplace[Positive, `-, -4:4]]
+??? @example ?? [-4, -3, -2, -1, 0, -1, -2, -3, -4]
+CellReplace := Curry[[cond, with, list] -> {
+    cond .= MakeFunction[cond, `==]
+    with .= MakeFunction[with]
+    ${
+        If[cond[x],
+            with[x],
+            x
+        ]
+    } @> list
+}]
+??>>
+
+??<<
+??? Returns the norm of <code>x</code>.
+??? @type x [(*)]
+??? @return number
+??? @genre list
+??? @example Print[Norm[3'4]]
+??? @example ?? 5.0
+??? @example Print[Norm[-2+1i]]
+??? @example ?? 2.23606797749979
+Norm[x] := (
+    list .= Flat[CellReplace[IsImaginary, ReIm, x]];;
+    Sqrt[Sum[list^2]]
+)
+??>>
+
+??<<
 ??? Returns all overlapping slices of size <code>2</code> in <code>list</code>.
 ??? @type list [(*)]
 ??? @return [(*)]
@@ -511,3 +582,9 @@ BinString   := ToBaseString&2
 UnBinString := FromBaseString&2
 OctString   := ToBaseString&8
 UnOctString := FromBaseString&8
+
+?? expected value
+E[dist] :=
+    Sum[`* &> dist]
+
+HashFrom := Hash@Stitch

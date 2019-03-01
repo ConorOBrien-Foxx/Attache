@@ -22,86 +22,111 @@ FormatStringInformation = Struct.new(:token, :count) {
         "FSI(#{token}, #{count})"
     end
 }
-def parse(code)
-    # group expression
-    stack = []
-    out = []
-    arities = []
-    # keep track of curries promoted to calls
-    curry_mask = []
-    last_token = Token.new nil, nil, nil
-    parens = []
 
-    format_string_stack = []
+class AtParser
+    def initialize(code)
+        @stack = []
+        @out = []
+        @arities = []
+        @curry_mask = []
+        @last_token = Token.new nil, nil, nil
+        @parens = []
+        @format_string_stack = []
+        @code = code
+        @source = tokenize @code
+        @consume_queue = []
+    end
 
-    # di "tokenizer"
-    tokenize(code).each { |ent|
+    def read_token
+        if @consume_queue.empty?
+            @source.next
+        else
+            @consume_queue.shift
+        end
+    rescue StopIteration
+        nil
+    end
+
+    def imp_call_start?(type)
+        [:word, :bracket_close, :func_end, :paren_close].include? type
+    end
+
+    def step
+        ent = read_token
+
+        return :stop if ent.nil?
+
         raw, type, start = ent
 
-        next if type == :comment
+        return if type == :comment
 
-        # cls
-        # dh "current", ent
-        # darr "stack", stack
-        # darr "out", out
-        # darr "format", format_string_stack
-        # STDIN.gets
+        if raw == "{" && imp_call_start?(@last_token.type) && @last_token.line == ent.line
+            ## call func
+            @consume_queue << Token.new("!!", :operator)
+            @consume_queue << ent
+            return
+        end
 
         if type == :format_string_begin
-            format_string_stack.push FormatStringInformation.new(ent, 1)
-            stack.push Token.new(nil, :format_indicator, nil)
-            next
+            @format_string_stack.push FormatStringInformation.new(ent, 1)
+            @stack.push Token.new(nil, :format_indicator, nil)
+            return
 
         elsif type == :format_string_continue
-            flush(out, stack, [:format_indicator])
-            format_string_stack.last.count += 1
-            format_string_stack.last.token.raw += raw
-            next
+            flush(@out, @stack, [:format_indicator])
+            @format_string_stack.last.count += 1
+            @format_string_stack.last.token.raw += raw
+            return
 
         elsif type == :format_string_end
-            format_string_stack.last.token.raw += raw
-            info = format_string_stack.pop
+            @format_string_stack.last.token.raw += raw
+            info = @format_string_stack.pop
             token = info.token
             token.type = :format_string
-            flush(out, stack, [:format_indicator])
-            stack.pop
-            out << Token.new(info.count, :format_string_count, nil)
-            out << token
-            next
+            flush(@out, @stack, [:format_indicator])
+            @stack.pop
+            @out << Token.new(info.count, :format_string_count, nil)
+            @out << token
+            return
 
         end
 
         is_data = $DATA.include?(type) || open_func?(type) # || type == :curry_open
-        last_was_data = $DATA_SIGNIFIER.include? last_token.type
+        last_was_data = $DATA_SIGNIFIER.include? @last_token.type
+        both_are_data = is_data && last_was_data
 
         # two adjacent datatypes mark a statement
-        if (is_data && last_was_data || type == :statement_sep) && format_string_stack.empty?
-            flush(out, stack, [:func_start, :named_func_start])
+        flush_stack =
+            (both_are_data || type == :statement_sep) &&
+            @format_string_stack.empty?
+
+        if flush_stack
+            flush(@out, @stack, [:func_start, :named_func_start])
         end
 
         if type == :statement_sep
-            last_token = ent
-            next
+            @last_token = ent
+            return
         end
 
         if $DATA.include? type
-            out.push ent
+            @out.push ent
 
         elsif open_func? type
-            stack.push ent
-            out.push ent
+            @stack.push ent
+            @out.push ent
 
         elsif type == :func_end
-            while stack.last && [:operator, :unary_operator].include?(stack.last.type)
-                out.push stack.pop
+            while @stack.last && [:operator, :unary_operator].include?(@stack.last.type)
+                @out.push @stack.pop
             end
 
             collect = []
-            until out.empty? || open_func?(out.last.type)
-                collect.unshift out.pop
+            until @out.empty? || open_func?(@out.last.type)
+                collect.unshift @out.pop
             end
 
-            if out.last.type == :named_func_start
+            if @out.last.type == :named_func_start
                 #Token<"x", :word, 3>, #Token<"_", :abstract, 8>, #Token<".=", :operator, 5>
                 prefix = []
                 ["x", "y", "z"].each_with_index { |var, i|
@@ -112,21 +137,21 @@ def parse(code)
                 collect = prefix.concat collect
             end
 
-            next_start = stack.pop.start
-            out.pop
+            next_start = @stack.pop.start
+            @out.pop
 
-            out.push Token.new collect, :make_lambda, next_start
+            @out.push Token.new collect, :make_lambda, next_start
 
         elsif type == :operator
-            if last_token.nil? || !$DATA_SIGNIFIER.include?(last_token.type)
+            if @last_token.nil? || !$DATA_SIGNIFIER.include?(@last_token.type)
                 ent.type = :unary_operator
 
             else
                 cur_prec, cur_assoc = $PRECEDENCE[raw]
                 # NOTE: precedence determining
                 loop {
-                    break if stack.empty?
-                    top_raw, top_type = stack.last
+                    break if @stack.empty?
+                    top_raw, top_type = @stack.last
                     break if top_type != :operator && top_type != :unary_operator
                     top_prec, top_assoc = $PRECEDENCE[top_raw]
 
@@ -135,118 +160,103 @@ def parse(code)
                     end
 
                     break if top_assoc == :right ? top_prec <= cur_prec : top_prec < cur_prec
-                    out.push stack.pop
+                    @out.push @stack.pop
                 }
             end
-            stack.push ent
+            @stack.push ent
 
         elsif type == :bracket_open
-            if !stack.empty? && stack.last.raw == "."
-                out.push stack.pop
+            if !@stack.empty? && @stack.last.raw == "."
+                @out.push @stack.pop
             end
 
             # determine if a function call
-            unless $SEPARATOR.include? last_token.type
+            unless $SEPARATOR.include? @last_token.type
                 # the "V" function creates an array
-                out.push Token.new "V", :word, nil
+                @out.push Token.new "V", :word, nil
             end
-            stack.push ent
-            arities.push 1
+            @stack.push ent
+            @arities.push 1
 
         elsif type == :curry_open
-            if !stack.empty? && stack.last.raw == "."
-                out.push stack.pop
+            if !@stack.empty? && @stack.last.raw == "."
+                @out.push @stack.pop
             end
 
             # determine if a curry call
-            unless $SEPARATOR.include? last_token.type
+            unless $SEPARATOR.include? @last_token.type
                 # the "Hash" function creates a hash
-                out.push Token.new "Hash", :word, nil
-                stack.push Token.new "[", :bracket_open, nil
-                curry_mask << true
+                @out.push Token.new "Hash", :word, nil
+                @stack.push Token.new "[", :bracket_open, nil
+                @curry_mask << true
             else
-                stack.push ent
-                curry_mask << false
+                @stack.push ent
+                @curry_mask << false
             end
-            arities.push 1
+            @arities.push 1
 
         elsif type == :comma
-            unless arities.last.nil?
-                arities[-1] += 1
+            unless @arities.last.nil?
+                @arities[-1] += 1
             end
 
-            out.push stack.pop while stack.last && [:operator, :unary_operator].include?(stack.last.type)
+            @out.push @stack.pop while @stack.last && [:operator, :unary_operator].include?(@stack.last.type)
 
-            if arities.last.nil?
-                parens[-1] = true
-                out.push Token.new "discard", :discard, nil
+            if @arities.last.nil?
+                @parens[-1] = true
+                @out.push Token.new "discard", :discard, nil
             end
 
-        elsif type == :bracket_close || (type == :curry_close && curry_mask.pop)
-            if last_token.type == :bracket_open || last_token.type == :curry_open
-                arities[-1] = 0
+        elsif type == :bracket_close || (type == :curry_close && @curry_mask.pop)
+            if @last_token.type == :bracket_open || @last_token.type == :curry_open
+                @arities[-1] = 0
             end
 
             loop {
-                if stack.empty?
+                if @stack.empty?
                     raise AttacheSyntaxError.new("Unmatched closing brace: #{ent.raw}", ent.position)
                     # STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
                     # return nil
                 end
-                break if stack.last.type == :bracket_open
-                out.push stack.pop
+                break if @stack.last.type == :bracket_open
+                @out.push @stack.pop
             }
 
-            out.push Token.new arities.pop, :call_func, nil
+            @out.push Token.new @arities.pop, :call_func, nil
 
-            stack.pop
+            @stack.pop
 
         elsif type == :curry_close
-            if last_token.type == :curry_open
-                arities[-1] = 0
+            if @last_token.type == :curry_open
+                @arities[-1] = 0
             end
 
-            while stack.last.type != :curry_open
-                out.push stack.pop
+            while @stack.last.type != :curry_open
+                @out.push @stack.pop
             end
 
-            out.push Token.new arities.pop, :curry_func, nil
+            @out.push Token.new @arities.pop, :curry_func, nil
 
-            stack.pop
+            @stack.pop
 
         elsif type == :paren_open
-            stack.push ent
-            # dh "stack", stack
-            # dh "out", out
-            arities.push nil
-            parens.push nil
+            @stack.push ent
+            @arities.push nil
+            @parens.push nil
 
         elsif type == :paren_close
-            arities.pop
+            @arities.pop
             temp = []
             loop {
-                if stack.empty?
+                if @stack.empty?
                     raise AttacheSyntaxError.new("Expected an open parenthesis to match #{raw.inspect}", ent.position)
                 end
-                break if stack.last.type == :paren_open
-                temp.push stack.pop
+                break if @stack.last.type == :paren_open
+                temp.push @stack.pop
             }
-            stack.pop
+            @stack.pop
 
-            # if parens.pop
-                # # out.unshift Token.new "Last", :word, nil
-                # # stack.unshift Token.new "[", :bracket_open, nil
-                # # dh "stack", stack
-                # # dh "out", out
-            # else
-                # # dh "stack", stack
-                # # stack.pop
-            # end
-
-
-            # temp.unshift Token.new("Last",:word,nil) if parens.pop
-
-            out.concat temp
+            @out.concat temp
 
         elsif type == :whitespace
             # do nothing
@@ -255,17 +265,33 @@ def parse(code)
             STDERR.puts "Unknown type #{type.inspect} (#{raw.inspect}) during shunting"
             raise
         end
-        last_token = ent if type != :whitespace
-    }
-
-    flush out, stack
-
-    offender = out.find { |raw, type| type == :bracket_open }
-    if offender
-        raise AttacheSyntaxError.new("Unmatched closing brace: #{offender.raw}", offender.position)
-    else
-        out
+        @last_token = ent if type != :whitespace
     end
+
+    def parse
+        loop {
+            running = step != :stop
+            break unless running
+        }
+
+        flush @out, @stack
+
+        offender = @out.find { |raw, type|
+            type == :bracket_open
+        }
+        if offender
+            raise AttacheSyntaxError.new(
+                "Unmatched closing brace: #{offender.raw}",
+                offender.position
+            )
+        else
+            @out
+        end
+    end
+end
+
+def parse(code)
+    AtParser.new(code).parse
 end
 
 def get_abstract_number(abstract, default=0)
@@ -951,6 +977,7 @@ class AtState
                 val = evaluate_node val
                 raise if is_vector #todo: fix
                 set_op_quote op, val, arity
+                return val
             else
                 #todo: pattern matching++
                 args = var.children.map { |e|
@@ -966,6 +993,7 @@ class AtState
                     args.each_with_index { |arg, i|
                         send dest, arg, val[i]
                     }
+                    return val
                 else
                     res = AtLambda.new [val], args
 
@@ -987,6 +1015,7 @@ class AtState
                     else
                         send dest, var.head.raw, res
                     end
+                    return res
                 end
             end
         else
@@ -1000,6 +1029,7 @@ class AtState
                 name = var.raw
             end
             send dest, name, res
+            return res
         end
     end
 

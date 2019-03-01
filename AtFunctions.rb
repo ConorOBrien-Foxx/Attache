@@ -232,12 +232,15 @@ module AtFunctionCatalog
         # @genre data
         #>>
         "Hash" => lambda { |inst, *opts|
-            res = {}
-            # p opts
-            opts.each { |k, v|
-                res[k] = v
-            }
-            res
+            if opts.size == 1 && !(ConfigureValue === opts[0])
+                Hash[*opts]
+            else
+                res = {}
+                opts.each { |k, v|
+                    res[k] = v
+                }
+                res
+            end
         },
         # "Hold" => lambda { |inst, fn|
         #     if AtState.func_like? fn
@@ -538,8 +541,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Pop" => lambda { |inst, list|
-            list.pop
+        "Pop" => lambda { |inst, list, count=nil|
+            list.pop *count
         },
         #<<
         # Pops a member from the start of <code>list</code>, modifying it. Returns that element.
@@ -547,8 +550,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Shift" => lambda { |inst, list|
-            list.shift
+        "Shift" => lambda { |inst, list, count=nil|
+            list.shift *count
         },
         #<<
         # Pushes <code>args</code> to the end of <code>list</code>, modifying it. Returns <code>list</code>.
@@ -641,7 +644,7 @@ module AtFunctionCatalog
                 value = f[inst, i]
                 unless value.nil?
                     break if config[:include] ? value > max : value >= max
-                    collect.push value if cond[inst, value]
+                    collect.push value if AtState.truthy? cond[inst, value]
                 end
                 i = @@functions["Succ"][inst, i]
             }
@@ -665,7 +668,7 @@ module AtFunctionCatalog
             collect = []
 
             inst.cast_list(list).each { |el|
-                break unless cond[inst, el]
+                break unless AtState.truthy? cond[inst, el]
                 collect << el
             }
 
@@ -1895,7 +1898,7 @@ module AtFunctionCatalog
         "InvocationIndex" => lambda { |inst, func|
             i = -1
             lambda { |inst, *args|
-                func[inst, *args, @@functions["Succ"][inst, i]]
+                func[inst, *args, i = @@functions["Succ"][inst, i]]
             }
         },
         #<<
@@ -1980,9 +1983,9 @@ module AtFunctionCatalog
         # @example Print[NestWhile[Halve, Even, 100]]
         # @example ?? 25
         #>>
-        "NestWhile" => lambda { |inst, f, cond, init|
+        "NestWhile" => curry { |inst, f, cond, init|
             iter = init
-            while cond[inst, iter]
+            while AtState.truthy? cond[inst, iter]
                 iter = f[inst, iter]
             end
             iter
@@ -2002,7 +2005,7 @@ module AtFunctionCatalog
             first = get_default opts, :first, true
             iter = init
             list = first ? [iter] : []
-            while cond[inst, iter]
+            while AtState.truthy? cond[inst, iter]
                 iter = f[inst, iter]
                 list << iter
             end
@@ -3434,6 +3437,9 @@ module AtFunctionCatalog
                 }
             end
         },
+        "Sorted" => lambda { |inst, list|
+            !@@functions["Delta"][inst, list].any?(&:negative?)
+        },
         #<<
         # Shuffles the contents of <code>list</code>.
         # @type list [(*)]
@@ -3486,11 +3492,12 @@ module AtFunctionCatalog
                 }.join "\n"
             else
                 zipwith(*args.map { |e| deep_copy e }) { |*args|
-                    args.reject(&:nil?).inject(:concat)
+                    args.map { |e| [*e] }
+                        .inject([], :concat)
                 }
             end
         },
-        "Subsets" => lambda { |inst, list, n=list.size, exclude=[]|
+        "Subslices" => lambda { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
             if n < 0
                 n = (list.size + n) % list.size
@@ -3499,6 +3506,22 @@ module AtFunctionCatalog
             exclude = [*exclude]
             res.concat @@functions["Slices"][inst, list, (1..n).to_a]
             res.delete_if { |e| exclude.include? e.size }
+        },
+        "WithoutOnce" => lambda { |inst, a, b|
+            b.each { |e|
+                a = @@functions["RemoveFirst"][inst, a, e]
+            }
+            a
+        },
+        # i.e. "radation hardened"
+        "Radiations" => lambda { |inst, list, n=list.size|
+            @@functions["Subslices"][inst, list, n].map { |sub|
+                @@functions["WithoutOnce"][inst, list, sub]
+            }
+        },
+        # same as Combinations
+        "Subsets" => lambda { |inst, list|
+            @@functions["Combinations"][inst, list]
         },
         "Sum" => lambda { |inst, list|
             list = inst.cast_list(list)
@@ -3575,7 +3598,7 @@ module AtFunctionCatalog
 
             (a..b).each { |y|
                 (a...y).each { |x|
-                    pairs << [x, y] if cond[inst, x, y]
+                    pairs << [x, y] if AtState.truthy? cond[inst, x, y]
                 }
             }
 
@@ -4050,11 +4073,19 @@ module AtFunctionCatalog
             }
         },
         "Select" => curry { |inst, f, list|
-            iter = inst.cast_list list
-            res = iter.select { |e|
-                AtState.truthy? f[inst, e]
-            }
-            reform_list res, list
+            if AtState.func_like? list
+                lambda { |inst, arg|
+                    @@functions["Select"][inst, f,
+                        list[inst, arg]
+                    ]
+                }
+            else
+                iter = inst.cast_list list
+                res = iter.select { |e|
+                    AtState.truthy? f[inst, e]
+                }
+                reform_list res, list
+            end
         },
         "Table" => curry(2) { |inst, f, as, bs=as|
             as.map { |a|
@@ -4663,14 +4694,14 @@ module AtFunctionCatalog
             }
         },
         "Commonest" => lambda { |inst, ent, n=1|
-            commonest = list.each_with_object(Hash.new(0)) { |m, h|
+            commonest = ent.each_with_object(Hash.new(0)) { |m, h|
                 h[m] += 1
             }
             .group_by(&:last)
-            .sort_by(&:last)
-            .reverse_each { |k, v|
+            .sort_by(&:first)
+            .map { |k, v|
                 v.map &:first
-            }
+            }.reverse!
             if Array === n
                 n.map { |i| commonest[i > 0 ? i - 1 : i] }
             else
@@ -5614,6 +5645,13 @@ module AtFunctionCatalog
                 raise AttacheUnimplementedError.new("a!b is not defined for non-functional arguments", inst.position)
             end
         },
+        "!!" => lambda { |inst, a, b|
+            if AtState.func_like? a
+                a[inst, b]
+            else
+                raise AttacheUnimplementedError.new("a!!b is not defined for non-functional arguments", inst.position)
+            end
+        },
     }
 
     @@unary_operators = {
@@ -5677,7 +5715,7 @@ module AtFunctionCatalog
         "\\" => lambda { |inst, f|
             if AtState.func_like? f
                 lambda { |inst, first, *args|
-                    f[inst, last]
+                    f[inst, first]
                 }
             else
                 raise AttacheUnimplementedError.new("\\ is not defined for `#{f.class.name}`", inst.position)

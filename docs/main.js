@@ -35,7 +35,7 @@ function updateRows() {
     rows.forEach(function(el, i) {
         var sourceEl = el.querySelector(".genre");
         var genreEl = normalizeGenre(sourceEl.textContent);
-        
+
         if(included.size === 0) {
             restoreRow(i);
             el.classList.remove("focused");
@@ -53,31 +53,42 @@ function updateRows() {
 
 window.addEventListener("load", function() {
     document.querySelectorAll(".source-button").forEach(function(button) {
-        var sourceId = button.id.replace("-button", "-source");
+        var id = button.id.replace("-button", "");
+        button.timer = null;
+        var sourceId = id + "-source";
         var source = document.getElementById(sourceId);
+        var pre = source.querySelector("pre");
         var hidden = true;
         button.addEventListener("click", function() {
+            clearInterval(button.timer);
             if(hidden) {
+                pre.innerHTML = SOURCE_LIST[id];
                 source.style.height = source.scrollHeight + "px";
             }
             else {
                 source.style.height = "0px";
+                this.timer = setInterval(function() {
+                    if(source.offsetHeight === 0) {
+                        clearInterval(button.timer);
+                        pre.innerHTML = "";
+                    }
+                }, 100);
             }
-            
+
             hidden = !hidden;
         });
     });
-    
+
     functions = document.getElementById("functions");
     // var rows = functions.children;
     rows = document.querySelectorAll(".function");
     var sources = document.querySelectorAll(".genre-source");
     sources.forEach(function(source) {
         var genre = normalizeGenre(source.textContent);
-        
+
         // is this genre focused?
         var focused = false;
-        
+
         source.addEventListener("click", function() {
             console.log("Clicked on " + genre);
             focused = !focused;
@@ -88,9 +99,9 @@ window.addEventListener("load", function() {
                 included.delete(genre);
             }
             lastFocus = genre;
-            
+
             source.style.backgroundColor = focused ? "#C6EAEA" : "";
-            
+
             updateRows();
         });
     });

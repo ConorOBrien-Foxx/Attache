@@ -19,6 +19,24 @@
 
 <p>This page is meant to document the syntax of Attache as a reference.</p>
 
+<h2>Data</h2>
+
+<p>Numbers are as you might expect, with a few, language-specific quirks:</p>
+<pre class="markdown"><code><code class="at_number">3</code><code class="at_whitespace">           </code><code class="at_comment">?? integer
+</code><code class="at_number">4.3</code><code class="at_whitespace">         </code><code class="at_comment">?? system float
+</code><code class="at_number">7x</code><code class="at_whitespace">          </code><code class="at_comment">?? extended precision
+</code><code class="at_number">2</code><code class="at_operator">-</code><code class="at_number">4i</code><code class="at_whitespace">        </code><code class="at_comment">?? complex number with integer parts
+</code><code class="at_number">3.4</code><code class="at_operator">+</code><code class="at_number">2.9i</code><code class="at_whitespace">    </code><code class="at_comment">?? complex number with float parts
+</code><code class="at_number">9x</code><code class="at_operator">+</code><code class="at_number">12ix</code><code class="at_whitespace">     </code><code class="at_comment">?? complex number with extended precision parts
+</code><code class="at_number">3</code><code class="at_operator">//</code><code class="at_number">5</code><code class="at_whitespace">        </code><code class="at_comment">?? fraction
+</code></code></pre>
+<p>There are various types of strings:</p>
+<pre class="markdown"><code><code class="at_string">&quot;Hello!&quot;</code><code class="at_whitespace">                </code><code class="at_comment">?? normal string
+</code><code class="at_string">&quot;\x43&quot;</code><code class="at_whitespace">                  </code><code class="at_comment">?? normal string with hex escape
+</code><code class="at_format_string_begin">$&quot;sum = ${</code><code class="at_number">3</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">4</code><code class="at_format_string_end">}&quot;</code><code class="at_whitespace">       </code><code class="at_comment">?? interpolated string
+</code><code class="at_raw_string">`&quot;C:\Users\attacher&quot;</code><code class="at_whitespace">    </code><code class="at_comment">?? raw string
+</code><code class="at_operator">/</code><code class="at_raw_string">`&quot;[A-Z]\w+&quot;</code><code class="at_whitespace">            </code><code class="at_comment">?? regex-like string
+</code></code></pre>
 <h2>Operators</h2>
 
 <p>Operators are either <strong>unary</strong> or <strong>binary</strong> (aka: monadic and dyadic). All operators can exist in either form, even though they may lack definitions for those forms. For example, while <code>%</code> is only defined dyadically, the monadic syntax is still available.</p>
@@ -42,7 +60,7 @@
 </code><code class="at_word">f2</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_named_func_start">${</code><code class="at_whitespace"> </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">*</code><code class="at_word">y</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace">
 </code><code class="at_word">f3</code><code class="at_bracket_open">[</code><code class="at_word">x</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">y</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">x</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">*</code><code class="at_word">y</code><code class="at_whitespace">
 </code></code></pre>
-<p><code>f1</code> and <code>f2</code> are different versions of lambdas, while <code>f3</code> is an explicit definition. Under the hood, they all do much the same thing.</p>
+<p><code>f1</code> and <code>f2</code> are different versions of lambdas, while <code>f3</code> is an explicit definition. Under the hood, they all do the same thing.</p>
 
 <p>You can overload operators:</p>
 <pre class="markdown"><code><code class="at_comment">?? test function
@@ -60,8 +78,13 @@
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_operator">~</code><code class="at_string">&quot;q&quot;</code><code class="at_bracket_close">]</code><code class="at_whitespace">     </code><code class="at_comment">?? Unary: q
 </code><code class="at_whitespace">
 </code><code class="at_comment">?? overload only one arity of an operator
-</code><code class="at_op_quote">`!</code><code class="at_operator">/</code><code class="at_number">2</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">test</code><code class="at_whitespace">
-</code><code class="at_op_quote">`+</code><code class="at_operator">/</code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">test</code><code class="at_whitespace">
+</code><code class="at_op_quote">`!</code><code class="at_operator">/</code><code class="at_number">2</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">test</code><code class="at_whitespace">    </code><code class="at_comment">?? overload binary factorial
+</code><code class="at_op_quote">`+</code><code class="at_operator">/</code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">test</code><code class="at_whitespace">    </code><code class="at_comment">?? overload unary plus
+</code><code class="at_whitespace">
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_operator">!</code><code class="at_number">3</code><code class="at_bracket_close">]</code><code class="at_whitespace">       </code><code class="at_comment">?? 6
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_number">3</code><code class="at_operator">!</code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_whitespace">      </code><code class="at_comment">?? Other: 3; 4
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_operator">+</code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_whitespace">       </code><code class="at_comment">?? Unary: 4
+</code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_number">3</code><code class="at_operator">+</code><code class="at_number">4</code><code class="at_bracket_close">]</code><code class="at_whitespace">      </code><code class="at_comment">?? 7
 </code></code></pre>
     </div>
 </body>
