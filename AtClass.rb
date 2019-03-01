@@ -3,15 +3,15 @@
 require_relative 'AtState.rb'
 
 class AtClassMethod < AtLambda
-    def initialize(inner_ast, params=[], raw: [])
-        super(inner_ast, params, raw: raw)
+    def initialize(inner_ast, params=[], parent_scope={}, raw: [])
+        super(inner_ast, params, parent_scope, raw: raw)
         @parent = nil
     end
 
     attr_accessor :parent
 
     def AtClassMethod.from(lam)
-        AtClassMethod.new lam.tokens, lam.params, raw: lam.raw
+        AtClassMethod.new lam.tokens, lam.params, lam.parent_scope, raw: lam.raw
     end
 
     def [](inst, *args)

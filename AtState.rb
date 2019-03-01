@@ -490,9 +490,10 @@ end
 class AtLambda
     ARG_CONST = "ARGUMENTS"
     OPTS_CONST = "OPTIONS"
-    def initialize(inner_ast, params=[], raw: [])
+    def initialize(inner_ast, params=[], parent_scope={}, raw: [])
         @tokens = [*inner_ast]
         @params = params
+        @parent_scope = parent_scope
         @scope = {}
         @ascend = true
         @descend = true
@@ -516,9 +517,10 @@ class AtLambda
 
     alias :arity :size
 
-    attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw
+    attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw, :parent_scope
 
     def call(inst, args, opts=nil)
+            inst.locals.push(@parent_scope) if @descend
             inst.local_descend(@scope) if @descend
             # define locals
             inst.define_local ARG_CONST, args
@@ -531,6 +533,7 @@ class AtLambda
             }
 
             temp_scope = @scope.dup
+            temp_parent_scope = @parent_scope.dup
 
             res = @tokens.map.with_index { |token, i|
 
@@ -555,8 +558,10 @@ class AtLambda
 
             inst.abstract_references.pop
             temp_scope = inst.local_ascend if @ascend
+            temp_parent_scope = inst.locals.pop if @ascend
 
             @scope.merge! temp_scope
+            @parent_scope.merge! temp_parent_scope
 
             res
     end
@@ -1001,7 +1006,7 @@ class AtState
                     }
                     return val
                 else
-                    res = AtLambda.new [val], args
+                    res = AtLambda.new [val], args, @locals.last
 
                     attributes.each { |attr|
                         old = res
