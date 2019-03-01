@@ -379,3 +379,82 @@ AtState.function "ReIm", &lambda { |inst, n|
     [inst["Re", n], inst["Im", n]]
 }
 ##>>
+
+##<<
+## Returns a function which applies <code>f</code> to the grid of charcters in a string. This returns a string.
+## @type f fn
+## @return fn
+## @genre functional/string
+## @example succEach := OverGrid[@Succ]
+## @example Print[succEach["hello\nworld"]]
+## @example ?? ifmmp
+## @example ?? xpsme
+AtState.function "OverGrid", &lambda { |inst, f|
+    lambda { |inst, arg|
+        grid = inst["Grid", arg]
+        result = f[inst, grid]
+        fitted = inst["UnGrid", result]
+    }
+}
+##>>
+
+##<<
+## Returns a function which applies <code>f</code> to the charcters in a string. This returns a string.
+## @type f fn
+## @return fn
+## @genre functional/string
+## @example doubleEach := OverChars { _ * 2 }
+## @example Print[doubleEach["Hello!"]]
+## @example ?? HHeelllloo!!
+AtState.function "OverChars", &lambda { |inst, f|
+    lambda { |inst, str|
+        chars = inst["Chars", str]
+        result = f[inst, chars]
+        fitted = inst["Join", result]
+    }
+}
+##>>
+
+##<<
+## Returns the minimum and the maximum of <code>list</code> in a 2-element array.
+## @type list [(*)]
+## @return [(*), (*)]
+## @genre list
+## @example list := [1, 9, 3, -5, 0, 0, 12]
+## @example Print[MinMax[list]]
+## @example ?? [-5, 12]
+AtState.function "MinMax", &lambda { |inst, list|
+    list.inject([Infinity, -Infinity]) { |(min, max), el|
+        [
+            el < min ? el : min,
+            el > max ? el : max
+        ]
+    }
+}
+##>>
+
+##<<
+## Returns all positive integers which divide <code>n</code> which are also
+## less than or equal to <code>Sqrt[n]</code>.
+## @type n number
+## @return [number]
+## @genre numeric
+AtState.function "RawDivisors", &lambda { |inst, n|
+    (1..inst["Sqrt", n]).select { |i|
+        inst["|", i, n]
+    }
+}
+##>>
+
+##<<
+## Returns all positive integers which divide <code>n</code>.
+## @type n number
+## @return [number]
+## @genre numeric
+AtState.function "Divisors", &vectorize_monad { |inst, n|
+    divisors = inst["RawDivisors", n]
+    divisors + divisors.reverse.map { |e|
+        inst["/", n, e]
+    }
+}
+##>>

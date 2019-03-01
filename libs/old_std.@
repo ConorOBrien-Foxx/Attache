@@ -23,54 +23,6 @@ ClassNamed[Point]! {
 ??>>
 
 ??<<
-??? Returns a function which applies <code>f</code> to the grid of charcters in a string. This returns a string.
-??? @type f fn
-??? @return fn
-??? @genre functional/string
-OverGrid[f] := UnGrid@f@Grid
-??>>
-
-??<<
-??? Returns a function which applies <code>f</code> to the charcters in a string. This returns a string.
-??? @type f fn
-??? @return fn
-??? @genre functional/string
-OverChars[f] := Join@f@Chars
-??>>
-
-??<<
-??? Returns the minimum and the maximum of <code>list</code> in a 2-element array.
-??? @type list [(*)]
-??? @return [(*), (*)]
-??? @genre list
-??? @example list := [1, 9, 3, -5, 0, 0, 12]
-??? @example Print[MinMax[list]]
-??? @example ?? [-5, 12]
-MinMax := Min # V # Max
-??>>
-
-??<<
-??? Returns all positive integers which divide <code>n</code> which are also
-??? less than or equal to <code>Sqrt[n]</code>.
-??? @type n number
-??? @return [number]
-??? @genre numeric
-RawDivisors[n] :=
-    `|&_ \ 1:Sqrt[n]
-??>>
-
-??<<
-??? Returns all positive integers which divide <code>n</code>.
-??? @type n number
-??? @return [number]
-??? @genre numeric
-Divisors := @{
-    d .= RawDivisors[_]
-    Union[d, Reverse[_ / d]]
-}
-??>>
-
-??<<
 ??? Returns all but the last element of <code>list</code>.
 ??? @type list [(*)]
 ??? @return [(*)]
