@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 load 'boilerplates.rb'
 require_relative 'AtState.rb'

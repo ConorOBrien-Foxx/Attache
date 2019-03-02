@@ -1,4 +1,12 @@
-require 'ruby-prof'
+#/usr/bin/env ruby
+
+begin
+    require 'ruby-prof'
+rescue LoadError
+    puts "Profiling requires ruby-prof to be installed"
+    puts "Use `gem install ruby-prof` to install"
+    exit
+end
 require_relative 'AtState.rb'
 
 RubyProf.start
