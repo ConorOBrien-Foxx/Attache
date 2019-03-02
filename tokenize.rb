@@ -341,7 +341,7 @@ class AtTokenizer
                 first_time = true
                 loop {
                     # TODO: make an  format string not "FORMAT_STRING_END"
-                    token.raw += read_until(/\G#$FORMAT_STRING_INTERRUPT|\G#$FORMAT_STRING_END/, /""/)
+                    token.raw += read_until(/#$FORMAT_STRING_INTERRUPT|#$FORMAT_STRING_END/, /""/)
                     token.raw += @match
                     advance @match.size
                     if $FORMAT_STRING_END === @match
