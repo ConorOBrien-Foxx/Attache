@@ -3,7 +3,8 @@ def color_inspect(item, color: true)
     if item.is_a? Array
         return "[#{item.map { |el| color_inspect(el, color: color) }.join(", ") }]"
     elsif item.is_a? Hash
-        return "[#{item.map { |key, value| color_inspect(key, color: color) + " => " + color_inspect(value, color: color) }.join(", ") }]"
+        arrow = color ? " \x1b[34m=>\x1b[0m " : " => "
+        return "[#{item.map { |key, value| color_inspect(key, color: color) + arrow + color_inspect(value, color: color) }.join(", ") }]"
     end
     if item.method(:inspect).parameters.any? { |param| param == [:key, :color] }
         string = item.inspect(color: color)

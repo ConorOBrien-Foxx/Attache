@@ -24,7 +24,7 @@ REPL := {
         If[#previous = 0 or Last[previous] =/= next,
             Unshift[previous, Entry[line, res]]
         ]
-        Display[res]
+        Display[res, Color->true]
     }~>, {
         If[_ is_an AttacheError,
             Print[_.readable],
