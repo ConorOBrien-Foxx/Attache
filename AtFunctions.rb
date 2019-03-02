@@ -4669,12 +4669,11 @@ module AtFunctionCatalog
             end
         },
         "TryCatch" => lambda { |inst, body, catch|
-            res = inst.evaluate_node body
-            if AtError === res
-                inst.evaluate_node catch, [res], check_error: false
+            begin
+                inst.evaluate_node body
+            rescue Exception => e
+                inst.evaluate_node catch, [e], check_error: false
                 nil
-            else
-                res
             end
         },
         "Safely" => lambda { |inst, func, catch=nil, **opts|

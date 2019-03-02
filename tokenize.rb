@@ -272,8 +272,13 @@ class AtTokenizer
 
     def advance(n = 1)
         s = @code[@i, n]
-        @line += s.count("\n")
-        @column = s.match(/^.*\Z/).length
+        lines = s.count("\n")
+        @line += lines
+        if lines > 0
+            @column = s.match(/^.*\Z/).size
+        else
+            @column += s.size
+        end
         @i += n
     end
 
@@ -286,7 +291,7 @@ class AtTokenizer
                 nil
             end
         else
-            if @code[@i, entity.length] == entity
+            if @code[@i, entity.size] == entity
                 @match = entity
             else
                 nil

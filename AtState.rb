@@ -215,7 +215,7 @@ class AtParser
 
             loop {
                 if @stack.empty?
-                    raise AttacheSyntaxError.new("Unmatched closing brace: #{ent.raw}", ent.position)
+                    raise AttacheSyntaxError.new("Unmatched closing brace: #{ent.raw}", ent.line, ent.column)
                     # STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
                     # return nil
                 end
@@ -250,7 +250,7 @@ class AtParser
             temp = []
             loop {
                 if @stack.empty?
-                    raise AttacheSyntaxError.new("Expected an open parenthesis to match #{raw.inspect}", ent.position)
+                    raise AttacheSyntaxError.new("Expected an open parenthesis to match #{raw.inspect}", ent.line, ent.column)
                 end
                 break if @stack.last.type == :paren_open
                 temp.push @stack.pop
@@ -283,7 +283,8 @@ class AtParser
         if offender
             raise AttacheSyntaxError.new(
                 "Unmatched closing brace: #{offender.raw}",
-                offender.position
+                offender.line,
+                offender.column
             )
         else
             @out
@@ -730,10 +731,10 @@ def ast(program)
             # stack.push Node.new ent, [stack.pop]
 
         elsif type == :paren_open
-            raise AttacheSyntaxError.new("Unmatched parenthesis: #{raw.inspect}", ent.position)
+            raise AttacheSyntaxError.new("Unmatched parenthesis: #{raw.inspect}", ent.line, ent.column)
 
         else
-            raise AttacheUnimplementedError.new("Unhandled type during shunting: #{type}", ent.position)
+            raise AttacheUnimplementedError.new("Unhandled type during shunting: #{type}", ent.line, ent.column)
         end
     }
     stack
@@ -801,9 +802,10 @@ class Type
 end
 
 class AttacheError < Exception
-    def initialize(message, line=nil)
+    def initialize(message, line=nil, column=nil)
         @message = message
         @line = line
+        @column = column
     end
 
     def AttacheError.descendants
@@ -811,7 +813,7 @@ class AttacheError < Exception
     end
 
     def readable
-        "#{self.class.name}: #{@line ? "(#{@line})" : ""} #{@message}"
+        "#{self.class.name[7, self.class.name.size]}: #{@line ? @column ? "(#{@line}:#{@column})" : "(#{@line})" : ""} #{@message}"
     end
 end
 
@@ -823,6 +825,8 @@ class AttacheUnimplementedError < AttacheError; end
 class AttacheSyntaxError < AttacheError; end
 # when improper data is given to a function
 class AttacheValueError < AttacheError; end
+# when an identifier does not exist in the current scope
+class AttacheNameError < AttacheError; end
 
 
 require_relative 'AtClass.rb'
@@ -948,12 +952,6 @@ class AtState
 
     attr_reader :stack
     attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references, :position
-
-    def error(message)
-        STDERR.puts message
-        exit
-        # raise
-    end
 
     @@attribute_map = {
         "#" => :config,
@@ -1167,7 +1165,7 @@ class AtState
             AtLambda.new(ast(raw), raw: raw)
 
         elsif type == :word
-            error "Reference Error: Undefined variable #{raw.inspect}"
+            raise AttacheNameError.new("Undefined variable #{raw.inspect}", obj.line, obj.column)
 
         elsif type == :abstract_reference
             @abstract_references[-raw.size]
@@ -1339,7 +1337,7 @@ class AtState
         # error checking -- function/operator arity does not exist
         if func.nil?
             if head.type == :unary_operator
-                raise AttacheOperatorError.new("Operator #{head.raw.inspect} has no unary case.", head.position)
+                raise AttacheOperatorError.new("Operator #{head.raw.inspect} has no unary case.", head.line, head.column)
             end
             STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
             exit -3
