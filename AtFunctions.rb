@@ -1,6 +1,8 @@
 # assumes included at a certain position in `AtState.rb`
 # TODO: fix that
 
+require_relative 'color_inspect.rb'
+
 # NOTE: prefer `inst.cast_list` over `force_list`
 
 def default_sentinel(*values, sentinel: AtFunctionCatalog::NOT_PROVIDED, &final)
@@ -189,8 +191,8 @@ module AtFunctionCatalog
         # @example Display[ "Hello, World!" ]
         # @example ?? "Hello, World!"
         #>>
-        "Display" => lambda { |inst, ent|
-            display ent
+        "Display" => lambda { |inst, ent, *opts|
+            puts color_inspect(ent, color: opts.any? { | k, v | k == "Color" && v == true})
         },
         #<<
         # Evaluates <code>str</code> in a new scope. Returns the last expression evaluated.
@@ -4667,12 +4669,11 @@ module AtFunctionCatalog
             end
         },
         "TryCatch" => lambda { |inst, body, catch|
-            res = inst.evaluate_node body
-            if AtError === res
-                inst.evaluate_node catch, [res], check_error: false
+            begin
+                inst.evaluate_node body
+            rescue Exception => e
+                inst.evaluate_node catch, [e], check_error: false
                 nil
-            else
-                res
             end
         },
         "Safely" => lambda { |inst, func, catch=nil, **opts|

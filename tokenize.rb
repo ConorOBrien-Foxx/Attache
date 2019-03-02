@@ -39,35 +39,38 @@ class Token
     end
 end
 
-$WORD = /[[:alpha:]][[[:alpha:]]\w]*/
-$ABSTRACT = /_+\d*/
-$NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:i?x?|x?i?)/
-$REFERENCE = /\$#$WORD/
-$COUNTER_REFERENCE = /\$\$?[0-9]+/
-$ABSTRACT_REFERENCE = /\$+/
-$BRACKET_OPEN = /\[|do\b/
-$BRACKET_CLOSE = /\]|end\b/
-$PAREN_OPEN = /\(/
-$PAREN_CLOSE = /\)/
-$COMMA = /,/
-$STRING = /"(?:[^"]|"")*"/
-$RAW_STRING = /`#$STRING/
-$FORMAT_STRING_BEGIN = /\$"/
-$FORMAT_STRING_END = /"/
-$FORMAT_STRING_CONTINUE = /\}/
-$FORMAT_STRING_INTERRUPT = /\$\{/
-# $FORMAT_STRING = /\$#$STRING/
-$FUNC_START = /\{/
-$NAMED_FUNC_START = /\$#$FUNC_START/
-$FUNC_END = /\}/
-$WHITESPACE = /\s+/
-$UNKNOWN = /./
-$COMMENT = /\?\?.*(?:\n|$)/
-$COMMENT_OPEN = /\(\*/
-$COMMENT_CLOSE = /\*\)/
-$CURRY_OPEN = /<~|«/
-$CURRY_CLOSE = /~>|»/
-$STATEMENT_SEP = /;/
+$WORD = /\G[[:alpha:]][[[:alpha:]]\w]*/
+$WORD_NO_G = /[[:alpha:]][[[:alpha:]]\w]*/
+$ABSTRACT = /\G_+\d*/
+$NUMBER = /\G(?:(?:[0-9]*\.[0-9]+)|\G(?:[0-9]+))(?:i?x?|x?i?)/
+$REFERENCE = /\G\$#$WORD_NO_G/
+$COUNTER_REFERENCE = /\G\$\$?[0-9]+/
+$ABSTRACT_REFERENCE = /\G\$+/
+$BRACKET_OPEN = /\G\[|\Gdo\b/
+$BRACKET_CLOSE = /\G\]|\Gend\b/
+$PAREN_OPEN = /\G\(/
+$PAREN_CLOSE = /\G\)/
+$COMMA = /\G,/
+$STRING = /\G"(?:[^"]|"")*"/
+$STRING_NO_G = /"(?:[^"]|"")*"/
+$RAW_STRING = /\G`#$STRING_NO_G/
+$FORMAT_STRING_BEGIN = /\G\$"/
+$FORMAT_STRING_END = /\G"/
+$FORMAT_STRING_CONTINUE = /\G\}/
+$FORMAT_STRING_INTERRUPT = /\G\$\{/
+# $FORMAT_STRING = /\G\$#$STRING/
+$FUNC_START = /\G\{/
+$FUNC_START_NO_G = /\{/
+$NAMED_FUNC_START = /\G\$#$FUNC_START_NO_G/
+$FUNC_END = /\G\}/
+$WHITESPACE = /\G\s+/
+$UNKNOWN = /\G./
+$COMMENT = /\G\?\?.*(?:\n|$)/
+$COMMENT_OPEN = /\G\(\*/
+$COMMENT_CLOSE = /\G\*\)/
+$CURRY_OPEN = /\G<~|\G«/
+$CURRY_CLOSE = /\G~>|\G»/
+$STATEMENT_SEP = /\G;/
 
 $PRECEDENCE = {
     "."        => [99999, :left],
@@ -184,12 +187,19 @@ $PRECEDENCE_UNARY["…"] = 0
 $operators = $PRECEDENCE.keys.sort { |x, y| y.size <=> x.size }
 $OPERATOR = Regexp.new($operators.map { |e|
     if /^\w+$/ === e
+        '\\G' + "#{e}\\b"
+    else
+        '\\G' + Regexp.escape(e)
+    end
+}.join "|")
+$OPERATOR_NO_G = Regexp.new($operators.map { |e|
+    if /^\w+$/ === e
         "#{e}\\b"
     else
         Regexp.escape e
     end
 }.join "|")
-$OP_QUOTE = /`#$OPERATOR/
+$OP_QUOTE = /\G`#$OPERATOR_NO_G/
 $TYPES = {
     $COMMENT            => :comment,
     $COMMENT_OPEN       => :comment_open,
@@ -261,25 +271,35 @@ class AtTokenizer
     end
 
     def advance(n = 1)
-        n.times {
-            if @code[@i] == "\n"
-                @column = 0
-                @line += 1
-            end
-            @column += 1
-            @i += 1
-        }
+        s = @code[@i, n]
+        lines = s.count("\n")
+        @line += lines
+        if lines > 0
+            @column = s.match(/^.*\Z/).size
+        else
+            @column += s.size
+        end
+        @i += n
     end
 
     def has_ahead?(entity)
-        if @code.index(entity, @i) == @i
-            @match = @code.match(entity, @i).to_s
+        if entity.is_a? Regexp
+            match = @code.match(entity, @i)
+            if match
+                @match = match.to_s
+            else
+                nil
+            end
         else
-            nil
+            if @code[@i, entity.size] == entity
+                @match = entity
+            else
+                nil
+            end
         end
     end
 
-    def read_until(entity, skipping=/^$/)
+    def read_until(entity, skipping=/\G^$/)
         build = ""
         loop {
             if has_ahead? skipping
@@ -308,7 +328,7 @@ class AtTokenizer
                         depth += 1
                     elsif has_ahead? $COMMENT_CLOSE
                         depth -= 1
-                    elsif !has_ahead?(/./m)
+                    elsif !has_ahead?(/\G./m)
                         raise "no more characters while searching for end of comment"
                     end
                     token.raw += @match
