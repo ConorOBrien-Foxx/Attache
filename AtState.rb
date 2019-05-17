@@ -1236,18 +1236,24 @@ class AtState
         end
     end
 
+    def evaluate_leaf(token, blank_args, merge_with, check_error: true)
+        unless token.is_a? Token
+            raise "#{node.inspect} is not a token"
+        end
+        res = nil
+
+        if node.type == :abstract
+            res = get_blank node.raw, blank_args
+        else
+            res = get_value node
+        end
+
+        res
+    end
+
     def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
         unless node.is_a? Node
-            raise "#{node.inspect} is not a token" unless node.is_a? Token
-
-            res = nil
-            if node.type == :abstract
-                res = get_blank node.raw, blank_args
-            else
-                res = get_value node
-            end
-
-            return res
+            return evaluate_leaf node, blank_args, merge_with, check_error: true
         end
 
         head, children = node
@@ -1282,8 +1288,8 @@ class AtState
         # evaluate children
         children.map!.with_index { |child, i|
             raw, type = child
-
-            if held[i]
+            p child
+            value = if held[i]
                 child
             else
                 if child.is_a? Node
@@ -1294,8 +1300,12 @@ class AtState
                     get_value child
                 end
             end
+            p value
+            value
         }
         args.concat children
+
+        p ['what', args]
 
         # second pass of held arguments
         if AtFunction === func
@@ -1315,10 +1325,12 @@ class AtState
 
         # filter ConfigureValue
         if configurable
+            p 'whooo'
             split = args.group_by { |e| e.is_a? ConfigureValue }
             split[true] ||= []
             config = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
+            p [split, args]
         end
 
         # reduce applicators
