@@ -534,7 +534,8 @@ class AtLambda
 
             res = @tokens.map.with_index { |token, i|
 
-                inner = inst.evaluate_node(token, args, @scope)
+                inst.save_blanks args
+                inner = inst.evaluate_node(token, @scope)
 
                 if @ascend && @descend
                     temp = inst.locals.last.dup
@@ -633,7 +634,9 @@ def make_curry(args, func)
         if not_provided.empty?
             others.reject!.with_index { |e, i| to_remove.include? i }
 
-            inst.evaluate_node Node.new(func, args + others), abstracts
+            inst.save_blanks abstracts
+            inst.evaluate_node Node.new(func, args + others)
+            inst.pop_blanks
         else
             update_abstracts = -> args {
                 args.map { |el|
@@ -1208,6 +1211,22 @@ class AtState
         @locals.pop
     end
 
+    def save_blanks(blanks)
+        @blanks << blanks
+    end
+
+    def pop_blanks
+        @blanks.pop
+    end
+
+    def get_blanks
+        if @blanks.empty?
+            @saved
+        else
+            @blanks.last
+        end
+    end
+
     def get_blank(blank)
         # if blank_args.nil?
         #     blank_args = @locals.last[AtLambda::ARG_CONST] || []
@@ -1226,7 +1245,7 @@ class AtState
                 STDERR.puts "Blank too long: #{type} of #{blank}"
         end
 
-        @blanks[range]
+        get_blanks[range]
     end
 
     def AtState.configurable?(func)
@@ -1238,14 +1257,14 @@ class AtState
         end
     end
 
-    def evaluate_leaf(token, blank_args, merge_with, check_error: true)
+    def evaluate_leaf(token, merge_with, check_error: true)
         unless token.is_a? Token
             raise "#{node.inspect} is not a token"
         end
         res = nil
 
         if token.type == :abstract
-            res = get_blank token.raw, blank_args
+            res = get_blank token.raw
         else
             res = get_value token
         end
@@ -1253,17 +1272,19 @@ class AtState
         res
     end
 
-    def evaluate_atfunction(fun, blank_args, merge_with, check_error: true)
+    def evaluate_atfunction(fun, merge_with, check_error: true)
 
     end
 
-    def evaluate_function(fun, blank_args, merge_with, check_error: true)
+    def evaluate_function(fun, merge_with, check_error: true)
 
     end
 
-    def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
+    def evaluate_node(node, merge_with = nil, check_error: true)
+
         unless node.is_a? Node
-            return evaluate_leaf node, blank_args, merge_with, check_error: true
+            value = evaluate_leaf node, merge_with, check_error: true
+            return value
         end
 
         head, children = node
@@ -1295,7 +1316,7 @@ class AtState
 
         # obtain value of head
         if func.is_a? Node
-            func = evaluate_node func, blank_args, merge_with, check_error: check_error
+            func = evaluate_node func, merge_with, check_error: check_error
         end
 
         # evaluate children
@@ -1306,9 +1327,9 @@ class AtState
                 child
             else
                 if child.is_a? Node
-                    evaluate_node child, blank_args, merge_with, check_error: check_error
+                    evaluate_node child, merge_with, check_error: check_error
                 elsif type == :abstract
-                    get_blank raw, blank_args
+                    get_blank raw
                 else
                     get_value child
                 end
@@ -1417,7 +1438,7 @@ class AtState
 
     def run
         @trees.map { |tree|
-            res = evaluate_node tree#, [], @locals.last.dup
+            res = evaluate_node tree#, @locals.last.dup
             if AtError === res
                 puts res.to_s
                 exit -2
