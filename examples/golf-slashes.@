@@ -25,7 +25,7 @@ golf_slashes := [code] -> {
     base .= 2
 
     Fixpoint[InvocationIndex[{
-        find_candidate[_1, unused[_2], base, #_1 / 2]
+        find_candidate[_1, unused[_2], base, Min[50, #_1 / 2]]
     }], code]
 }
 
