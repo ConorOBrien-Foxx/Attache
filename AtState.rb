@@ -1251,6 +1251,14 @@ class AtState
         res
     end
 
+    def evaluate_atfunction(fun, blank_args, merge_with, check_error: true)
+
+    end
+
+    def evaluate_function(fun, blank_args, merge_with, check_error: true)
+
+    end
+
     def evaluate_node(node, blank_args = nil, merge_with = nil, check_error: true)
         unless node.is_a? Node
             return evaluate_leaf node, blank_args, merge_with, check_error: true
@@ -1268,6 +1276,9 @@ class AtState
         func = is_format_string ? nil : get_value(head)
 
         # 1st pass at characteristic checking
+        # if AtFunction === func
+        #     return evaluate_atfunction func
+        # end
         if AtFunction === func
             held = func.held
             configurable = func.config
