@@ -916,7 +916,7 @@ class AtState
         @variables = @@default_variables.dup
         @abstract_references = []
         @locals = [{}]
-        @saved = []
+        @blanks = []
         @position = nil
         @in = input
         @out = output
@@ -1208,23 +1208,25 @@ class AtState
         @locals.pop
     end
 
-    def get_blank(blank, blank_args = nil)
-        if blank_args.nil?
-            blank_args = @locals.last[AtLambda::ARG_CONST] || []
-        end
-
+    def get_blank(blank)
+        # if blank_args.nil?
+        #     blank_args = @locals.last[AtLambda::ARG_CONST] || []
+        # end
+        #
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-
-        # p "abstract type #{type}, #{blank}, #{blank_args}"
-        case type
+        #
+        # # p "abstract type #{type}, #{blank}, #{blank_args}"
+        range = case type
             when 1
-                n < blank_args.size ? blank_args[n] : @saved[n]
+                n
             when 2
-                blank_args[n..-1]
+                n..-1
             else
                 STDERR.puts "Blank too long: #{type} of #{blank}"
         end
+
+        @blanks[range]
     end
 
     def AtState.configurable?(func)
@@ -1242,10 +1244,10 @@ class AtState
         end
         res = nil
 
-        if node.type == :abstract
-            res = get_blank node.raw, blank_args
+        if token.type == :abstract
+            res = get_blank token.raw, blank_args
         else
-            res = get_value node
+            res = get_value token
         end
 
         res
@@ -1299,7 +1301,7 @@ class AtState
         # evaluate children
         children.map!.with_index { |child, i|
             raw, type = child
-            p child
+            # p child
             value = if held[i]
                 child
             else
@@ -1311,12 +1313,12 @@ class AtState
                     get_value child
                 end
             end
-            p value
+            # p value
             value
         }
         args.concat children
 
-        p ['what', args]
+        # p ['what', args]
 
         # second pass of held arguments
         if AtFunction === func
@@ -1336,12 +1338,12 @@ class AtState
 
         # filter ConfigureValue
         if configurable
-            p 'whooo'
+            # p 'whooo'
             split = args.group_by { |e| e.is_a? ConfigureValue }
             split[true] ||= []
             config = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
-            p [split, args]
+            # p [split, args]
         end
 
         # reduce applicators
