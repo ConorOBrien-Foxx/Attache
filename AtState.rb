@@ -448,7 +448,8 @@ class Node
     end
 
     def to_ary
-        [@head.clone, @children.clone]
+        raise "to_ary is deprecated"
+        # [@head.clone, @children.clone]
     end
 
     def to_s(depth = 0, color: true)
@@ -1280,6 +1281,30 @@ class AtState
 
     end
 
+    def call_function(func, node, args, config, configurable: false)
+        res = if configurable
+            func[self, *args, **config]
+        else
+            # special call function overloading
+            if Array === func || Hash === func || String === func || class_has?(func, "$get")
+                @@functions["Get"][self, func, *args]
+            else
+                begin
+                    if class_has? func, "$call"
+                        func["$call"][self, *args]
+                    else
+                        func[self, *args]
+                    end
+                # TODO: use an actual error
+                rescue ArgumentError => e
+                    STDERR.puts "Argument error: #{node.head}"
+                    raise e
+                end
+            end
+        end
+        res
+    end
+
     def evaluate_node(node, merge_with = nil, check_error: true)
 
         unless node.is_a? Node
@@ -1287,16 +1312,16 @@ class AtState
             return value
         end
 
-        head, children = node
+        # head, children = node
 
-        position_holder = head == Node ? head.raw : head
+        position_holder = node.head == Node ? node.head.raw : node.head
         @position = position_holder.position rescue nil
 
         is_format_string = head.type == :format_string rescue false
         # special cases
         args = []
 
-        func = is_format_string ? nil : get_value(head)
+        func = is_format_string ? nil : get_value(node.head)
 
         # 1st pass at characteristic checking
         # if AtFunction === func
@@ -1306,9 +1331,10 @@ class AtState
             held = func.held
             configurable = func.config
             func = func.fn
-        elsif head.is_a? Token
-            held = @@held_arguments[head.raw] || []
-            configurable = @@configurable.include?(head.raw) rescue false
+        elsif node.head.is_a? Token
+            held = @@held_arguments[node.head.raw] || []
+            configurable = false
+            # @@configurable.include?(head.raw) rescue false
         else
             held = []
             configurable = false
@@ -1320,16 +1346,16 @@ class AtState
         end
 
         # evaluate children
-        children.map!.with_index { |child, i|
-            raw, type = child
+        node.children.map!.with_index { |child, i|
+            # raw, type = child
             # p child
             value = if held[i]
                 child
             else
                 if child.is_a? Node
                     evaluate_node child, merge_with, check_error: check_error
-                elsif type == :abstract
-                    get_blank raw
+                elsif child.type == :abstract
+                    get_blank child.raw
                 else
                     get_value child
                 end
@@ -1337,7 +1363,7 @@ class AtState
             # p value
             value
         }
-        args.concat children
+        args.concat node.children
 
         # p ['what', args]
 
@@ -1374,15 +1400,15 @@ class AtState
 
         # preemptively return format strings
         if is_format_string
-            return format_string(head.raw, args)
+            return format_string(node.head.raw, args)
         end
 
         # error checking -- function/operator arity does not exist
         if func.nil?
-            if head.type == :unary_operator
-                raise AttacheOperatorError.new("Operator #{head.raw.inspect} has no unary case.", head.position)
+            if node.head.type == :unary_operator
+                raise AttacheOperatorError.new("Operator #{node.head.raw.inspect} has no unary case.", node.head.position)
             end
-            STDERR.puts "[in function execution] Error in retrieving value for #{head.inspect}"
+            STDERR.puts "[in function execution] Error in retrieving value for #{node.head.inspect}"
             exit -3
         end
 
@@ -1396,36 +1422,18 @@ class AtState
         end
 
         # call the function
-        res = if configurable
-            func[self, *args, **config]
-        else
-            # special call function overloading
-            if Array === func || Hash === func || String === func || class_has?(func, "$get")
-                @@functions["Get"][self, func, *args]
-            else
-                begin
-                    if class_has? func, "$call"
-                        func["$call"][self, *args]
-                    else
-                        func[self, *args]
-                    end
-                # TODO: use an actual error
-                rescue ArgumentError => e
-                    STDERR.puts "Argument error: #{head}"
-                    raise e
-                end
-            end
-        end
+        result = call_function(func, node, args, config, configurable: configurable)
 
-        if res.kind_of?(AtLambda) && !merge_with.nil?
+        # infuse scope
+        if result.kind_of?(AtLambda) && !merge_with.nil?
             # di "res infusion"
             # dh "func", func.inspect
             # dhash "merge_with", merge_with
-            res.scope.merge! merge_with
+            result.scope.merge! merge_with
             # dd "res infused"
         end
 
-        res
+        result
     end
 
     def evaluate_node_safe(node_maybe)
@@ -1450,7 +1458,8 @@ class AtState
     def AtState.function(name, aliases: [], configurable: false, hold: nil, &body)
         @@functions[name] = convert_to_lambda(&body)
         if configurable
-            @@configurable << name
+            raise "@@configurable is deprecated"
+            # @@configurable << name
         end
 
         aliases.each { |ali|

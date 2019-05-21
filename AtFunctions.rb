@@ -33,20 +33,7 @@ end
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
 
-    # TODO: remove @@configurable and @@held_arguments in favor of `held`
-    # and `configurable` functions
-    # functions which can receive key things
-    @@configurable = [
-        "Bisect",
-        "Chop",
-        "Configure",
-        "Print",
-        "Option",
-        # "Random",
-        "Safely",
-        "Series",
-        "SeriesIf",
-    ]
+    # TODO: remove @@held_arguments in favor of `held`
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -147,7 +134,7 @@ module AtFunctionCatalog
         # @example ?? {3, 4, 5}
         # @genre functional
         #>>
-        "Configure" => lambda { |inst, func, **opts|
+        "Configure" => configurable { |inst, func, **opts|
             lambda { |inst, *args|
                 func[inst, *args, **opts]
             }
@@ -301,7 +288,7 @@ module AtFunctionCatalog
         # @example Print["Received:", Repr[input]]
         # @example ?? Received: "i"
         #>>
-        "Option" => lambda { |inst, prompt, **opts|
+        "Option" => configurable { |inst, prompt, **opts|
             read_option prompt, opts
         },
         #<<
@@ -322,7 +309,7 @@ module AtFunctionCatalog
         # @option joiner The string which joins <code>args</code>. Default: <code>" "</code>.
         # @genre IO
         #>>
-        "Print" => lambda { |inst, *args, **opts|
+        "Print" => configurable { |inst, *args, **opts|
             joiner = opts[:joiner] || " "
             inst.out.print opts[:before] || ""
             inst.out.print args.map { |e|
@@ -609,7 +596,7 @@ module AtFunctionCatalog
         # @example Print[Series[Prime, 13, include->true]]
         # @example ?? [2, 3, 5, 7, 11, 13]
         #>>
-        "Series" => lambda { |inst, f, max, start=0, **config|
+        "Series" => configurable { |inst, f, max, start=0, **config|
             i = start
             collect = []
             loop {
@@ -637,7 +624,7 @@ module AtFunctionCatalog
         # @example Print[SeriesIf[Prime, Odd, 13, include->true]]
         # @example ?? [3, 5, 7, 11, 13]
         #>>
-        "SeriesIf" => lambda { |inst, f, cond, max, start=0, **config|
+        "SeriesIf" => configurable { |inst, f, cond, max, start=0, **config|
             i = start
             collect = []
             loop {
@@ -2467,7 +2454,7 @@ module AtFunctionCatalog
         # @example ?? [[1], [2, 3], [4, 5, 6], [7], [8, 9], [10, 11, 12]]
         # @reforms elements
         #>>
-        "Chop" => lambda { |inst, list, size, **opts|
+        "Chop" => configurable { |inst, list, size, **opts|
             extra = get_default opts, :extra, true
             res = chop inst.cast_list(list), size, extra
             res.map { |e|
@@ -4679,7 +4666,7 @@ module AtFunctionCatalog
                 res
             end
         },
-        "Safely" => lambda { |inst, func, catch=nil, **opts|
+        "Safely" => configurable { |inst, func, catch=nil, **opts|
             rec = lambda { |inst, *args|
                 begin
                     func[inst, *args]
