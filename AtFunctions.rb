@@ -2034,6 +2034,39 @@ module AtFunctionCatalog
                 cond[inst, i] ? f[inst, e] : e
             }
         },
+        #<<
+        # Returns a function that will, over each element of its input list,
+        # select the first appropriate condition (if any) defined in
+        # <code>opts</code> and apply it to each element. Each key is a
+        # condition, and each value is a function to apply on elements
+        # satisfying that condition.
+        # @type opts ConfigureValue
+        # @return fn
+        # @genre functional/list
+        # @example squareFirst := Over[0 -> Square]
+        # @example Print[squareFirst[3:6]]
+        # @example ?? [9, 4, 5, 6]
+        # @example
+        # @example squareOddIndices := Over[Odd -> Square]
+        # @example Print[squareOddIndices[2:6]]
+        # @example ?? [2, 9, 4, 25, 6]
+        # @example
+        # @example zeroOutEvenIndices := Over[Even -> 0]
+        # @example Print[zeroOutEvenIndices[1:5]]
+        # @example ?? [0, 2, 0, 4, 0]
+        # @example
+        # @example oddEvenPulse := Over[Odd -> Succ, Even -> Pred]
+        # @example Print[oddEvenPulse[1:5]]
+        # @example ?? [0, 3, 2, 5, 4]
+        # @example
+        # @example named[x] := x = 0 or x = 2
+        # @example negateNamed := Over[$named -> { -_ }]
+        # @example Print[negateNamed[1:5]]
+        # @example ?? [-1, 2, -3, 4, 5]
+        # @example named[x] := x /= 0
+        # @example Print[negateNamed[1:5]]
+        # @example ?? [-1, 2, -3, 4, 5]
+        #>>
         "Over" => AtFunction.from { |inst, *opts|
             # list of key-value pairs, where
             #     key = condition on array index
