@@ -1,0 +1,3 @@
+#content p + p {
+    text-indent: 2em;
+}

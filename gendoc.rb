@@ -441,6 +441,7 @@ def render(md, title)
 <head>
     <meta charset="utf8">
     <link rel="STYLESHEET" href="../styles.css">
+    <link rel="STYLESHEET" href="./tutorial.css">
     <script src="tutorial.js" type="text/javascript"></script>
     <title>#{title}</title>
 </head>

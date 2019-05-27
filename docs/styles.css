@@ -96,7 +96,6 @@ p {
 }
 
 #content p + p {
-    text-indent: 2em;
     line-height: 27px;
     margin-top: 5px;
 }
