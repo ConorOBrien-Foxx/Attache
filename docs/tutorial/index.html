@@ -26,7 +26,7 @@
 <li>Minimize boilerplates</li>
 </ol>
 
-<p>In particular, each canon reflects problems apparent in other languages:</p>
+<p>In particular, each canon aims to fix problems apparent in other languages:</p>
 
 <ol>
 <li>Languages like Python and C++ tend to be burdened by their awkward approaches to functional programming. Simple constructs like maps and lambdas are rendered unwieldly. Consider <code>map(lambda x: x + 1, range(2, 5))</code> in Python, or some ugly use of <code>std::transform</code> in C++. Such languages tend to lack the necessary syntax for convenient functional programming.</li>
@@ -49,15 +49,35 @@
 <h3>Hello, World!</h3>
 <pre class="markdown"><code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_string">&quot;Hello, World!&quot;</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code></code></pre>
+<p>The first thing to note is that Attache, similar to languages like Mathematica, uses square brackets <code>[</code> and <code>]</code> to call functions. In this example, we are calling the <code>Print</code> function, which does what you might expect. It&#39;s similar to JavaScript&#39;s <code>console.log</code> and Python 3&#39;s <code>print</code> function.</p>
+
+<p>The next thing to note is that strings are written with double quotes <code>&quot;</code>. They <strong>cannot</strong> be written with single quotes <code>&#39;</code>, as that symbol is actually an operator. Attache has a plethora of operators, and most symbols are, in fact, operators.</p>
+
 <h3>First <code>n</code> prime numbers</h3>
 <pre class="markdown"><code><code class="at_word">n</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_word">ReadInt</code><code class="at_bracket_open">[</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code><code class="at_word">Print</code><code class="at_bracket_open">[</code><code class="at_word">Primes</code><code class="at_bracket_open">[</code><code class="at_word">n</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace">
 </code></code></pre>
+<p>Here we see how variables are defined: with <code>:=</code>. In Attache, what most languages use for variable definition, the equals sign <code>=</code>, is used to represent an equality check, which is usually represented by <code>==</code> in other languages.</p>
+
+<p><code>ReadInt</code> does what you might expect. It reads an integer from STDIN.</p>
+
+<p>Then, we use the familiar <code>Print</code> function to display the result of calling the <code>Primes</code> function on <code>n</code>. You may have guessed by the title of this subsection that <code>Primes[n]</code> returns the first <code>n</code> prime numbers. Well, you&#39;d be right.</p>
+
 <h3>That python example from earlier</h3>
 
 <p>By that, I mean &quot;mapping increment over the range from 2 to 4&quot;</p>
-<pre class="markdown"><code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_number">4</code><code class="at_whitespace">
+<pre class="markdown"><code><code class="at_word">Succ</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_number">4</code><code class="at_whitespace">
+</code><code class="at_comment">?? or
+</code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_operator">+</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace"> </code><code class="at_operator">=&gt;</code><code class="at_whitespace"> </code><code class="at_number">2</code><code class="at_operator">:</code><code class="at_number">4</code><code class="at_whitespace">
 </code></code></pre>
+<p>I&#39;m introducing a couple of things with this example. First, note that the two examples produce the same result: <code>[3, 4, 5]</code>. But, before I begin, note that <code>?? ...</code> is a single line comment, and may be placed anywhere on a line.</p>
+
+<p>First, note the use of <code>:</code>. This is Attache&#39;s range operator. <code>a:b</code> produces an inclusive range between <code>a</code> and <code>b</code>. <code>2:4</code> evaluates to <code>[2, 3, 4]</code>. The <code>=&gt;</code> operator is Attache&#39;s map operator. <code>f =&gt; k</code> maps the function <code>f</code> over each element in the list <code>k</code>. <code>Succ</code> is short for &quot;successor&quot; and represents the natural successor of its argument. For integers, <code>Succ[x]</code> is the same as saying <code>x + 1</code>.</p>
+
+<p>Pulling it together, <code>Succ =&gt; 2:4</code> maps the <code>Succ</code> function over each element in the list <code>[2, 3, 4]</code>, giving us <code>[Succ[2], Succ[3], Succ[4]]</code> which evaluates to <code>[3, 4, 5]</code>.</p>
+
+<p>Now, as for the second part of this example, I&#39;ve introduced a lambda <code>{ _ + 1 }</code>. All basic lambdas are defined by these brackets <code>{ ... }</code>. Here, <code>_</code> refers to the first parameter passed to the lambda. This lambda simply adds 1 to its first parameter and returns that result. It could also be written as <code>{ _1 + 1 }</code>, being explicit that we want to add 1 to the first parameter. Consequently, we can also have <code>{ _2 + 1 }</code>, which adds 1 to the second parameter. These underscore variables are called <em>blanks</em>, and usually refer to various kinds of input in Attache.</p>
+
 <h3>Custom Fizzbuzz</h3>
 <pre class="markdown"><code><code class="at_word">range</code><code class="at_whitespace"> </code><code class="at_operator">:=</code><code class="at_whitespace"> </code><code class="at_number">1</code><code class="at_operator">:</code><code class="at_number">100</code><code class="at_whitespace">
 </code><code class="at_comment">?? modify below to customize the output
@@ -70,6 +90,20 @@
 
 </code><code class="at_word">range</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_func_start">{</code><code class="at_whitespace"> </code><code class="at_word">Join</code><code class="at_bracket_open">[</code><code class="at_word">Mask</code><code class="at_bracket_open">[</code><code class="at_word">map</code><code class="at_bracket_open">[</code><code class="at_number">0</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_comma">,</code><code class="at_whitespace"> </code><code class="at_word">map</code><code class="at_bracket_open">[</code><code class="at_number">1</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_bracket_close">]</code><code class="at_whitespace"> </code><code class="at_operator">or</code><code class="at_whitespace"> </code><code class="at_abstract">_</code><code class="at_whitespace"> </code><code class="at_func_end">}</code><code class="at_whitespace"> </code><code class="at_operator">|</code><code class="at_whitespace"> </code><code class="at_word">Print</code><code class="at_whitespace">
 </code></code></pre>
+<p>Bear with me, this example is a bit more complicated. I&#39;ll outline what we&#39;re doing on a higher level first, then we&#39;ll dive into the minutia.</p>
+
+<p>First, we defined a variable <code>range</code> which is the range of numbers from <code>1</code> to <code>100</code>. Next, we defined a correspondence between numbers and strings. Multiples of 3, e.g., correspond to &quot;Fizz&quot;. Last, we apply this correspondence to each element in <code>range</code> and print it out.</p>
+
+<p>See? Not so bad. Now for the nitty-gritty.</p>
+
+<p><code>&lt;~ ... ~&gt;</code> defines a hash; a key-value pair is denoted by <code>key -&gt; value</code>.</p>
+
+<p>Then, we convert this hash to a list using the <code>List</code> function. This gives us a list of key-value pairs stored in lists <code>[key, value]</code>.</p>
+
+<p>Last, we transpose this list of lists, giving us a list of two lists, the first being a list of keys, and the second being a list of values. This value is stored in the variable <code>map</code>. In this case, we obtain the list <code>[[3, 5, 7], [&quot;Fizz&quot;, &quot;Buzz&quot;, &quot;?!&quot;]]</code>.</p>
+
+<p>[to be continued]</p>
+
     </div>
 </body>
 </html>
