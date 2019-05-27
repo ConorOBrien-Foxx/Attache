@@ -448,13 +448,19 @@ end
 class AtFunction
     def initialize(
         fn,
-        config: false,
+        configurable: false,
         arity: nil,
         held: [],
         vectorize: nil
     )
         @held = held
-        @config = config
+        if @held == true
+            @held = HOLD_ALL
+        end
+        if @held.nil?
+            raise "@held cannot be nil"
+        end
+        @configurable = configurable
         @fn = fn
         @arity = arity || fn.arity rescue fn.size rescue 0
         @vectorize = vectorize
@@ -464,8 +470,19 @@ class AtFunction
         AtFunction.new(fn, **opts)
     end
 
-    def AtFunction.vectorize(arity=nil, &fn)
-        AtFunction.new(fn, vectorize: true, arity: arity)
+    def AtFunction.vectorize(arity=nil, **opts, &fn)
+        AtFunction.new(fn, **opts, vectorize: true, arity: arity)
+    end
+
+    def AtFunction.held(*held, **opts, &fn)
+        if held.empty?
+            held = true
+        end
+        AtFunction.new(fn, held: held)
+    end
+
+    def AtFunction.configurable(configurable=true, **opts, &fn)
+        AtFunction.new(fn, configurable: configurable, **opts)
     end
 
     def size
@@ -482,18 +499,20 @@ class AtFunction
         end
     end
 
-    attr_accessor :held, :config, :fn, :arity
+    attr_accessor :held, :configurable, :fn, :arity
 end
 
 HOLD_ALL = Hash.new(true)
 def held(*held, &fn)
+    raise AttacheDeprecationError.new "`held` will be deprecated"
     if Hash === held[0]
         held = held[0]
     end
     AtFunction.new(fn, held: held)
 end
 def configurable(arity: nil, &fn)
-    AtFunction.new(fn, config: true, arity: arity)
+    raise AttacheDeprecationError.new "`configurable` will be deprecated"
+    AtFunction.new(fn, configurable: true, arity: arity)
 end
 
 class Node
@@ -584,47 +603,49 @@ class AtLambda
     attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw
 
     def call(inst, args, opts=nil)
-            inst.local_descend(@scope) if @descend
-            # define locals
-            inst.define_local ARG_CONST, args
-            unless opts.nil?
-                inst.define_local OPTS_CONST, opts.map { |k, v| [k.to_s, v] } .to_h
+        inst.local_descend(@scope) if @descend
+        # define locals
+        inst.define_local ARG_CONST, args
+        unless opts.nil?
+            inst.define_local OPTS_CONST, opts.map { |k, v| [k.to_s, v] } .to_h
+        end
+        inst.abstract_references << self
+        @params.each_with_index { |name, i|
+            inst.define_local name, args[i]
+        }
+
+        temp_scope = @scope.dup
+
+        res = @tokens.map.with_index { |token, i|
+
+            inst.save_blanks args
+            # p ["TOKEN!"]
+            # p token
+            inner = inst.evaluate_node(token, @scope)
+
+            if @ascend && @descend
+                temp = inst.locals.last.dup
+                @params.each { |param|
+                    temp.delete param
+                }
+                temp_scope.merge! temp
             end
-            inst.abstract_references << self
-            @params.each_with_index { |name, i|
-                inst.define_local name, args[i]
+
+            AtState.traverse(inner) { |atom|
+                if atom.kind_of? AtLambda
+                    atom.scope.merge! temp_scope
+                end
             }
 
-            temp_scope = @scope.dup
+            inner
+        }.last
 
-            res = @tokens.map.with_index { |token, i|
+        inst.abstract_references.pop
+        temp_scope = inst.local_ascend if @ascend
 
-                inst.save_blanks args
-                inner = inst.evaluate_node(token, @scope)
+        @scope.merge! temp_scope
 
-                if @ascend && @descend
-                    temp = inst.locals.last.dup
-                    @params.each { |param|
-                        temp.delete param
-                    }
-                    temp_scope.merge! temp
-                end
-
-                AtState.traverse(inner) { |atom|
-                    if atom.kind_of? AtLambda
-                        atom.scope.merge! temp_scope
-                    end
-                }
-
-                inner
-            }.last
-
-            inst.abstract_references.pop
-            temp_scope = inst.local_ascend if @ascend
-
-            @scope.merge! temp_scope
-
-            res
+        res
     end
 
     def call_with_opts(inst, *args, **opts)
@@ -676,7 +697,10 @@ class Applicator
 end
 
 def make_curry(args, func)
-    AtFunction.from { |inst, *others|
+    # p "MAKING CURRY"
+    # p args
+    return AtFunction.from { |inst, *others|
+        # p others
         abstracts = []
         to_remove = []
 
@@ -700,8 +724,14 @@ def make_curry(args, func)
             others.reject!.with_index { |e, i| to_remove.include? i }
 
             inst.save_blanks abstracts
-            inst.evaluate_node Node.new(func, args + others)
+            new_args = args.map { |arg|
+                inst.evaluate_node arg
+            }
+            new_args += others
+            calling_function = inst.evaluate_node(func)
+            result = calling_function[inst, *new_args]
             inst.pop_blanks
+            result
         else
             update_abstracts = -> args {
                 args.map { |el|
@@ -880,6 +910,8 @@ class AttacheUnimplementedError < AttacheError; end
 class AttacheSyntaxError < AttacheError; end
 # when improper data is given to a function
 class AttacheValueError < AttacheError; end
+# for deprecating various aspsects of Attache, particularly internal functions
+class AttacheDeprecationError < AttacheError; end
 
 
 require_relative 'AtClass.rb'
@@ -1013,7 +1045,7 @@ class AtState
     end
 
     @@attribute_map = {
-        "#" => :config,
+        "#" => :configurable,
         "@" => :vector,
         "&" => :curry,
     }
@@ -1072,8 +1104,8 @@ class AtState
                                 curry(args.size) { |inst, *args| old[inst, *args] }
                             when :vector
                                 vectorize { |inst, *args| old[inst, *args] }
-                            when :config
-                                configurable { |inst, *args, **config| old[inst, *args, **config] }
+                            when :configurable
+                                configurable { |inst, *args, **configurable| old[inst, *args, **configurable] }
                             else
                                 raise AttacheUnimplementedError.new("unknown attribute " + attr.to_s)
                         end
@@ -1310,7 +1342,7 @@ class AtState
     def AtState.configurable?(func)
         case func
             when AtFunction
-                func.config
+                func.configurable
             else
                 false
         end
@@ -1339,9 +1371,9 @@ class AtState
 
     end
 
-    def call_function(func, node, args, config, configurable: false)
+    def call_function(func, node, args, configurable: false)
         res = if configurable
-            func[self, *args, **config]
+            func[self, *args, **configurable]
         else
             # special call function overloading
             if Array === func || Hash === func || String === func || class_has?(func, "$get")
@@ -1355,7 +1387,8 @@ class AtState
                     end
                 # TODO: use an actual error
                 rescue ArgumentError => e
-                    STDERR.puts "Argument error: #{node.head}"
+                    source = node.head rescue node.inspect
+                    STDERR.puts "Argument error: #{source}"
                     raise e
                 end
             end
@@ -1364,7 +1397,6 @@ class AtState
     end
 
     def evaluate_node(node, merge_with = nil, check_error: true)
-
         unless node.is_a? Node
             value = evaluate_leaf node, merge_with, check_error: true
             return value
@@ -1387,20 +1419,12 @@ class AtState
         # end
         if AtFunction === func
             held = func.held
-            configurable = func.config
+            configurable = func.configurable
             # func = func.fn
             # p func
-        elsif node.head.is_a? Token
-            callstack = begin
-                raise
-            rescue Exception => e
-                e
-            end
-            warn callstack.backtrace.map { |e| " " * 4 + e }
-            warn "Warning: non-AtFunction callables will be deprecated."
-            held = @@held_arguments[node.head.raw] || []
+        elsif AtLambda === func
+            held = []
             configurable = false
-            # @@configurable.include?(head.raw) rescue false
         else
             held = []
             configurable = false
@@ -1411,10 +1435,11 @@ class AtState
             func = evaluate_node func, merge_with, check_error: check_error
         end
 
+        # puts ">>>EVALUATING CHILDREN"
+        # p node.children
         # evaluate children
-        node.children.map!.with_index { |child, i|
+        children = node.children.map.with_index { |child, i|
             # raw, type = child
-            # p child
             value = if held[i]
                 child
             else
@@ -1429,13 +1454,13 @@ class AtState
             # p value
             value
         }
-        args.concat node.children
+        args.concat children
 
         # p ['what', args]
 
         # second pass of held arguments
         if AtFunction === func
-            configurable = func.config
+            configurable = func.configurable
             held = func.held
             # func = func.fn
         end
@@ -1454,7 +1479,7 @@ class AtState
             # p 'whooo'
             split = args.group_by { |e| e.is_a? ConfigureValue }
             split[true] ||= []
-            config = split[true].map { |a, b| [a.to_sym, b] }.to_h
+            configurable = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
             # p [split, args]
         end
@@ -1488,7 +1513,7 @@ class AtState
         end
 
         # call the function
-        result = call_function(func, node, args, config, configurable: configurable)
+        result = call_function(func, node, args, configurable: configurable)
 
         # infuse scope
         if result.kind_of?(AtLambda) && !merge_with.nil?
@@ -1521,20 +1546,25 @@ class AtState
         }
     end
 
-    def AtState.function(name, aliases: [], configurable: false, hold: nil, &body)
-        @@functions[name] = convert_to_lambda(&body)
-        if configurable
-            raise "@@configurable is deprecated"
-            # @@configurable << name
-        end
+    def AtState.function(name, aliases: [], configurable: false, hold: [], &body)
+        fn = AtFunction.new(
+            convert_to_lambda(&body),
+            configurable: configurable,
+            held: hold
+        )
+        @@functions[name] = fn
+        # if configurable
+        #     # raise "@@configurable is deprecated"
+        #     # @@configurable << name
+        # end
 
         aliases.each { |ali|
             @@functions[ali] = ali
         }
 
-        unless hold.nil?
-            @@held_arguments[name] = hold
-        end
+        # unless hold.nil?
+        #     @@held_arguments[name] = hold
+        # end
     end
 
     def AtState.variable(name, value)

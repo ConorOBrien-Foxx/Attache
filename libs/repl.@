@@ -29,7 +29,8 @@ REPL := {
         If[_ is_an AttacheError,
             Print[_.readable],
             If[S[_] /= "exit",
-                Print["\e[31mInternal error: \e[1m" + S[_] + "\e[0m"]
+                Print["\e[31mInternal error: \e[1m" + S[_] + "\e[0m"];;
+                Print => _.backtrace
             ]
         ]
     }, redo->true][]

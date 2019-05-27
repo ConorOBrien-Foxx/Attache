@@ -111,7 +111,7 @@ class AtClass
         @inst.locals << {}
         privates = {}
 
-        @inst.define_local "Private", held(true) { |inst, name|
+        @inst.define_local "Private", AtFunction.held { |inst, name|
             privates[name.raw] = true
         }
 

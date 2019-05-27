@@ -42,27 +42,27 @@ module AtFunctionCatalog
         ns.each { |k| a[k] = false }
         a
     end
-    @@held_arguments = {
-        # "->" => [true, false],
-        # "→" => [true, false],
-        "If" => [false, true, true],
-        "While" => [true, true],
-        "DoWhile" => [true, true],
-        "ForEach" => [false, true],
-        "Modify" => [false, true],
-        # ":=" => [true, true],
-        # ".=" => [true, true],
-        "." => [false, true],
-        "DoSafe" => [true],
-        "TryCatch" => [true, true],
-
-        "and" => [true, true],
-        "nand" => [true, true],
-        "else" => [true, true],
-        "or" => [true, true],
-        "nor" => [true, true],
-        "not" => [true, true],
-    }
+    # @@held_arguments = {
+    #     # "->" => [true, false],
+    #     # "→" => [true, false],
+    #     "If" => [false, true, true],
+    #     "While" => [true, true],
+    #     "DoWhile" => [true, true],
+    #     "ForEach" => [false, true],
+    #     "Modify" => [false, true],
+    #     # ":=" => [true, true],
+    #     # ".=" => [true, true],
+    #     "." => [false, true],
+    #     "DoSafe" => [true],
+    #     "TryCatch" => [true, true],
+    #
+    #     "and" => [true, true],
+    #     "nand" => [true, true],
+    #     "else" => [true, true],
+    #     "or" => [true, true],
+    #     "nor" => [true, true],
+    #     "not" => [true, true],
+    # }
 
     # All builtins
     @@functions = {
@@ -134,7 +134,7 @@ module AtFunctionCatalog
         # @example ?? {3, 4, 5}
         # @genre functional
         #>>
-        "Configure" => configurable { |inst, func, **opts|
+        "Configure" => AtFunction.configurable { |inst, func, **opts|
             AtFunction.from { |inst, *args|
                 func[inst, *args, **opts]
             }
@@ -288,7 +288,7 @@ module AtFunctionCatalog
         # @example Print["Received:", Repr[input]]
         # @example ?? Received: "i"
         #>>
-        "Option" => configurable { |inst, prompt, **opts|
+        "Option" => AtFunction.configurable { |inst, prompt, **opts|
             read_option prompt, opts
         },
         #<<
@@ -309,7 +309,7 @@ module AtFunctionCatalog
         # @option joiner The string which joins <code>args</code>. Default: <code>" "</code>.
         # @genre IO
         #>>
-        "Print" => configurable { |inst, *args, **opts|
+        "Print" => AtFunction.configurable { |inst, *args, **opts|
             joiner = opts[:joiner] || " "
             inst.out.print opts[:before] || ""
             inst.out.print args.map { |e|
@@ -493,7 +493,7 @@ module AtFunctionCatalog
         # @return fn
         # @genre class
         #>>
-        "ClassNamed" => held(true) { |inst, name, parent=nil|
+        "ClassNamed" => AtFunction.held { |inst, name, parent=nil|
             #p name
             AtFunction.from { |inst, body|
                 inst.define name.raw, AtClass.new(inst, body, parent, name: name.raw)
@@ -596,7 +596,7 @@ module AtFunctionCatalog
         # @example Print[Series[Prime, 13, include->true]]
         # @example ?? [2, 3, 5, 7, 11, 13]
         #>>
-        "Series" => configurable { |inst, f, max, start=0, **config|
+        "Series" => AtFunction.configurable { |inst, f, max, start=0, **config|
             i = start
             collect = []
             loop {
@@ -624,7 +624,7 @@ module AtFunctionCatalog
         # @example Print[SeriesIf[Prime, Odd, 13, include->true]]
         # @example ?? [3, 5, 7, 11, 13]
         #>>
-        "SeriesIf" => configurable { |inst, f, cond, max, start=0, **config|
+        "SeriesIf" => AtFunction.configurable { |inst, f, cond, max, start=0, **config|
             i = start
             collect = []
             loop {
@@ -1067,7 +1067,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/random
         #>>
-        "Random" => configurable { |inst, *args, **conf|
+        "Random" => AtFunction.configurable { |inst, *args, **conf|
             p [3, args]
             "lolno"
             # AtFunction.vectorize(2) { |inst, n=nil, m=nil, **opts|
@@ -1769,7 +1769,7 @@ module AtFunctionCatalog
         },
         "Configurable" => AtFunction.from { |inst, fn|
             a = fn
-            configurable { |inst, *args, **opts|
+            AtFunction.configurable { |inst, *args, **opts|
                 a.call inst, args, opts
             }
         },
@@ -1954,7 +1954,7 @@ module AtFunctionCatalog
         # @example ?? [2, 4, 8]
         # @option first Specifies whether or not to include the first element. Default: <code>true</code>.
         #>>
-        "NestList" => configurable { |inst, f, init, n, **opts|
+        "NestList" => AtFunction.configurable { |inst, f, init, n, **opts|
             first = get_default opts, :first, true
             iter = init
             list = first ? [iter] : []
@@ -1992,7 +1992,7 @@ module AtFunctionCatalog
         # @example ?? [100, 50, 25]
         # @option first whether or not the input element <code>init</code> is included as the first element in the results. Default: <code>true</code>.
         #>>
-        "NestListWhile" => configurable { |inst, f, cond, init, **opts|
+        "NestListWhile" => AtFunction.configurable { |inst, f, cond, init, **opts|
             first = get_default opts, :first, true
             iter = init
             list = first ? [iter] : []
@@ -2161,7 +2161,7 @@ module AtFunctionCatalog
         "Falsey" => AtFunction.from { |inst, arg|
             AtState.falsey? arg
         },
-        "Cases" => held(HOLD_ALL) { |inst, *pairs|
+        "Cases" => AtFunction.held { |inst, *pairs|
             res = pairs.map { |config|
                 config.children
             }.find { |cond, value|
@@ -2173,7 +2173,7 @@ module AtFunctionCatalog
                 inst.evaluate_node res[1]
             end
         },
-        "Switch" => held(hold_all_but(0)) { |inst, search, *pairs|
+        "Switch" => AtFunction.held(hold_all_but(0)) { |inst, search, *pairs|
             res = pairs.map { |config|
                 config.children
             }.find { |cmp, value|
@@ -2396,7 +2396,7 @@ module AtFunctionCatalog
         # @example Print[Bisect[1:5, bias->$right]]
         # @example ?? [[1, 2], [3, 4, 5]]
         #>>
-        "Bisect" => configurable(arity: 1) { |inst, list, **opts|
+        "Bisect" => AtFunction.configurable(arity: 1) { |inst, list, **opts|
             opts[:bias] ||= "none"
             right_upper = list.size / 2.0
             left_lower = list.size / 2.0
@@ -2454,7 +2454,7 @@ module AtFunctionCatalog
         # @example ?? [[1], [2, 3], [4, 5, 6], [7], [8, 9], [10, 11, 12]]
         # @reforms elements
         #>>
-        "Chop" => configurable { |inst, list, size, **opts|
+        "Chop" => AtFunction.configurable { |inst, list, size, **opts|
             extra = get_default opts, :extra, true
             res = chop inst.cast_list(list), size, extra
             res.map { |e|
@@ -3386,7 +3386,7 @@ module AtFunctionCatalog
         # @example Print[SlicesFill[1:3, 2, repeat->3]]
         # @example ?? [[0, 0], [0, 0], [0, 1], [1, 2], [2, 3], [3, 0], [0, 0], [0, 0]]
         #>>
-        "SlicesFill" => configurable { |inst, list, skew=(1..list.size).to_a, **opts|
+        "SlicesFill" => AtFunction.configurable { |inst, list, skew=(1..list.size).to_a, **opts|
 
             fill = get_default(opts, :fill, 0)
             compact = get_default(opts, :compact, false)
@@ -3439,7 +3439,7 @@ module AtFunctionCatalog
         # @option RNG specifies which RNG to shuffle by.
         # @genre list/random
         #>>
-        "Shuffle" => configurable { |inst, list, **opts|
+        "Shuffle" => AtFunction.configurable { |inst, list, **opts|
             casted = inst.cast_list(list)
 
             if opts.has_key? :RNG
@@ -3770,7 +3770,7 @@ module AtFunctionCatalog
                 res
             end
         },
-        "Moore" => configurable { |inst, list, fn, r=1, **opts|
+        "Moore" => AtFunction.configurable { |inst, list, fn, r=1, **opts|
             # see also: http://mathworld.wolfram.com/MooreNeighborhood.html
             cycle = get_default opts, :cycle, false
             list.map.with_index { |row, i|
@@ -3792,7 +3792,7 @@ module AtFunctionCatalog
                 }
             }
         },
-        "MooreN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
+        "MooreN" => AtFunction.configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
             widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
             moores = []
             @@functions["Moore"][inst, list, AtFunction.from { |inst, mat|
@@ -3806,7 +3806,7 @@ module AtFunctionCatalog
                 moores[widths]
             end
         },
-        "VonNeumann" => configurable { |inst, list, fn, r=1, **opts|
+        "VonNeumann" => AtFunction.configurable { |inst, list, fn, r=1, **opts|
             # see also: http://mathworld.wolfram.com/vonNeumannNeighborhood.html
             cycle = get_default opts, :cycle, false
             list.map.with_index { |row, i|
@@ -3826,7 +3826,7 @@ module AtFunctionCatalog
                 }
             }
         },
-        "VonNeumannN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
+        "VonNeumannN" => AtFunction.configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
             widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
             von_neumanns = []
             @@functions["VonNeumann"][inst, list, AtFunction.from { |inst, mat|
@@ -4020,7 +4020,9 @@ module AtFunctionCatalog
                     f[inst, e]
                 }
             else
-                list.map { |e| f[inst, e] }
+                list.map { |e|
+                    f[inst, e]
+                }
             end
         },
         "MapArgs" => AtFunction.from { |inst, f, list, *args|
@@ -4666,7 +4668,7 @@ module AtFunctionCatalog
                 res
             end
         },
-        "Safely" => configurable { |inst, func, catch=nil, **opts|
+        "Safely" => AtFunction.configurable { |inst, func, catch=nil, **opts|
             rec = AtFunction.from { |inst, *args|
                 begin
                     func[inst, *args]
@@ -4699,7 +4701,7 @@ module AtFunctionCatalog
                 commonest[n > 0 ? n - 1 : n]
             end
         },
-        "Reap" => held(HOLD_ALL) { |inst, expr, tag=nil|
+        "Reap" => AtFunction.held { |inst, expr, tag=nil|
             reap_start inst.evaluate_node_safe(tag)
             inst.evaluate_node_safe expr
             reaper = reap_end
@@ -4735,7 +4737,7 @@ module AtFunctionCatalog
         # @example Print[john.name, john.age, joiner->", "]
         # @examlpe ?? John Smith, 43
         #>>
-        "." => AtFunction.from { |inst, obj, prop|
+        "." => AtFunction.held(false, true) { |inst, obj, prop|
             if Node === prop
                 raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
             end
@@ -4746,23 +4748,23 @@ module AtFunctionCatalog
                 obj.send prop.raw.to_sym
             else
                 raise AttacheValueError.new(
-                    "`.` expected object to have properties",
+                    "`.` expected object to have properties (#{obj}; #{prop})",
                     inst.position
                 )
             end
         },
-        ":=" => held(true, true) { |inst, var, val|
+        ":=" => AtFunction.held { |inst, var, val|
             # p inst, var, val
             inst.set_global var, val
         },
-        ".=" => AtFunction.from { |inst, var, val|
+        ".=" => AtFunction.held { |inst, var, val|
             inst.set_local var, val
         },
-        "≔" => held(true, true) { |inst, var, val|
+        "≔" => AtFunction.held { |inst, var, val|
             @@operators[":="][inst, var, val]
         },
         # only overwrite if nil/undefined
-        "::=" => held(true, true) { |inst, var, val|
+        "::=" => AtFunction.held { |inst, var, val|
             if Token === var
                 update = begin
                     res = get_variable var.raw
@@ -4776,7 +4778,7 @@ module AtFunctionCatalog
             end
         },
         # only overwrite if nil/undefined
-        "..=" => held(true, true) { |inst, var, val|
+        "..=" => AtFunction.held { |inst, var, val|
             if Token === var
                 update = begin
                     res = inst.get_variable var.raw
@@ -4789,7 +4791,7 @@ module AtFunctionCatalog
                 raise AttacheUnimplementedError.new("::= is not defined for non-token first argument", inst.position)
             end
         },
-        "@=" => held(true) { |inst, left, value|
+        "@=" => AtFunction.held { |inst, left, value|
             ent = inst.get_variable left.head.raw
             inds = left.children.map { |e|
                 inst.evaluate_node e
@@ -5281,7 +5283,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator/logic
         #>>
-        "∨" => held(true, true) { |inst, a, b|
+        "∨" => AtFunction.held { |inst, a, b|
             @@operators["or"][inst, a, b]
         },
         #<<
@@ -5328,7 +5330,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "⊼" => held(true, true) { |inst, a, b|
+        "⊼" => AtFunction.held { |inst, a, b|
             @@operators["nand"][inst, a, b]
         },
         #<<
@@ -5353,7 +5355,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "∧" => held(true, true) { |inst, a, b|
+        "∧" => AtFunction.held { |inst, a, b|
             @@operators["and"][inst, a, b]
         },
         #<<
@@ -5394,7 +5396,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "⊽" => held(true, true) { |inst, a, b|
+        "⊽" => AtFunction.held { |inst, a, b|
             @@operators["nor"][inst, a, b]
         },
         #<<
@@ -5603,7 +5605,7 @@ module AtFunctionCatalog
         # @return ConfigureValue
         # @genre operator
         #>>
-        "->" => held(true, false) { |inst, key, value|
+        "->" => AtFunction.held(true, false) { |inst, key, value|
             if key.is_a?(Node) && key.head.raw == "V"
                 # make a function
                 params = key.children.map(&:raw)
@@ -5664,7 +5666,7 @@ module AtFunctionCatalog
             }
         },
         # propda
-        "." => held(HOLD_ALL) { |inst, property|
+        "." => AtFunction.held { |inst, property|
             AtFunction.from { |inst, ent| @@operators["."][inst, ent, property] }
         },
 
