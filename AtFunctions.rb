@@ -706,7 +706,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric
         #>>
-        "Abs" => vectorize_monad { |inst, n|
+        "Abs" => AtFunction.vectorize(1) { |inst, n|
             n.abs
         },
         #<<
@@ -724,7 +724,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/bases
         #>>
-        "Bin" => vectorize_monad { |inst, n|
+        "Bin" => AtFunction.vectorize(1) { |inst, n|
             @@functions["ToBase"][inst, n, 2]
         },
         #<<
@@ -764,7 +764,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre numeric/series
         #>>
-        "Collatz" => vectorize_monad { |inst, n|
+        "Collatz" => AtFunction.vectorize(1) { |inst, n|
             collatz n
         },
         #<<
@@ -773,7 +773,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/series
         #>>
-        "CollatzSize" => vectorize_monad { |inst, n|
+        "CollatzSize" => AtFunction.vectorize(1) { |inst, n|
             collatz(n).size - 1
         },
         #<<
@@ -782,7 +782,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Double" => vectorize_monad { |inst, n|
+        "Double" => AtFunction.vectorize(1) { |inst, n|
             @@operators["*"][inst, n, 2]
         },
         #<<
@@ -791,7 +791,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre numeric
         #>>
-        "Digits" => vectorize_monad { |list, n|
+        "Digits" => AtFunction.vectorize(1) { |list, n|
             n.digits.reverse
         },
         #<<
@@ -813,7 +813,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Exp" => vectorize_monad { |inst, n|
+        "Exp" => AtFunction.vectorize(1) { |inst, n|
             CMath::exp n
         },
         #<<
@@ -822,7 +822,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/series
         #>>
-        "Fibonacci" => vectorize_monad { |inst, n|
+        "Fibonacci" => AtFunction.vectorize(1) { |inst, n|
             nth_fibonacci(n)
         },
         #<<
@@ -870,7 +870,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/bases
         #>>
-        "Hex" => vectorize_monad { |inst, n|
+        "Hex" => AtFunction.vectorize(1) { |inst, n|
             @@functions["ToBase"][inst, n, 16]
         },
         #<<
@@ -879,7 +879,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Halve" => vectorize_monad { |inst, n|
+        "Halve" => AtFunction.vectorize(1) { |inst, n|
             @@operators["/"][inst, n, 2]
         },
         #<<
@@ -919,7 +919,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Log" => vectorize_monad { |inst, n|
+        "Log" => AtFunction.vectorize(1) { |inst, n|
             CMath::log10 n
         },
         #<<
@@ -928,7 +928,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Log2" => vectorize_monad { |inst, n|
+        "Log2" => AtFunction.vectorize(1) { |inst, n|
             CMath::log2 n
         },
         #<<
@@ -937,7 +937,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric
         #>>
-        "Ln" => vectorize_monad { |inst, n|
+        "Ln" => AtFunction.vectorize(1) { |inst, n|
             CMath::log n
         },
         #<<
@@ -987,7 +987,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/bases
         #>>
-        "Oct" => vectorize_monad { |inst, n|
+        "Oct" => AtFunction.vectorize(1) { |inst, n|
             @@functions["ToBase"][inst, n, 8]
         },
         #<<
@@ -1037,7 +1037,7 @@ module AtFunctionCatalog
         # @example ?? [9, 40, 41]
         # @example ?? [35, 12, 37]
         #>>
-        "Pythagorean" => vectorize_monad { |inst, n|
+        "Pythagorean" => AtFunction.vectorize(1) { |inst, n|
             pythagorean n
         },
         #<<
@@ -1104,7 +1104,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Sign" => vectorize_monad { |inst, n|
+        "Sign" => AtFunction.vectorize(1) { |inst, n|
             sign n
         },
         #<<
@@ -1113,7 +1113,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/rational
         #>>
-        "Numerator" => vectorize_monad { |inst, n|
+        "Numerator" => AtFunction.vectorize(1) { |inst, n|
             Rational(n).numerator
         },
         #<<
@@ -1122,7 +1122,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/rational
         #>>
-        "Denominator" => vectorize_monad { |inst, n|
+        "Denominator" => AtFunction.vectorize(1) { |inst, n|
             Rational(n).denominator
         },
         #<<
@@ -1131,7 +1131,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Sqrt" => vectorize_monad { |inst, n|
+        "Sqrt" => AtFunction.vectorize(1) { |inst, n|
             CMath::sqrt n
         },
         #<<
@@ -1140,7 +1140,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Cbrt" => vectorize_monad { |inst, n|
+        "Cbrt" => AtFunction.vectorize(1) { |inst, n|
             CMath::cbrt n
         },
         #<<
@@ -1160,7 +1160,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Square" => vectorize_monad { |inst, n|
+        "Square" => AtFunction.vectorize(1) { |inst, n|
             @@operators["*"][inst, n, n]
         },
         #<<
@@ -1192,7 +1192,7 @@ module AtFunctionCatalog
         # @example ?? [0, 1, 3, 6, 10, 15]
         # @genre numeric/series
         #>>
-        "Triangular" => vectorize_monad { |inst, n|
+        "Triangular" => AtFunction.vectorize(1) { |inst, n|
             gonal n, 3
         },
         #<<
@@ -1275,7 +1275,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcCos" => vectorize_monad { |inst, n|
+        "ArcCos" => AtFunction.vectorize(1) { |inst, n|
             CMath::acos n
         },
         #<<
@@ -1284,7 +1284,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcCosh" => vectorize_monad { |inst, n|
+        "ArcCosh" => AtFunction.vectorize(1) { |inst, n|
             CMath::acosh n
         },
         #<<
@@ -1293,7 +1293,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcSin" => vectorize_monad { |inst, n|
+        "ArcSin" => AtFunction.vectorize(1) { |inst, n|
             CMath::asin n
         },
         #<<
@@ -1302,7 +1302,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcSinh" => vectorize_monad { |inst, n|
+        "ArcSinh" => AtFunction.vectorize(1) { |inst, n|
             CMath::asinh n
         },
         #<<
@@ -1311,7 +1311,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcTan" => vectorize_monad { |inst, n|
+        "ArcTan" => AtFunction.vectorize(1) { |inst, n|
             CMath::atan n
         },
         #<<
@@ -1320,7 +1320,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcTanh" => vectorize_monad { |inst, n|
+        "ArcTanh" => AtFunction.vectorize(1) { |inst, n|
             CMath::atanh n
         },
         #<<
@@ -1339,7 +1339,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Cos" => vectorize_monad { |inst, n|
+        "Cos" => AtFunction.vectorize(1) { |inst, n|
             CMath::cos n
         },
         #<<
@@ -1348,7 +1348,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Cosh" => vectorize_monad { |inst, n|
+        "Cosh" => AtFunction.vectorize(1) { |inst, n|
             CMath::cosh n
         },
         #<<
@@ -1357,7 +1357,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Sin" => vectorize_monad { |inst, n|
+        "Sin" => AtFunction.vectorize(1) { |inst, n|
             CMath::sin n
         },
         #<<
@@ -1366,7 +1366,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Sinh" => vectorize_monad { |inst, n|
+        "Sinh" => AtFunction.vectorize(1) { |inst, n|
             CMath::sinh n
         },
         #<<
@@ -1375,7 +1375,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Tan" => vectorize_monad { |inst, n|
+        "Tan" => AtFunction.vectorize(1) { |inst, n|
             CMath::tan n
         },
         #<<
@@ -1384,7 +1384,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "Tanh" => vectorize_monad { |inst, n|
+        "Tanh" => AtFunction.vectorize(1) { |inst, n|
             CMath::tanh n
         },
 
@@ -1397,7 +1397,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre numeric/prime
         #>>
-        "IsPrime" => vectorize_monad { |inst, n|
+        "IsPrime" => AtFunction.vectorize(1) { |inst, n|
             Prime.prime? n
         },
         #<<
@@ -1406,7 +1406,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre numeric/prime
         #>>
-        "IsComposite" => vectorize_monad { |inst, n|
+        "IsComposite" => AtFunction.vectorize(1) { |inst, n|
             !Prime.prime? n
         },
         #<<
@@ -1453,7 +1453,7 @@ module AtFunctionCatalog
         # @genre numeric/prime
         # @example Print[Prime[1:10]]
         #>>
-        "Prime" => vectorize_monad { |inst, n|
+        "Prime" => AtFunction.vectorize(1) { |inst, n|
             nth_prime n
         },
         #<<
@@ -1462,7 +1462,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/prime
         #>>
-        "PrimeDivision" => vectorize_monad { |inst, n|
+        "PrimeDivision" => AtFunction.vectorize(1) { |inst, n|
             Prime.prime_division n
         },
         #<<
@@ -1471,7 +1471,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/prime
         #>>
-        "PrimeFactors" => vectorize_monad { |inst, n|
+        "PrimeFactors" => AtFunction.vectorize(1) { |inst, n|
             prime_factors n
         },
         #<<
@@ -1480,7 +1480,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/prime
         #>>
-        "Primes" => vectorize_monad { |inst, n|
+        "Primes" => AtFunction.vectorize(1) { |inst, n|
             Prime.first n
         },
         #<<
@@ -1489,7 +1489,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/prime
         #>>
-        "PrimeNu" => vectorize_monad { |inst, n|
+        "PrimeNu" => AtFunction.vectorize(1) { |inst, n|
             prime_factors(n).uniq.size
         },
         #<<
@@ -1498,7 +1498,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/prime
         #>>
-        "PrimeOmega" => vectorize_monad { |inst, n|
+        "PrimeOmega" => AtFunction.vectorize(1) { |inst, n|
             prime_factors(n).size
         },
 
@@ -1511,7 +1511,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Even" => vectorize_monad { |inst, n|
+        "Even" => AtFunction.vectorize(1) { |inst, n|
             n.even?
         },
         #<<
@@ -1520,7 +1520,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Imaginary" => vectorize_monad { |inst, n|
+        "Imaginary" => AtFunction.vectorize(1) { |inst, n|
             @@functions["IsImaginary"][inst, n]
         },
         #<<
@@ -1546,7 +1546,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Im" => vectorize_monad { |inst, n|
+        "Im" => AtFunction.vectorize(1) { |inst, n|
             n.imaginary rescue 0
         },
         #<<
@@ -1555,7 +1555,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Re" => vectorize_monad { |inst, n|
+        "Re" => AtFunction.vectorize(1) { |inst, n|
             n.real rescue n
         },
         #<<
@@ -1564,7 +1564,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Negative" => vectorize_monad { |inst, n|
+        "Negative" => AtFunction.vectorize(1) { |inst, n|
             n.negative?
         },
         #<<
@@ -1573,7 +1573,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Odd" => vectorize_monad { |inst, n|
+        "Odd" => AtFunction.vectorize(1) { |inst, n|
             n.odd?
         },
         #<<
@@ -1582,7 +1582,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Positive" => vectorize_monad { |inst, n|
+        "Positive" => AtFunction.vectorize(1) { |inst, n|
             n.positive?
         },
         #<<
@@ -1591,7 +1591,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Real" => vectorize_monad { |inst, n|
+        "Real" => AtFunction.vectorize(1) { |inst, n|
             unless n.real?
                 n.imaginary == 0
             else
@@ -1604,7 +1604,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "Zero" => vectorize_monad { |inst, n|
+        "Zero" => AtFunction.vectorize(1) { |inst, n|
             n.zero?
         },
         #<<
@@ -1613,7 +1613,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre numeric/logic
         #>>
-        "Integral" => vectorize_monad { |inst, n|
+        "Integral" => AtFunction.vectorize(1) { |inst, n|
             n == n.floor
         },
         #<<
@@ -1727,7 +1727,7 @@ module AtFunctionCatalog
             if Tie === fs
                 fs = fs.to_a
             end
-            vectorize_monad { |inst, f|
+            AtFunction.vectorize(1) { |inst, f|
                 f[inst, *args]
             } [inst, fs]
         },
@@ -3768,7 +3768,7 @@ module AtFunctionCatalog
         "Dim" => AtFunction.from { |inst, mat|
             dim mat
         },
-        "Identity" => vectorize_monad { |inst, size|
+        "Identity" => AtFunction.vectorize(1) { |inst, size|
             Matrix.identity(size).to_a
         },
         #<<
@@ -4152,7 +4152,7 @@ module AtFunctionCatalog
         # @type str string
         # @genre string
         #>>
-        "Chars" => vectorize_monad { |inst, str|
+        "Chars" => AtFunction.vectorize(1) { |inst, str|
             str.chars
         },
         #<<
@@ -4311,7 +4311,7 @@ module AtFunctionCatalog
         # @example Print[Ords[ [33, 34, 35] ]]
         # @example ?? [32, 34, 35]
         #>>
-        "Ords" => vectorize_monad { |inst, ent|
+        "Ords" => AtFunction.vectorize(1) { |inst, ent|
             if ent.is_a? String
                 ent.chars.map(&:ord)
             else
@@ -4451,7 +4451,7 @@ module AtFunctionCatalog
         # @example Print[Lines["abc\nhello"]]
         # @example ?? ["abc", "hello"]
         #>>
-        "Lines" => vectorize_monad { |inst, str|
+        "Lines" => AtFunction.vectorize(1) { |inst, str|
             str.split(/\r?\n/)
         },
         #<<
@@ -4555,7 +4555,7 @@ module AtFunctionCatalog
                 reform_list(list, ent)
             end
         },
-        "SwapCase" => vectorize_monad { |inst, str|
+        "SwapCase" => AtFunction.vectorize(1) { |inst, str|
             str.chars.map { |e|
                 if e != e.upcase
                     e.upcase
@@ -4578,7 +4578,7 @@ module AtFunctionCatalog
         # @example ?? LE MONDE
         # @genre string
         #>>
-        "Upcase" => vectorize_monad { |inst, str|
+        "Upcase" => AtFunction.vectorize(1) { |inst, str|
             str.upcase
         },
         "UnGrid" => AtFunction.from { |inst, str|
@@ -4596,22 +4596,22 @@ module AtFunctionCatalog
         # @example ?? le monde
         # @genre string
         #>>
-        "Downcase" => vectorize_monad { |inst, str|
+        "Downcase" => AtFunction.vectorize(1) { |inst, str|
             str.downcase
         },
-        "IsUpcase" => vectorize_monad { |inst, str|
+        "IsUpcase" => AtFunction.vectorize(1) { |inst, str|
             str.upcase == str
         },
-        "IsDowncase" => vectorize_monad { |inst, str|
+        "IsDowncase" => AtFunction.vectorize(1) { |inst, str|
             str.downcase == str
         },
-        "IsAlpha" => vectorize_monad { |inst, str|
+        "IsAlpha" => AtFunction.vectorize(1) { |inst, str|
             /^[[:alpha:]]*$/ === str.to_s
         },
-        "IsAlphaNumeric" => vectorize_monad { |inst, str|
+        "IsAlphaNumeric" => AtFunction.vectorize(1) { |inst, str|
             /^[[:alnum:]]*$/ === str.to_s
         },
-        "IsNumeric" => vectorize_monad { |inst, str|
+        "IsNumeric" => AtFunction.vectorize(1) { |inst, str|
             /^[[:digit:]]*$/ === str.to_s
         },
 
@@ -4639,13 +4639,13 @@ module AtFunctionCatalog
             }
             res
         },
-        "DayOfWeek" => vectorize_monad { |inst, date|
+        "DayOfWeek" => AtFunction.vectorize(1) { |inst, date|
             date.week_day
         },
-        "Weekday" => vectorize_monad { |inst, date|
+        "Weekday" => AtFunction.vectorize(1) { |inst, date|
             date.wday
         },
-        "Day" => vectorize_monad { |inst, date=Time.now|
+        "Day" => AtFunction.vectorize(1) { |inst, date=Time.now|
             date.day
         },
 
@@ -4677,7 +4677,7 @@ module AtFunctionCatalog
             dd "end debugging"
 
         },
-        "BigDecimal" => vectorize_monad { |inst, n|
+        "BigDecimal" => AtFunction.vectorize(1) { |inst, n|
             BigDecimal.new n
         },
         "Error" => AtFunction.from { |inst, name, msg="An error has occured."|
@@ -5695,7 +5695,7 @@ module AtFunctionCatalog
     }
 
     @@unary_operators = {
-        "-" => vectorize_monad { |inst, n| -n },
+        "-" => AtFunction.vectorize(1) { |inst, n| -n },
         "#" => AtFunction.from { |inst, n|
             if n.is_a? Train
                 AtFunction.from { |inst, args|
@@ -5738,7 +5738,7 @@ module AtFunctionCatalog
         "##" => AtFunction.from { |inst, n|
             dim n
         },
-        "±" => vectorize_monad { |inst, a|
+        "±" => AtFunction.vectorize(1) { |inst, a|
             [a, @@unary_operators["-"][inst, a]]
         },
         "/" => AtFunction.from { |inst, r|
@@ -5764,7 +5764,7 @@ module AtFunctionCatalog
         # vectorize
         "@" => AtFunction.from { |inst, f|
             if AtState.func_like? f
-                vectorize { |inst, *args|
+                AtFunction.vectorize { |inst, *args|
                     f[inst, *args]
                 }
             else
@@ -5784,7 +5784,7 @@ module AtFunctionCatalog
             end
         },
         # reverses arguments
-        "~" => vectorize_monad { |inst, f|
+        "~" => AtFunction.vectorize(1) { |inst, f|
             if AtState.func_like? f
                 AtFunction.from { |inst, *args|
                     f[inst, *args.reverse]
@@ -5793,7 +5793,7 @@ module AtFunctionCatalog
                 ~f
             end
         },
-        "!" => vectorize_monad { |inst, n|
+        "!" => AtFunction.vectorize(1) { |inst, n|
             if AtState.func_like? n
                 AtFunction.from { |inst, *args|
                     @@functions["Permutations"][inst, *args].map { |perm|
@@ -5804,7 +5804,7 @@ module AtFunctionCatalog
                 factorial n
             end
         },
-        "?" => vectorize_monad { |inst, n|
+        "?" => AtFunction.vectorize(1) { |inst, n|
             AtState.truthy? n
         },
         #<<
