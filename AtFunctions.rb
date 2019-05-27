@@ -2035,30 +2035,48 @@ module AtFunctionCatalog
             }
         },
         "Over" => AtFunction.from { |inst, *opts|
-            opts.map! { |opt|
+            # list of key-value pairs, where
+            #     key = condition on array index
+            #     value = corresponding function to evaluate on element
+            modified = opts.map { |opt|
+                # evaluate string variables as function names
                 key = if String === opt.key
                     inst.get_variable opt.key
                 else
                     opt.key
                 end
+
+                value = opt.value
+
+                # non-function-likes are lists of indices
                 unless AtState.func_like? key
+                    # remove nil, ensure list
                     old = [*key]
                     key = AtFunction.from { |inst, e| old.include? e }
                 end
-                opt.key = key
-                opt
+
+                # ensure value is function-like
+                unless AtState.func_like? value
+                    value = AtFunction.constant value
+                end
+
+                ConfigureValue.new key, value
             }
 
+            # return function which performs the desired transformation
             AtFunction.from { |inst, arr|
                 map_vector(inst, arr, with_index: true) { |inst, e, i|
-                    fn = opts.find { |opt| opt.key[inst, i] }
+                    # find first key-value pair which returns true
+                    fn = modified.find { |opt|
+                        opt.key[inst, i]
+                    }
+                    # then execute its function if there was one found
                     if fn
-                        p fn
                         fn.value[inst, e]
+                    # otherwise, just return the element as is
                     else
                         e
                     end
-
                 }
             }
         },

@@ -485,6 +485,12 @@ class AtFunction
         AtFunction.new(fn, configurable: configurable, **opts)
     end
 
+    def AtFunction.constant(value)
+        AtFunction.from { |inst, *discard|
+            value
+        }
+    end
+
     def size
         @arity
     end
