@@ -92,7 +92,7 @@ class AtParser
 
         end
 
-        is_data = $DATA.include?(type) || open_func?(type) # || type == :curry_open
+        is_data = $DATA.include?(type) || open_func?(type)
         last_was_data = $DATA_SIGNIFIER.include? @last_token.type
         both_are_data = is_data && last_was_data
 
@@ -216,8 +216,6 @@ class AtParser
             loop {
                 if @stack.empty?
                     raise AttacheSyntaxError.new("Unmatched closing brace: #{ent.raw}", ent.position)
-                    # STDERR.puts "Syntax Error: unmatched closing brace: #{ent}"
-                    # return nil
                 end
                 break if @stack.last.type == :bracket_open
                 @out.push @stack.pop
@@ -365,17 +363,6 @@ def vectorize_arity(args, depths, &fn)
     end
 end
 
-# def nth_vectorize(cases, depths)
-#     lambda { |*args|
-#         arity = args.size
-#         fn = cases[arity]
-#         depth = depths[arity]
-#         vectorize_arity(args, depth, &fn)
-#     }
-# end
-
-# exit
-
 class AtFunction
     def initialize(
         fn,
@@ -469,7 +456,6 @@ class Node
 
     def to_ary
         raise "to_ary is deprecated"
-        # [@head.clone, @children.clone]
     end
 
     def to_s(depth = 0, color: true)
@@ -492,11 +478,6 @@ class Node
 
     def inspect(color: true)
         (color ? "#\x1b[33mNode\x1b[0m<" : "#Node<") + "#{@head}>{#{@children.inspect}}"
-        # if @head.type == :operator
-            # @children.map(&:raw).join @head.raw
-        # else
-            # @head.raw + @children.inspect
-        # end
     end
 end
 
@@ -531,10 +512,6 @@ class AtLambda
         @params.size
     end
 
-    # def inspect
-    #     "AtLambda(#{@raw})"
-    # end
-
     alias :arity :size
 
     attr_accessor :params, :scope, :ascend, :descend, :ignore_other, :tokens, :raw
@@ -554,10 +531,7 @@ class AtLambda
         temp_scope = @scope.dup
 
         res = @tokens.map.with_index { |token, i|
-
             inst.save_blanks args
-            # p ["TOKEN!"]
-            # p token
             inner = inst.evaluate_node(token, @scope)
 
             if @ascend && @descend
@@ -634,10 +608,7 @@ class Applicator
 end
 
 def make_curry(args, func)
-    # p "MAKING CURRY"
-    # p args
     return AtFunction.from { |inst, *others|
-        # p others
         abstracts = []
         to_remove = []
 
@@ -755,9 +726,6 @@ def ast(program)
 
         elsif $DATA.include? type
             stack.push ent
-
-        # elsif type == :discard
-            # stack.push Node.new ent, [stack.pop]
 
         elsif type == :paren_open
             raise AttacheSyntaxError.new("Unmatched parenthesis: #{raw.inspect}", ent.position)
@@ -978,7 +946,6 @@ class AtState
     def error(message)
         STDERR.puts message
         exit
-        # raise
     end
 
     @@attribute_map = {
@@ -1256,14 +1223,9 @@ class AtState
     end
 
     def get_blank(blank)
-        # if blank_args.nil?
-        #     blank_args = @locals.last[AtLambda::ARG_CONST] || []
-        # end
-        #
         type = blank.match(/_+/)[0].size
         n = get_abstract_number(blank)
-        #
-        # # p "abstract type #{type}, #{blank}, #{blank_args}"
+
         range = case type
             when 1
                 n
@@ -1339,8 +1301,6 @@ class AtState
             return value
         end
 
-        # head, children = node
-
         position_holder = node.head == Node ? node.head.raw : node.head
         @position = position_holder.position rescue nil
 
@@ -1351,14 +1311,9 @@ class AtState
         func = is_format_string ? nil : get_value(node.head)
 
         # 1st pass at characteristic checking
-        # if AtFunction === func
-        #     return evaluate_atfunction func
-        # end
         if AtFunction === func
             held = func.held
             configurable = func.configurable
-            # func = func.fn
-            # p func
         elsif AtLambda === func
             held = []
             configurable = false
@@ -1372,8 +1327,6 @@ class AtState
             func = evaluate_node func, merge_with, check_error: check_error
         end
 
-        # puts ">>>EVALUATING CHILDREN"
-        # p node.children
         # evaluate children
         children = node.children.map.with_index { |child, i|
             # raw, type = child
@@ -1388,18 +1341,14 @@ class AtState
                     get_value child
                 end
             end
-            # p value
             value
         }
         args.concat children
-
-        # p ['what', args]
 
         # second pass of held arguments
         if AtFunction === func
             configurable = func.configurable
             held = func.held
-            # func = func.fn
         end
 
         # check if error occured
@@ -1413,12 +1362,10 @@ class AtState
 
         # filter ConfigureValue
         if configurable
-            # p 'whooo'
             split = args.group_by { |e| e.is_a? ConfigureValue }
             split[true] ||= []
             configurable = split[true].map { |a, b| [a.to_sym, b] }.to_h
             args = split[false]
-            # p [split, args]
         end
 
         # reduce applicators
@@ -1442,11 +1389,7 @@ class AtState
 
         # infuse scopes
         if func.kind_of?(AtLambda) && !merge_with.nil?
-            # di "func infusion"
-            # dh "func", func.inspect
-            # dhash "merge_with", merge_with
             func.scope.merge! merge_with
-            # dd "func infused"
         end
 
         # call the function
@@ -1454,11 +1397,7 @@ class AtState
 
         # infuse scope
         if result.kind_of?(AtLambda) && !merge_with.nil?
-            # di "res infusion"
-            # dh "func", func.inspect
-            # dhash "merge_with", merge_with
             result.scope.merge! merge_with
-            # dd "res infused"
         end
 
         result
@@ -1490,18 +1429,10 @@ class AtState
             held: hold
         )
         @@functions[name] = fn
-        # if configurable
-        #     # raise "@@configurable is deprecated"
-        #     # @@configurable << name
-        # end
 
         aliases.each { |ali|
             @@functions[ali] = ali
         }
-
-        # unless hold.nil?
-        #     @@held_arguments[name] = hold
-        # end
     end
 
     def AtState.variable(name, value)
