@@ -115,6 +115,12 @@ class AttacheParser
                 options[:highlight] = v
             end
 
+            opts.on("-R", "--save-results",
+                "Saves last evaluated tree root in `_1`"
+            ) do |v|
+                options[:save_results] = v
+            end
+
             opts.on("-S", "--serve-templat",
                 "Starts localhost:8000 with TemplAt code"
             ) do |v|
@@ -218,7 +224,11 @@ if options[:tokenize] || options[:shunt]
     }
 else
     begin
-        inst = AtState.new program, exclude_std: options[:fast]
+        inst = AtState.new(
+            program,
+            exclude_std: options[:fast],
+            auto_save_results: options[:save_results]
+        )
         inst.run
     rescue AttacheError => e
         puts e.readable
