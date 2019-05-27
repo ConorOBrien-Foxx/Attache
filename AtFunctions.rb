@@ -42,27 +42,6 @@ module AtFunctionCatalog
         ns.each { |k| a[k] = false }
         a
     end
-    # @@held_arguments = {
-    #     # "->" => [true, false],
-    #     # "→" => [true, false],
-    #     "If" => [false, true, true],
-    #     "While" => [true, true],
-    #     "DoWhile" => [true, true],
-    #     "ForEach" => [false, true],
-    #     "Modify" => [false, true],
-    #     # ":=" => [true, true],
-    #     # ".=" => [true, true],
-    #     "." => [false, true],
-    #     "DoSafe" => [true],
-    #     "TryCatch" => [true, true],
-    #
-    #     "and" => [true, true],
-    #     "nand" => [true, true],
-    #     "else" => [true, true],
-    #     "or" => [true, true],
-    #     "nor" => [true, true],
-    #     "not" => [true, true],
-    # }
 
     # All builtins
     @@functions = {
@@ -256,7 +235,7 @@ module AtFunctionCatalog
         # @example Print[a]
         # @example ?? 7
         #>>
-        "Modify" => AtFunction.from { |inst, head, body|
+        "Modify" => AtFunction.held(false, true) { |inst, head, body|
             init = inst.get_variable head
             result = inst.evaluate_node body, [init]
             inst.define head, result
@@ -2254,7 +2233,7 @@ module AtFunctionCatalog
         # @example     Print["Everything is situation normal."]
         # @example ]
         #>>
-        "If" => AtFunction.from { |inst, cond, t, f=nil|
+        "If" => AtFunction.held(false, true, true) { |inst, cond, t, f=nil|
             res = if AtState.truthy? cond
                 t
             else
@@ -2324,7 +2303,7 @@ module AtFunctionCatalog
         # @example While[false, Print["Hello!"]]
         # @example ?? nothing is printed
         #>>
-        "While" => AtFunction.from { |inst, cond, body|
+        "While" => AtFunction.held { |inst, cond, body|
             res = nil
             loop {
                 # dhash "while scope", inst.locals.last
@@ -2355,7 +2334,7 @@ module AtFunctionCatalog
         # @example DoWhile[false, Print["Hello!"]]
         # @example ?? Hello!
         #>>
-        "DoWhile" => AtFunction.from { |inst, cond, body|
+        "DoWhile" => AtFunction.held { |inst, cond, body|
             res = nil
             loop {
                 res = inst.evaluate_node body
@@ -2372,7 +2351,7 @@ module AtFunctionCatalog
         # @type ent [(*)]
         # @return nil
         #>>
-        "ForEach" => AtFunction.from { |inst, ent, body|
+        "ForEach" => AtFunction.held(false, true) { |inst, ent, body|
             arr = inst.cast_list(ent)
 
             arr.each_with_index { |x, i|
@@ -4706,7 +4685,7 @@ module AtFunctionCatalog
         "HTMLEscape" => AtFunction.from { |inst, str|
             str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
         },
-        "DoSafe" => AtFunction.from { |inst, body|
+        "DoSafe" => AtFunction.held { |inst, body|
             begin
                 inst.evaluate_node body
                 nil
@@ -4714,7 +4693,7 @@ module AtFunctionCatalog
                 e
             end
         },
-        "TryCatch" => AtFunction.from { |inst, body, catch|
+        "TryCatch" => AtFunction.held { |inst, body, catch|
             res = inst.evaluate_node body
             if AtError === res
                 inst.evaluate_node catch, [res], check_error: false
@@ -5323,7 +5302,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator/logic
         #>>
-        "or" => AtFunction.from { |inst, a, b|
+        "or" => AtFunction.held { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
@@ -5369,7 +5348,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "nand" => AtFunction.from { |inst, a, b|
+        "nand" => AtFunction.held { |inst, a, b|
             if AtState.falsey? inst.evaluate_node_safe a
                 true
             elsif AtState.falsey? inst.evaluate_node_safe b
@@ -5395,7 +5374,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "and" => AtFunction.from { |inst, a, b|
+        "and" => AtFunction.held { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.falsey? lres
                 lres
@@ -5420,7 +5399,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "else" => AtFunction.from { |inst, a, b|
+        "else" => AtFunction.held { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
@@ -5435,7 +5414,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "nor" => AtFunction.from { |inst, a, b|
+        "nor" => AtFunction.held { |inst, a, b|
             if AtState.truthy? inst.evaluate_node_safe a
                 false
             elsif AtState.truthy? inst.evaluate_node_safe b
@@ -5464,7 +5443,7 @@ module AtFunctionCatalog
         # @example Print[Select[even_nonpos, [-4, -3, -2, 0, 2, 3, 4]]]
         # @example ?? [-4, -2, 0]
         #>>
-        "not" => AtFunction.from { |inst, a, b|
+        "not" => AtFunction.held { |inst, a, b|
             # A && !B
             rres = inst.evaluate_node_safe b
             if AtState.truthy? rres
@@ -5683,7 +5662,7 @@ module AtFunctionCatalog
         # @return ConfigureValue
         # @genre operator
         #>>
-        "→" => AtFunction.from { |inst, key, value|
+        "→" => AtFunction.held(true, false) { |inst, key, value|
             @@operators["->"][inst, key, value]
         },
         ";;" => AtFunction.from { |inst, x, y| y },
