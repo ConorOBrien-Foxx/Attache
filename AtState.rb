@@ -907,7 +907,13 @@ class AtState
     }
     @@extended_variables = {}
 
-    def initialize(program, input=STDIN, output=STDOUT, exclude_std: false)
+    def initialize(
+            program,
+            input=STDIN,
+            output=STDOUT,
+            exclude_std: false,
+            auto_save_results: false
+    )
         @trees = ast(program)
         if @trees.nil?
             exit
@@ -919,6 +925,8 @@ class AtState
         @position = nil
         @in = input
         @out = output
+        @auto_save_results = auto_save_results
+        @saved = []
         load_lib "std" unless exclude_std
     end
 
@@ -1412,12 +1420,16 @@ class AtState
     end
 
     def run
+        last_results = []
         @trees.map { |tree|
-            res = evaluate_node tree#, @locals.last.dup
+            save_blanks last_results.dup if @auto_save_results
+            res = evaluate_node tree
+            pop_blanks if @auto_save_results
             if AtError === res
                 puts res.to_s
                 exit -2
             end
+            last_results = [res] if @auto_save_results
             res
         }
     end
