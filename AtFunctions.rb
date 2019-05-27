@@ -2022,8 +2022,11 @@ module AtFunctionCatalog
         # @example ?? [[1, 2, 3], [6, 5, 4], ["a", "b", "c"], ["f", "e", "d"]]
         #>>
         "On" => curry { |inst, cond, f, arr|
+            size = arr.size rescue 0
             unless AtState.func_like? cond
-                old = [*cond]
+                old = [*cond].map { |e|
+                    val = e < 0 ? e + size : e
+                }
                 cond = AtFunction.from { |inst, e| old.include? e }
             end
 
@@ -2050,6 +2053,7 @@ module AtFunctionCatalog
                 map_vector(inst, arr, with_index: true) { |inst, e, i|
                     fn = opts.find { |opt| opt.key[inst, i] }
                     if fn
+                        p fn
                         fn.value[inst, e]
                     else
                         e
