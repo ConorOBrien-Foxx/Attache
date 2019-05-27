@@ -71,7 +71,7 @@ $RB_AFTER_COMMENT = /(?<=#).+/
 $RB_COMMENT_GROUP = /#<<[\s\S]+?#>>\s+[^#].*?\r?\n[\s\S]+?\},\s*$/
 $RB_OTHER_COMMENT_GROUP = /##<<[\s\S]+?##>>/
 $RB_OTHER_AFTER_COMMENT = /(?<=##).+$/
-$RB_SIGNATURE_PARSE = /"(.+?)" => (\w+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
+$RB_SIGNATURE_PARSE = /"(.+?)" => ([\w.]+(?:\(.+?\))?) \{ \|(.+?)\|\s*$/
 $DATA_LINE = /@(\w+)(?:\s?(.+))?/
 def create_info(body)
     info = Hash.new("")
