@@ -43,15 +43,15 @@ module AtFunctionCatalog
         a
     end
     @@held_arguments = {
-        "->" => [true, false],
-        "→" => [true, false],
+        # "->" => [true, false],
+        # "→" => [true, false],
         "If" => [false, true, true],
         "While" => [true, true],
         "DoWhile" => [true, true],
         "ForEach" => [false, true],
         "Modify" => [false, true],
-        ":=" => [true, true],
-        ".=" => [true, true],
+        # ":=" => [true, true],
+        # ".=" => [true, true],
         "." => [false, true],
         "DoSafe" => [true],
         "TryCatch" => [true, true],
@@ -80,7 +80,7 @@ module AtFunctionCatalog
         # @return string
         # @genre IO
         #>>
-        "AllInput" => lambda { |inst|
+        "AllInput" => AtFunction.from { |inst|
             inst.in.read
         },
 
@@ -90,7 +90,7 @@ module AtFunctionCatalog
         # @genre IO
         # @type n number
         #>>
-        "Arg" => lambda { |inst, n=0|
+        "Arg" => AtFunction.from { |inst, n=0|
             ARGV[n + 1]
         },
         #<<
@@ -99,7 +99,7 @@ module AtFunctionCatalog
         # @genre scope
         # @type name string
         #>>
-        "Clear" => lambda { |inst, name|
+        "Clear" => AtFunction.from { |inst, name|
             inst.clear name
         },
         #<<
@@ -107,7 +107,7 @@ module AtFunctionCatalog
         # @return nil
         # @genre IO
         #>>
-        "ClearScreen" => lambda { |inst|
+        "ClearScreen" => AtFunction.from { |inst|
             system "cls" or system "clear"
         },
         #<<
@@ -116,7 +116,7 @@ module AtFunctionCatalog
         # @genre scope
         # @type name string
         #>>
-        "ClearLocal" => lambda { |inst, name|
+        "ClearLocal" => AtFunction.from { |inst, name|
             inst.clear_local name
         },
         #<<
@@ -135,7 +135,7 @@ module AtFunctionCatalog
         # @genre functional
         #>>
         "Configure" => configurable { |inst, func, **opts|
-            lambda { |inst, *args|
+            AtFunction.from { |inst, *args|
                 func[inst, *args, **opts]
             }
         },
@@ -149,7 +149,7 @@ module AtFunctionCatalog
         # @example Print[a]
         # @example ?? This is variable a!
         #>>
-        "Define" => lambda { |inst, name, value|
+        "Define" => AtFunction.from { |inst, name, value|
             inst.define name, value
         },
         #<<
@@ -161,7 +161,7 @@ module AtFunctionCatalog
         # @example Print[Retrieve[$a]]
         # @example ?? 323
         #>>
-        "Retrieve" => lambda { |inst, name|
+        "Retrieve" => AtFunction.from { |inst, name|
             inst.get_variable name
         },
         #<<
@@ -176,7 +176,7 @@ module AtFunctionCatalog
         # @example Display[ "Hello, World!" ]
         # @example ?? "Hello, World!"
         #>>
-        "Display" => lambda { |inst, ent|
+        "Display" => AtFunction.from { |inst, ent|
             display ent
         },
         #<<
@@ -185,7 +185,7 @@ module AtFunctionCatalog
         # @type str string
         # @genre meta
         #>>
-        "Eval" => lambda { |inst, str|
+        "Eval" => AtFunction.from { |inst, str|
             AtState.new(str).run.last
         },
         #<<
@@ -194,7 +194,7 @@ module AtFunctionCatalog
         # @type str string
         # @genre meta
         #>>
-        "EvalHere" => lambda { |inst, str, blanks=[]|
+        "EvalHere" => AtFunction.from { |inst, str, blanks=[]|
             ast(str).map { |tree|
                 inst.evaluate_node tree, blanks
             }.last
@@ -207,7 +207,7 @@ module AtFunctionCatalog
         # @return nil
         # @genre IO
         #>>
-        "Exit" => lambda { |inst, code=0|
+        "Exit" => AtFunction.from { |inst, code=0|
             STDOUT.flush
             exit! code
         },
@@ -218,7 +218,7 @@ module AtFunctionCatalog
         # @param opts A series of value pairs <code>a -> v</code>.
         # @genre data
         #>>
-        "Hash" => lambda { |inst, *opts|
+        "Hash" => AtFunction.from { |inst, *opts|
             if opts.size == 1 && !(ConfigureValue === opts[0])
                 Hash[*opts]
             else
@@ -229,7 +229,7 @@ module AtFunctionCatalog
                 res
             end
         },
-        # "Hold" => lambda { |inst, fn|
+        # "Hold" => AtFunction.from { |inst, fn|
         #     if AtState.func_like? fn
         #         fn ;
         #     end
@@ -241,7 +241,7 @@ module AtFunctionCatalog
         # @type name string
         # @type value (*)
         #>>
-        "Local" => lambda { |inst, name, value|
+        "Local" => AtFunction.from { |inst, name, value|
             inst.define_local name, value
         },
         #<<
@@ -256,7 +256,7 @@ module AtFunctionCatalog
         # @example Print[a]
         # @example ?? 7
         #>>
-        "Modify" => lambda { |inst, head, body|
+        "Modify" => AtFunction.from { |inst, head, body|
             init = inst.get_variable head
             result = inst.evaluate_node body, [init]
             inst.define head, result
@@ -268,7 +268,7 @@ module AtFunctionCatalog
         # @genre meta
         # @return [string]
         #>>
-        "Needs" => lambda { |inst, *libs|
+        "Needs" => AtFunction.from { |inst, *libs|
             libs.each { |lib|
                 inst.load_lib lib
             }
@@ -297,7 +297,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre data
         #>>
-        "Pred" => lambda { |inst, ent|
+        "Pred" => AtFunction.from { |inst, ent|
             ent.pred
         },
         #<<
@@ -326,7 +326,7 @@ module AtFunctionCatalog
         # @optional prompt
         # @genre IO
         #>>
-        "Prompt" => lambda { |inst, prompt=nil|
+        "Prompt" => AtFunction.from { |inst, prompt=nil|
             prompt_input prompt, inst.in
         },
         #<<
@@ -334,7 +334,7 @@ module AtFunctionCatalog
         # @return string
         # @genre IO
         #>>
-        "ReadLine" => lambda { |inst|
+        "ReadLine" => AtFunction.from { |inst|
             inst.in.gets
         },
         #<<
@@ -346,7 +346,7 @@ module AtFunctionCatalog
         # @param func A function that receives lines of input and returns a string.
         # @genre IO
         #>>
-        "ReadLineLoop" => lambda { |inst, *args, func|
+        "ReadLineLoop" => AtFunction.from { |inst, *args, func|
             lines = []
             loop {
                 line = @@functions["Prompt"][inst, *args]
@@ -360,7 +360,7 @@ module AtFunctionCatalog
         # @return string
         # @genre IO
         #>>
-        "ReadChar" => lambda { |inst|
+        "ReadChar" => AtFunction.from { |inst|
             inst.in.getc
         },
         #<<
@@ -368,7 +368,7 @@ module AtFunctionCatalog
         # @return number
         # @genre IO
         #>>
-        "ReadInt" => lambda { |inst|
+        "ReadInt" => AtFunction.from { |inst|
             inst.in.gets.chomp.to_i
         },
         #<<
@@ -376,7 +376,7 @@ module AtFunctionCatalog
         # @return number
         # @genre IO
         #>>
-        "ReadFloat" => lambda { |inst|
+        "ReadFloat" => AtFunction.from { |inst|
             inst.in.gets.chomp.to_f
         },
         #<<
@@ -384,7 +384,7 @@ module AtFunctionCatalog
         # @return number
         # @genre IO
         #>>
-        "ReadNumber" => lambda { |inst|
+        "ReadNumber" => AtFunction.from { |inst|
             force_number inst.in.gets.chomp
         },
         #<<
@@ -393,7 +393,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre meta
         #>>
-        "Save" => lambda { |inst, *args|
+        "Save" => AtFunction.from { |inst, *args|
             inst.saved = args
         },
         #<<
@@ -401,7 +401,7 @@ module AtFunctionCatalog
         # @return string
         # @genre IO
         #>>
-        "Stdin" => lambda { |inst|
+        "Stdin" => AtFunction.from { |inst|
             STDIN.read
         },
         #<<
@@ -410,7 +410,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre data
         #>>
-        "Succ" => lambda { |inst, ent|
+        "Succ" => AtFunction.from { |inst, ent|
             ent.succ
         },
         #<<
@@ -419,7 +419,7 @@ module AtFunctionCatalog
         # @genre IO
         # @return nil
         #>>
-        "Stdout" => lambda { |inst, *args|
+        "Stdout" => AtFunction.from { |inst, *args|
             print args.flatten.join
         },
         #<<
@@ -428,7 +428,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre data
         #>>
-        "V" => lambda { |inst, *args|
+        "V" => AtFunction.from { |inst, *args|
             args
         },
 
@@ -442,7 +442,7 @@ module AtFunctionCatalog
         # @genre IO/files
         # @option encoding The encoding that the target file is in.
         #>>
-        "FileRead" => lambda { |inst, name, **opts|
+        "FileRead" => AtFunction.from { |inst, name, **opts|
             opts[:encoding] ||= "UTF-8"
             File.read(name.strip, encoding: opts[:encoding]) rescue nil
         },
@@ -454,7 +454,7 @@ module AtFunctionCatalog
         # @genre IO/files
         # @option encoding The encoding that the target file is in.
         #>>
-        "FileWrite" => lambda { |inst, name, content, **opts|
+        "FileWrite" => AtFunction.from { |inst, name, content, **opts|
             opts[:encoding] ||= "UTF-8"
             File.write(name.strip, content, encoding: opts[:encoding])
         },
@@ -464,13 +464,13 @@ module AtFunctionCatalog
         # @return bool
         # @genre IO/files
         #>>
-        "FileExists" => lambda { |inst, name|
+        "FileExists" => AtFunction.from { |inst, name|
             File.exists? name.strip
         },
-        "Wait" => lambda { |inst, n|
+        "Wait" => AtFunction.from { |inst, n|
             sleep n
         },
-        "Cls" => lambda { |inst|
+        "Cls" => AtFunction.from { |inst|
             cls
         },
 
@@ -484,7 +484,7 @@ module AtFunctionCatalog
         # @return class
         # @genre class
         #>>
-        "Class" => lambda { |inst, body, parent=nil|
+        "Class" => AtFunction.from { |inst, body, parent=nil|
             AtClass.new inst, body, parent
         },
         #<<
@@ -495,7 +495,7 @@ module AtFunctionCatalog
         #>>
         "ClassNamed" => held(true) { |inst, name, parent=nil|
             #p name
-            lambda { |inst, body|
+            AtFunction.from { |inst, body|
                 inst.define name.raw, AtClass.new(inst, body, parent, name: name.raw)
             }
         },
@@ -506,7 +506,7 @@ module AtFunctionCatalog
         # @return class[]
         # @genre class
         #>>
-        "New" => lambda { |inst, ac, *args|
+        "New" => AtFunction.from { |inst, ac, *args|
             ac.create(*args)
         },
 
@@ -519,7 +519,7 @@ module AtFunctionCatalog
         # @type a (*)
         # @genre functional
         #>>
-        "Id" => lambda { |inst, a|
+        "Id" => AtFunction.from { |inst, a|
             a
         },
         #<<
@@ -528,7 +528,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Pop" => lambda { |inst, list, count=nil|
+        "Pop" => AtFunction.from { |inst, list, count=nil|
             list.pop *count
         },
         #<<
@@ -537,7 +537,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Shift" => lambda { |inst, list, count=nil|
+        "Shift" => AtFunction.from { |inst, list, count=nil|
             list.shift *count
         },
         #<<
@@ -547,7 +547,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Push" => lambda { |inst, list, *args|
+        "Push" => AtFunction.from { |inst, list, *args|
             list.push *args
         },
         #<<
@@ -557,7 +557,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Unshift" => lambda { |inst, list, *args|
+        "Unshift" => AtFunction.from { |inst, list, *args|
             list.unshift *args
         },
         #<<
@@ -566,7 +566,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre list/logic
         #>>
-        "Palindromic" => lambda { |inst, ent|
+        "Palindromic" => AtFunction.from { |inst, ent|
             reverse(ent) == ent
         },
         #<<
@@ -575,7 +575,7 @@ module AtFunctionCatalog
         # @type ent (*)
         # @genre list
         #>>
-        "Reverse" => lambda { |inst, ent|
+        "Reverse" => AtFunction.from { |inst, ent|
             reverse ent
         },
 
@@ -651,7 +651,7 @@ module AtFunctionCatalog
         # @example Print[TakeWhile[IsPrime, 357923]]
         # @example ?? 357
         #>>
-        "TakeWhile" => lambda { |inst, cond, list|
+        "TakeWhile" => AtFunction.from { |inst, cond, list|
             collect = []
 
             inst.cast_list(list).each { |el|
@@ -674,7 +674,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre functional
         #>>
-        "GenerateFirst" => lambda { |inst, f, cond, start=0|
+        "GenerateFirst" => AtFunction.from { |inst, f, cond, start=0|
             res = nil
             n = start
             loop {
@@ -699,7 +699,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre functional
         #>>
-        "GenerateN" => lambda { |inst, f, cond, size, start=0|
+        "GenerateN" => AtFunction.from { |inst, f, cond, size, start=0|
             res = nil
             collect = []
             n = start
@@ -731,7 +731,7 @@ module AtFunctionCatalog
         # @type args number
         # @genre numeric
         #>>
-        "Add" => lambda { |inst, *args|
+        "Add" => AtFunction.from { |inst, *args|
             @@functions["Sum"][inst, args]
         },
         #<<
@@ -752,7 +752,7 @@ module AtFunctionCatalog
         # @optional r
         # @genre numeric
         #>>
-        "Ceiling" => vectorize_dyad { |inst, n, r=nil|
+        "Ceiling" => AtFunction.vectorize(2) { |inst, n, r=nil|
             if r.nil?
                 n.ceil
             else
@@ -767,7 +767,7 @@ module AtFunctionCatalog
         # @paramtype [number] arg Converts <code>arg</code> to a string of char codes.
         # @genre conversion
         #>>
-        "Char" => lambda { |inst, arg|
+        "Char" => AtFunction.from { |inst, arg|
             if arg.is_a? Array
                 arg.map { |e| e.chr Encoding::UTF_8 }.join
             else
@@ -816,11 +816,11 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Divide" => lambda { |inst, *args|
+        "Divide" => AtFunction.from { |inst, *args|
             args[0] = args[0].to_f
             args.inject(:/)
         },
-        "DivMod" => vectorize_dyad { |inst, d, m|
+        "DivMod" => AtFunction.vectorize(2) { |inst, d, m|
             d.divmod m
         },
         #<<
@@ -850,7 +850,7 @@ module AtFunctionCatalog
         # @optional r
         # @genre numeric
         #>>
-        "Floor" => vectorize_dyad { |inst, n, r=nil|
+        "Floor" => AtFunction.vectorize(2) { |inst, n, r=nil|
             if r.nil?
                 n.floor
             else
@@ -867,7 +867,7 @@ module AtFunctionCatalog
         # @param base a number greater than <code>0</code>, representing the source base of the numeric array.
         # @genre numeric/bases
         #>>
-        "FromBase" => vectorize_dyad(RIGHT) { |inst, num, base|
+        "FromBase" => AtFunction.from(vectorize: [false, true]) { |inst, num, base|
             from_base num, base
         },
         #<<
@@ -877,7 +877,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "GCD" => lambda { |inst, *args|
+        "GCD" => AtFunction.from { |inst, *args|
             gcd args.flatten
         },
         #<<
@@ -905,7 +905,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "LCM" => lambda { |inst, *args|
+        "LCM" => AtFunction.from { |inst, *args|
             lcm args.flatten
         },
         #<<
@@ -915,7 +915,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "IntLog" => vectorize_dyad { |inst, n, base|
+        "IntLog" => AtFunction.vectorize(2) { |inst, n, base|
             discrete_log n, base
         },
         #<<
@@ -926,7 +926,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre numeric/logic
         #>>
-        "IsRational" => lambda { |inst, x|
+        "IsRational" => AtFunction.from { |inst, x|
             Rational === x
         },
         #<<
@@ -962,7 +962,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric
         #>>
-        "LogBase" => vectorize_dyad { |inst, n, b|
+        "LogBase" => AtFunction.vectorize(2) { |inst, n, b|
             force_number CMath::log n, b
         },
         #<<
@@ -971,7 +971,7 @@ module AtFunctionCatalog
         # @type args number
         # @genre numeric
         #>>
-        "Multiply" => lambda { |inst, *args|
+        "Multiply" => AtFunction.from { |inst, *args|
             @@functions["Prod"][inst, args]
         },
         #<<
@@ -984,10 +984,10 @@ module AtFunctionCatalog
         # @paramtype number ent Converts <code>ent</code> to an integer if it represents one.
         # @paramtype (*) ent Attempts to cast <code>ent</code> to an integer.
         #>>
-        "N" => lambda { |inst, ent|
+        "N" => AtFunction.from { |inst, ent|
             force_number ent
         },
-        "F" => lambda { |inst, ent|
+        "F" => AtFunction.from { |inst, ent|
             if BigDecimal === ent
                 ent.to_f
             elsif Complex === ent
@@ -1013,7 +1013,7 @@ module AtFunctionCatalog
         # @type b number
         # @genre numeric
         #>>
-        "PlusMinus" => vectorize_dyad { |inst, a, b|
+        "PlusMinus" => AtFunction.vectorize(2) { |inst, a, b|
             [@@operators["+"][inst, a, b], @@operators["-"][inst, a, b]]
         },
         #<<
@@ -1032,7 +1032,7 @@ module AtFunctionCatalog
         # @example Print[Polygonal[0:5, 4]]
         # @example ?? [0, 1, 4, 9, 16, 25]
         #>>
-        "Polygonal" => vectorize_dyad { |inst, n, order=3|
+        "Polygonal" => AtFunction.vectorize(2) { |inst, n, order=3|
             gonal n, order
         },
         #<<
@@ -1070,7 +1070,7 @@ module AtFunctionCatalog
         "Random" => configurable { |inst, *args, **conf|
             p [3, args]
             "lolno"
-            # vectorize_dyad { |inst, n=nil, m=nil, **opts|
+            # AtFunction.vectorize(2) { |inst, n=nil, m=nil, **opts|
             #     if opts.has_key? :RNG
             #         random(n, m, random: opts[:RNG])
             #     else
@@ -1085,7 +1085,7 @@ module AtFunctionCatalog
         # @return RNG
         # @genre numeric/random
         #>>
-        "RNG" => lambda { |inst, seed=Random.new_seed|
+        "RNG" => AtFunction.from { |inst, seed=Random.new_seed|
             AtRNG.new(seed)
         },
         #<<
@@ -1095,7 +1095,7 @@ module AtFunctionCatalog
         # @type b number
         # @genre numeric
         #>>
-        "Rational" => vectorize_dyad { |inst, a, b|
+        "Rational" => AtFunction.vectorize(2) { |inst, a, b|
             Rational(a, b)
         },
         #<<
@@ -1107,7 +1107,7 @@ module AtFunctionCatalog
         # @optional r
         # @genre numeric
         #>>
-        "Round" => vectorize_dyad { |inst, n, r=nil|
+        "Round" => AtFunction.vectorize(2) { |inst, n, r=nil|
             if r.nil?
                 n.round
             else
@@ -1166,7 +1166,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Root" => vectorize_dyad { |inst, b, n|
+        "Root" => AtFunction.vectorize(2) { |inst, b, n|
             require 'bigdecimal'
             force_number n ** (BigDecimal.new(1) / b)
         },
@@ -1185,7 +1185,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric
         #>>
-        "Subtract" => lambda { |inst, *args|
+        "Subtract" => AtFunction.from { |inst, *args|
             args.inject(:-)
         },
         #<<
@@ -1195,7 +1195,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre numeric/bases
         #>>
-        "ToBase" => vectorize_dyad { |inst, num, base|
+        "ToBase" => AtFunction.vectorize(2) { |inst, num, base|
             to_base num, base
         },
         #<<
@@ -1217,7 +1217,7 @@ module AtFunctionCatalog
         # @return number
         # @type n [number]
         #>>
-        "UnBin" => lambda { |inst, n|
+        "UnBin" => AtFunction.from { |inst, n|
             @@functions["FromBase"][inst, n, 2]
         },
         #<<
@@ -1226,7 +1226,7 @@ module AtFunctionCatalog
         # @return number
         # @type n [number]
         #>>
-        "UnHex" => lambda { |inst, n|
+        "UnHex" => AtFunction.from { |inst, n|
             @@functions["FromBase"][inst, n, 16]
         },
         #<<
@@ -1235,50 +1235,50 @@ module AtFunctionCatalog
         # @return number
         # @type n [number]
         #>>
-        "UnOct" => lambda { |inst, n|
+        "UnOct" => AtFunction.from { |inst, n|
             @@functions["FromBase"][inst, n, 8]
         },
 
         ##------------------##
         ## Binary Functions ##
         ##------------------##
-        "And" => lambda { |inst, a, b|
+        "And" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) && AtState.truthy?(b)
         },
-        "Nand" => lambda { |inst, a, b|
+        "Nand" => AtFunction.from { |inst, a, b|
             !(AtState.truthy?(a) && AtState.truthy?(b))
         },
-        "Or" => lambda { |inst, a, b|
+        "Or" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) || AtState.truthy?(b)
         },
-        "Nor" => lambda { |inst, a, b|
+        "Nor" => AtFunction.from { |inst, a, b|
             !(AtState.truthy?(a) || AtState.truthy?(b))
         },
-        "Xor" => lambda { |inst, a, b|
+        "Xor" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) == AtState.truthy?(b)
         },
-        "Xnor" => lambda { |inst, a, b|
+        "Xnor" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) != AtState.truthy?(b)
         },
-        "BitAnd" => lambda { |inst, a, b|
+        "BitAnd" => AtFunction.from { |inst, a, b|
             a & b
         },
-        "BitOr" => lambda { |inst, a, b|
+        "BitOr" => AtFunction.from { |inst, a, b|
             a | b
         },
-        "BitXor" => lambda { |inst, a, b|
+        "BitXor" => AtFunction.from { |inst, a, b|
             a ^ b
         },
-        "BitNot" => lambda { |inst, a|
+        "BitNot" => AtFunction.from { |inst, a|
             ~a
         },
-        "BitNand" => lambda { |inst, a, b|
+        "BitNand" => AtFunction.from { |inst, a, b|
             ~(a & b)
         },
-        "BitNor" => lambda { |inst, a, b|
+        "BitNor" => AtFunction.from { |inst, a, b|
             ~(a | b)
         },
-        "BitXnor" => lambda { |inst, a, b|
+        "BitXnor" => AtFunction.from { |inst, a, b|
             ~(a ^ b)
         },
 
@@ -1346,7 +1346,7 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/trig
         #>>
-        "ArcTan2" => vectorize_dyad { |inst, y, x|
+        "ArcTan2" => AtFunction.vectorize(2) { |inst, y, x|
             CMath::atan2 y, x
         },
         #<<
@@ -1434,7 +1434,7 @@ module AtFunctionCatalog
         # @param rep When specified, returns the <code>rep</code>th prime after <code>n</code>.
         # @genre numeric/prime
         #>>
-        "NextPrime" => vectorize_dyad { |inst, n, rep=1|
+        "NextPrime" => AtFunction.vectorize(2) { |inst, n, rep=1|
             rep.times {
                 n += 1 + n % 2
                 n += 2 until Prime.prime? n
@@ -1450,7 +1450,7 @@ module AtFunctionCatalog
         # @param rep When specified, returns the <code>rep</code>th prime before <code>n</code>.
         # @genre numeric/prime
         #>>
-        "PreviousPrime" => vectorize_dyad { |inst, n, rep=1|
+        "PreviousPrime" => AtFunction.vectorize(2) { |inst, n, rep=1|
             rep.times {
                 break n = nil if n <= 2
                 if n == 3
@@ -1545,7 +1545,7 @@ module AtFunctionCatalog
         # @type n number
         # @genre numeric/logic
         #>>
-        "IsImaginary" => lambda { |inst, n|
+        "IsImaginary" => AtFunction.from { |inst, n|
             if Numeric === n
                 unless n.real?
                     n.imaginary != 0
@@ -1638,10 +1638,10 @@ module AtFunctionCatalog
         # @return bool
         # @genre numeric/logic
         #>>
-        "Numeric" => lambda { |inst, n|
+        "Numeric" => AtFunction.from { |inst, n|
             Numeric === n
         },
-        "IsSquare" => lambda { |inst, n|
+        "IsSquare" => AtFunction.from { |inst, n|
             CMath::sqrt(n).to_i ** 2 == n
         },
 
@@ -1679,7 +1679,7 @@ module AtFunctionCatalog
         # @example ?? ["olleh", "dlrow"]
         # @genre functional
         #>>
-        "Apply" => lambda { |inst, func, arg_arr|
+        "Apply" => AtFunction.from { |inst, func, arg_arr|
             func[inst, *arg_arr]
         },
         #<<
@@ -1692,8 +1692,8 @@ module AtFunctionCatalog
         # @example Print[1, 2, 3, 4, 5]
         # @example ?? 1 2 3 4 5
         #>>
-        "Applier" => lambda { |inst, func|
-            lambda { |inst, args|
+        "Applier" => AtFunction.from { |inst, func|
+            AtFunction.from { |inst, args|
                 func[inst, *args]
             }
         },
@@ -1704,8 +1704,8 @@ module AtFunctionCatalog
         # @return fn
         # @genre functional
         #>>
-        "Bond" => lambda { |inst, func, larg|
-            lambda { |inst, *args|
+        "Bond" => AtFunction.from { |inst, func, larg|
+            AtFunction.from { |inst, *args|
                 func[inst, larg, *args]
             }
         },
@@ -1715,8 +1715,8 @@ module AtFunctionCatalog
         # @return fn
         # @genre functional
         #>>
-        "C" => lambda { |inst, arg|
-            lambda { |inst, *discard|
+        "C" => AtFunction.from { |inst, arg|
+            AtFunction.from { |inst, *discard|
                 arg
             }
         },
@@ -1729,7 +1729,7 @@ module AtFunctionCatalog
         # @example Call[Print, "Hello", "World"]
         # @example ?? Hello World
         #>>
-        "Call" => lambda { |inst, f, *args|
+        "Call" => AtFunction.from { |inst, f, *args|
             f[inst, *args]
         },
         #<<
@@ -1767,13 +1767,13 @@ module AtFunctionCatalog
             }
             res
         },
-        "Configurable" => lambda { |inst, fn|
+        "Configurable" => AtFunction.from { |inst, fn|
             a = fn
             configurable { |inst, *args, **opts|
                 a.call inst, args, opts
             }
         },
-        "GetOption" => lambda { |inst, name, *others|
+        "GetOption" => AtFunction.from { |inst, name, *others|
             opts = inst.get_variable("OPTIONS")
             if opts.nil?
                 nil
@@ -1805,14 +1805,14 @@ module AtFunctionCatalog
         # @example Print[add6[10]]
         # @example ?? 16
         #>>
-        "Curry" => lambda { |inst, f, arity=f.arity|
+        "Curry" => AtFunction.from { |inst, f, arity=f.arity|
             if arity.negative?
                 arity = ~arity
             end
 
             arity += 1 if AtLambda === f || AtFunction === f
 
-            rec = lambda { |fn, inst, *args, **opts|
+            rec = AtFunction.from { |fn, inst, *args, **opts|
                 # parse arguments
                 args.reject! { |e|
                     if ConfigureValue === e
@@ -1833,7 +1833,7 @@ module AtFunctionCatalog
                         fn[inst, *args]
                     end
                 else
-                    lambda { |inst, *more, **moreopts|
+                    AtFunction.from { |inst, *more, **moreopts|
                         rec[fn, inst, *args, *more, **moreopts.merge(opts)]
                     }
                 end
@@ -1862,8 +1862,8 @@ module AtFunctionCatalog
         # @example Print[avg[1:5]]
         # @example ?? 3.0
         #>>
-        "Fork" => lambda { |inst, f, g, h|
-            lambda { |inst, *args|
+        "Fork" => AtFunction.from { |inst, f, g, h|
+            AtFunction.from { |inst, *args|
                 g[inst, f[inst, *args], h[inst, *args]]
             }
         },
@@ -1874,8 +1874,8 @@ module AtFunctionCatalog
         # @return fn
         # @genre functional
         #>>
-        "Hook" => lambda { |inst, f, g|
-            lambda { |inst, *args|
+        "Hook" => AtFunction.from { |inst, f, g|
+            AtFunction.from { |inst, *args|
                 f[inst, args.first, g[inst, *args]]
             }
         },
@@ -1886,9 +1886,9 @@ module AtFunctionCatalog
         # @return fn
         # @genre functional
         #>>
-        "InvocationIndex" => lambda { |inst, func|
+        "InvocationIndex" => AtFunction.from { |inst, func|
             i = -1
-            lambda { |inst, *args|
+            AtFunction.from { |inst, *args|
                 func[inst, *args, i = @@functions["Succ"][inst, i]]
             }
         },
@@ -1905,7 +1905,7 @@ module AtFunctionCatalog
         # @example Print[f[1, 2, 3, 4, 5, 6]]
         # @example ?? [2, 1, 6, 2, 10, 3]
         #>>
-        "Tie" => lambda { |inst, *args|
+        "Tie" => AtFunction.from { |inst, *args|
             if args.any? { |e| !AtState.func_like? e }
                 args.inject([]) { |acc, e| [*acc, *e] }
             else
@@ -1921,7 +1921,7 @@ module AtFunctionCatalog
         # @example Print[f[1:6]]
         # @example ?? [2, 1, 6, 2, 10, 3]
         #>>
-        "TieArray" => lambda { |inst, *funcs|
+        "TieArray" => AtFunction.from { |inst, *funcs|
             Tie.new funcs, true
         },
         #<<
@@ -1934,7 +1934,7 @@ module AtFunctionCatalog
         # @example Print[Nest[Double, 1, 3]]
         # @example ?? 8 (= 2 ^ 3)
         #>>
-        "Nest" => lambda { |inst, f, init, n|
+        "Nest" => AtFunction.from { |inst, f, init, n|
             iter = init
             from_numlike(n).times {
                 iter = f[inst, iter]
@@ -2024,14 +2024,14 @@ module AtFunctionCatalog
         "On" => curry { |inst, cond, f, arr|
             unless AtState.func_like? cond
                 old = [*cond]
-                cond = lambda { |inst, e| old.include? e }
+                cond = AtFunction.from { |inst, e| old.include? e }
             end
 
             map_vector(inst, arr, with_index: true) { |inst, e, i|
                 cond[inst, i] ? f[inst, e] : e
             }
         },
-        "Over" => lambda { |inst, *opts|
+        "Over" => AtFunction.from { |inst, *opts|
             opts.map! { |opt|
                 key = if String === opt.key
                     inst.get_variable opt.key
@@ -2040,13 +2040,13 @@ module AtFunctionCatalog
                 end
                 unless AtState.func_like? key
                     old = [*key]
-                    key = lambda { |inst, e| old.include? e }
+                    key = AtFunction.from { |inst, e| old.include? e }
                 end
                 opt.key = key
                 opt
             }
 
-            lambda { |inst, arr|
+            AtFunction.from { |inst, arr|
                 map_vector(inst, arr, with_index: true) { |inst, e, i|
                     fn = opts.find { |opt| opt.key[inst, i] }
                     if fn
@@ -2089,8 +2089,8 @@ module AtFunctionCatalog
         # @return fn
         # @genre functional
         #>>
-        "RBond" => lambda { |inst, func, rarg|
-            lambda { |inst, *args|
+        "RBond" => AtFunction.from { |inst, func, rarg|
+            AtFunction.from { |inst, *args|
                 func[inst, *args, rarg]
             }
         },
@@ -2108,7 +2108,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre logic
         #>>
-        "All" => lambda { |inst, f, list=nil|
+        "All" => AtFunction.from { |inst, f, list=nil|
             if list.nil?
                 f.all? { |e| AtState.truthy? e }
             else
@@ -2124,7 +2124,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre logic
         #>>
-        "Any" => lambda { |inst, f, list=nil|
+        "Any" => AtFunction.from { |inst, f, list=nil|
             if list.nil?
                 f.any? { |e| AtState.truthy? e }
             else
@@ -2140,7 +2140,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre logic
         #>>
-        "None" => lambda { |inst, f, list=nil|
+        "None" => AtFunction.from { |inst, f, list=nil|
             !@@functions["Any"][inst, f, list]
         },
         #<<
@@ -2149,7 +2149,7 @@ module AtFunctionCatalog
         # @type arg (*)
         # @genre logic
         #>>
-        "Not" => lambda { |inst, arg|
+        "Not" => AtFunction.from { |inst, arg|
             AtState.falsey? arg
         },
         #<<
@@ -2158,7 +2158,7 @@ module AtFunctionCatalog
         # @type arg (*)
         # @genre logic
         #>>
-        "Falsey" => lambda { |inst, arg|
+        "Falsey" => AtFunction.from { |inst, arg|
             AtState.falsey? arg
         },
         "Cases" => held(HOLD_ALL) { |inst, *pairs|
@@ -2199,7 +2199,7 @@ module AtFunctionCatalog
         # @example     Print["Everything is situation normal."]
         # @example ]
         #>>
-        "If" => lambda { |inst, cond, t, f=nil|
+        "If" => AtFunction.from { |inst, cond, t, f=nil|
             res = if AtState.truthy? cond
                 t
             else
@@ -2216,9 +2216,9 @@ module AtFunctionCatalog
         # @optional arg
         # @param arg when omitted, returns a function <code>f[x] = Invariant[func, x]</code>.
         #>>
-        "Invariant" => lambda { |inst, func, arg=nil|
+        "Invariant" => AtFunction.from { |inst, func, arg=nil|
             if arg.nil?
-                lambda { |inst, arg|
+                AtFunction.from { |inst, arg|
                     func[inst, arg] == arg
                 }
             else
@@ -2235,13 +2235,13 @@ module AtFunctionCatalog
         # @genre logic
         # @reforms
         #>>
-        "Mask" => lambda { |inst, mask, list|
+        "Mask" => AtFunction.from { |inst, mask, list|
             masked = inst.cast_list(list).select.with_index { |e, i|
                 AtState.truthy? mask[i]
             }
             reform_list masked, list
         },
-        "Reform" => lambda { |inst, result, to|
+        "Reform" => AtFunction.from { |inst, result, to|
             reform_list result, to
         },
         #<<
@@ -2250,7 +2250,7 @@ module AtFunctionCatalog
         # @type arg (*)
         # @genre logic
         #>>
-        "Truthy" => lambda { |inst, arg|
+        "Truthy" => AtFunction.from { |inst, arg|
             AtState.truthy? arg
         },
         #<<
@@ -2269,7 +2269,7 @@ module AtFunctionCatalog
         # @example While[false, Print["Hello!"]]
         # @example ?? nothing is printed
         #>>
-        "While" => lambda { |inst, cond, body|
+        "While" => AtFunction.from { |inst, cond, body|
             res = nil
             loop {
                 # dhash "while scope", inst.locals.last
@@ -2300,7 +2300,7 @@ module AtFunctionCatalog
         # @example DoWhile[false, Print["Hello!"]]
         # @example ?? Hello!
         #>>
-        "DoWhile" => lambda { |inst, cond, body|
+        "DoWhile" => AtFunction.from { |inst, cond, body|
             res = nil
             loop {
                 res = inst.evaluate_node body
@@ -2317,7 +2317,7 @@ module AtFunctionCatalog
         # @type ent [(*)]
         # @return nil
         #>>
-        "ForEach" => lambda { |inst, ent, body|
+        "ForEach" => AtFunction.from { |inst, ent, body|
             arr = inst.cast_list(ent)
 
             arr.each_with_index { |x, i|
@@ -2337,7 +2337,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre list
         #>>
-        "Accumulate" => lambda { |inst, list|
+        "Accumulate" => AtFunction.from { |inst, list|
             list.prefixes.map { |e| @@functions["Sum"][inst, e] }
         },
         #<<
@@ -2353,7 +2353,7 @@ module AtFunctionCatalog
         # @example ??  0 0 1 2 0 0
         # @example ??  7 7 3 4 7 7
         #>>
-        "ArrayFlatten" => lambda { |inst, list|
+        "ArrayFlatten" => AtFunction.from { |inst, list|
             inner = list.flatten(1).first { |e| Array === e }
 
             size = [*dim(inner)]
@@ -2376,7 +2376,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "Average" => lambda { |inst, list|
+        "Average" => AtFunction.from { |inst, list|
             list.average
         },
         #<<
@@ -2433,7 +2433,7 @@ module AtFunctionCatalog
         # @example Print[Bounce[942]]
         # @example ?? 94249
         #>>
-        "Bounce" => lambda { |inst, list|
+        "Bounce" => AtFunction.from { |inst, list|
             listified = inst.cast_list(list)
             bounced = listified[0..-2] + listified.reverse
             reform_list bounced, list
@@ -2467,7 +2467,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Collapse" => lambda { |inst, *lists|
+        "Collapse" => AtFunction.from { |inst, *lists|
             lists.map.with_index { |c, i|
                 if i == 0
                     c
@@ -2502,7 +2502,7 @@ module AtFunctionCatalog
         # @example ??  25           [5]
         # @example ??   4          [-2]
         #>>
-        "Chunk" => lambda { |inst, list, f=nil|
+        "Chunk" => AtFunction.from { |inst, list, f=nil|
             list = inst.cast_list list
             if f.nil?
                 list.chunk { |e| e }.to_a
@@ -2517,7 +2517,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Complement" => lambda { |inst, parent, *args|
+        "Complement" => AtFunction.from { |inst, parent, *args|
             any = args.map { |e|
                 inst.cast_list e
             }.flatten(1)
@@ -2531,7 +2531,7 @@ module AtFunctionCatalog
         # @example Print[Concat[ 1:5, 2:3, [7], [[8, 9]] ]]
         # @example ?? [1, 2, 3, 4, 5, 2, 3, 7, [8, 9]]
         #>>
-        "Concat" => lambda { |inst, *args|
+        "Concat" => AtFunction.from { |inst, *args|
             args.flatten(1)
         },
         #<<
@@ -2565,7 +2565,7 @@ module AtFunctionCatalog
         # @example Print[Decreasing[ 1:5 ]]
         # @example ?? false
         #>>
-        "Decreasing" => lambda { |inst, list|
+        "Decreasing" => AtFunction.from { |inst, list|
             inst.cast_list(list).delta.all?(&:negative?) rescue false
         },
         #<<
@@ -2580,7 +2580,7 @@ module AtFunctionCatalog
         # @example Print[Delta[ Square[0:4] ]]
         # @example ?? [1, 3, 5, 7]
         #>>
-        "Delta" => lambda { |inst, list|
+        "Delta" => AtFunction.from { |inst, list|
             list.delta
         },
         #<<
@@ -2590,7 +2590,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Difference" => lambda { |inst, a, b|
+        "Difference" => AtFunction.from { |inst, a, b|
             halve1 = @@functions["Complement"][inst, a, b]
             halve2 = @@functions["Complement"][inst, b, a]
             halve1 + halve2
@@ -2602,7 +2602,7 @@ module AtFunctionCatalog
         # @return [[(*), number]]
         # @genre list
         #>>
-        "Enumerate" => lambda { |inst, list, start=0|
+        "Enumerate" => AtFunction.from { |inst, list, start=0|
             i = start
             list.map { |e|
                 res = [e, i]
@@ -2620,7 +2620,7 @@ module AtFunctionCatalog
         # @example Print[First[ "Hello!" ]]
         # @example ?? H
         #>>
-        "First" => lambda { |inst, list|
+        "First" => AtFunction.from { |inst, list|
             inst.cast_list(list)[0]
         },
         #<<
@@ -2632,7 +2632,7 @@ module AtFunctionCatalog
         # @paramtype (*) f returns the first element in <code>list</code> equal to <code>f</code>.
         # @genre list
         #>>
-        "Find" => lambda { |inst, f, list|
+        "Find" => AtFunction.from { |inst, f, list|
             if AtState.func_like? f
                 list.find { |e| f[inst, e] }
             else
@@ -2648,7 +2648,7 @@ module AtFunctionCatalog
         # @genre list
         # @param n when specified, flattens <code>list</code> to 1 level <code>n</code> times.
         #>>
-        "Flat" => lambda { |inst, list, n=nil|
+        "Flat" => AtFunction.from { |inst, list, n=nil|
             list.flatten(n)
         },
         #<<
@@ -2658,7 +2658,7 @@ module AtFunctionCatalog
         # @reforms
         # @genre list
         #>>
-        "Flip" => lambda { |inst, list|
+        "Flip" => AtFunction.from { |inst, list|
             is_string = String === list
             inner = is_string ? @@functions["Grid"][inst, list] : inst.cast_list(list)
 
@@ -2684,7 +2684,7 @@ module AtFunctionCatalog
         # @example ?? ["H", "e", "l", "l", "o"]
         # @example Print[Get["Hello, World!", 4 -> -4]]
         #>>
-        "Get" => vectorize_dyad(RIGHT) { |inst, list, ind|
+        "Get" => AtFunction.from(vectorize: [false, true]) { |inst, list, ind|
             if Hash === list
                 list[ind]
             else
@@ -2706,7 +2706,7 @@ module AtFunctionCatalog
         # @genre list
         # @paramtype string list returns if <code>member</code> is contained within <code>list</code>.
         #>>
-        "Has" => lambda { |inst, list, member|
+        "Has" => AtFunction.from { |inst, list, member|
             if String === list
                 !!list.index(member)
             else
@@ -2731,7 +2731,7 @@ module AtFunctionCatalog
         # @example Print[FlatGet[id, [0, 0]]]
         # @example ?? 1
         #>>
-        "FlatGet" => lambda { |inst, list, inds|
+        "FlatGet" => AtFunction.from { |inst, list, inds|
             inst.enlist(inds).each { |i|
                 list = list[i]
             }
@@ -2743,7 +2743,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre list
         #>>
-        "Grade" => lambda { |inst, list|
+        "Grade" => AtFunction.from { |inst, list|
             grade inst.cast_list list
         },
         #<<
@@ -2777,7 +2777,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre list/logic
         #>>
-        "Increasing" => lambda { |inst, list|
+        "Increasing" => AtFunction.from { |inst, list|
             inst.cast_list(list).delta.all?(&:positive?) rescue false
         },
         #<<
@@ -2789,7 +2789,7 @@ module AtFunctionCatalog
         # @example Print[Indices[ [1, 1, 2, 3, 1, 3, 1], [1, 3] ]]
         # @example ?? [[0, 1, 4, 6], [3, 5]]
         #>>
-        "Indices" => vectorize_dyad(RIGHT) { |inst, list, ind|
+        "Indices" => AtFunction.from(vectorize: [false, true]) { |inst, list, ind|
             inst.cast_list(list).indices ind
         },
         #<<
@@ -2799,7 +2799,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "Index" => vectorize_dyad(RIGHT) { |inst, list, ind|
+        "Index" => AtFunction.from(vectorize: [false, true]) { |inst, list, ind|
             if String === list
                 list.index ind
             else
@@ -2813,7 +2813,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "LastIndex" => vectorize_dyad(RIGHT) { |inst, list, ind|
+        "LastIndex" => AtFunction.from(vectorize: [false, true]) { |inst, list, ind|
             if String === list
                 list.rindex ind
             else
@@ -2829,7 +2829,7 @@ module AtFunctionCatalog
         # @example Print[IndicesFlat[ [1, 1, 2, 3, 1, 3, 1], [1, 3] ]]
         # @example ?? []
         #>>
-        "IndicesFlat" => lambda { |inst, list, ind|
+        "IndicesFlat" => AtFunction.from { |inst, list, ind|
             inst.cast_list(list).indices ind
         },
         #<<
@@ -2839,7 +2839,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "IndexFlat" => lambda { |inst, list, ind|
+        "IndexFlat" => AtFunction.from { |inst, list, ind|
             inst.cast_list(list).index ind
         },
         #<<
@@ -2849,7 +2849,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "LastIndexFlat" => lambda { |inst, list, ind|
+        "LastIndexFlat" => AtFunction.from { |inst, list, ind|
             inst.cast_list(list).rindex ind
         },
         #<<
@@ -2858,7 +2858,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Integers" => lambda { |inst, *args|
+        "Integers" => AtFunction.from { |inst, *args|
             args = args.flat_map { |e| e }
             size = args.prod
             iter = args[1..-1]
@@ -2876,7 +2876,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Intersection" => lambda { |inst, *lists|
+        "Intersection" => AtFunction.from { |inst, *lists|
             lists.inject(&:&)
         },
         #<<
@@ -2888,7 +2888,7 @@ module AtFunctionCatalog
         # @example Print[Intersperse[1:3, 0]]
         # @example ?? [1, 0, 2, 0, 3]
         #>>
-        "Intersperse" => lambda { |inst, list, joiner|
+        "Intersperse" => AtFunction.from { |inst, list, joiner|
             res = []
             inst.cast_list(list).each_with_index { |e, i|
                 res << e
@@ -2906,7 +2906,7 @@ module AtFunctionCatalog
         # @example Print[Iota["Hi!"]]
         # @example ?? [0, 1, 2]
         #>>
-        "Iota" => lambda { |inst, min|
+        "Iota" => AtFunction.from { |inst, min|
             ((0...min) rescue (0...min.size)).to_a
         },
         #<<
@@ -2920,7 +2920,7 @@ module AtFunctionCatalog
         # @example Print[Larger[[1, 2, 3], [3, 2, 1]]]
         # @example ?? [3, 2, 3]
         #>>
-        "Larger" => vectorize_dyad { |inst, a, b|
+        "Larger" => AtFunction.vectorize(2) { |inst, a, b|
             [*a, *b].max
         },
         #<<
@@ -2933,7 +2933,7 @@ module AtFunctionCatalog
         # @example Print[Last[1:5]]
         # @example ?? 5
         #>>
-        "Last" => lambda { |inst, list|
+        "Last" => AtFunction.from { |inst, list|
             inst.cast_list(list)[-1]
         },
         #<<
@@ -2945,7 +2945,7 @@ module AtFunctionCatalog
         # @paramtype string ent Returns the characters of <code>ent</code>.
         # @paramtype hash ent Returns an array of key-value pairs in <code>ent</code>.
         #>>
-        "List" => lambda { |inst, ent|
+        "List" => AtFunction.from { |inst, ent|
             inst.cast_list ent
         },
         #<<
@@ -2954,7 +2954,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Max" => lambda { |inst, *args|
+        "Max" => AtFunction.from { |inst, *args|
             (args.flatten - [nil]).max
         },
         #<<
@@ -2967,7 +2967,7 @@ module AtFunctionCatalog
         # @example Print[Median[[1, 2, 3, 4]]]
         # @example ?? 2.5
         #>>
-        "Median" => lambda { |inst, list|
+        "Median" => AtFunction.from { |inst, list|
             force_number list.median
         },
         #<<
@@ -2976,7 +2976,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre list
         #>>
-        "Min" => lambda { |inst, *args|
+        "Min" => AtFunction.from { |inst, *args|
             (args.flatten - [nil]).min
         },
         #<<
@@ -2992,7 +2992,7 @@ module AtFunctionCatalog
         # @example Print[Outers[1:5, 2]]
         # @example ?? [1, 2, 4, 5]
         #>>
-        "Outers" => vectorize_dyad(RIGHT) { |inst, list, n=1|
+        "Outers" => AtFunction.from(vectorize: [false, true]) { |inst, list, n=1|
             list[0...n] + list[-n..-1]
         },
         #<<
@@ -3002,7 +3002,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre list/logic
         #>>
-        "Overlap" => lambda { |inst, list, search|
+        "Overlap" => AtFunction.from { |inst, list, search|
             overlap list, search
         },
         #<<
@@ -3018,7 +3018,7 @@ module AtFunctionCatalog
         # @example Print[Prefixes[901]]
         # @example ?? [9, 90, 901]
         #>>
-        "Prefixes" => lambda { |inst, list|
+        "Prefixes" => AtFunction.from { |inst, list|
             inst.cast_list(list).prefixes.map { |e|
                 reform_list e, list
             }
@@ -3036,7 +3036,7 @@ module AtFunctionCatalog
         # @example Print[Suffixes[901]]
         # @example ?? [901, 1, 1]
         #>>
-        "Suffixes" => lambda { |inst, list|
+        "Suffixes" => AtFunction.from { |inst, list|
             inst.cast_list(list).suffixes.map { |e|
                 reform_list e, list
             }
@@ -3059,7 +3059,7 @@ module AtFunctionCatalog
         # @example "l" [2, 3]
         # @example "!"    [5]
         #>>
-        "Positions" => lambda { |inst, arr, els=arr|
+        "Positions" => AtFunction.from { |inst, arr, els=arr|
             arr = inst.cast_list arr
             els = inst.cast_list els
             positions arr, els
@@ -3075,7 +3075,7 @@ module AtFunctionCatalog
         # @example Print[Powerset[123]]
         # @example ?? [0, 1, 2, 12, 3, 13, 23, 123]
         #>>
-        "Powerset" => lambda { |inst, list|
+        "Powerset" => AtFunction.from { |inst, list|
             inst.cast_list(list).powerset.map { |e|
                 reform_list e, list
             }
@@ -3086,7 +3086,7 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "Prod" => lambda { |inst, list|
+        "Prod" => AtFunction.from { |inst, list|
             list.inject(1) { |a, c|
                 @@operators["*"][inst, a, c]
             }
@@ -3104,7 +3104,7 @@ module AtFunctionCatalog
         # @example Print[Range["a", "d"]]
         # @example ?? ["a", "b", "c", "d"]
         #>>
-        "Range" => vectorize_dyad { |inst, min, max=nil|
+        "Range" => AtFunction.vectorize(2) { |inst, min, max=nil|
             if max.nil?
                 (0..min).to_a
             else
@@ -3123,7 +3123,7 @@ module AtFunctionCatalog
         # @example Print[Resize[[1, 2], 7]]
         # @example ?? [1, 2, 1, 2, 1, 2, 1]
         #>>
-        "Resize" => lambda { |inst, list, size|
+        "Resize" => AtFunction.from { |inst, list, size|
             res = resize inst.cast_list(list), size
             reform_list res, list
         },
@@ -3141,7 +3141,7 @@ module AtFunctionCatalog
         # @example Print[Remove["Hello, World!", "ll"]]
         # @example ?? "Hello, World!"
         #>>
-        "Remove" => lambda { |inst, list, ent|
+        "Remove" => AtFunction.from { |inst, list, ent|
             iter = inst.cast_list(list)
             iter.delete ent
             reform_list iter, list
@@ -3160,7 +3160,7 @@ module AtFunctionCatalog
         # @example Print[RemoveFirst["Hello, World!", "ll"]]
         # @example ?? "Hello, World!"
         #>>
-        "RemoveFirst" => lambda { |inst, list, ent|
+        "RemoveFirst" => AtFunction.from { |inst, list, ent|
             iter = inst.cast_list(list)
             index = iter.index ent
             iter.delete_at index unless index.nil?
@@ -3180,7 +3180,7 @@ module AtFunctionCatalog
         # @example Print[RemoveLast["Hello, World!", "ll"]]
         # @example ?? "Hello, World!"
         #>>
-        "RemoveLast" => lambda { |inst, list, ent|
+        "RemoveLast" => AtFunction.from { |inst, list, ent|
             iter = inst.cast_list(list)
             index = iter.rindex ent
             iter.delete_at index unless index.nil?
@@ -3200,7 +3200,7 @@ module AtFunctionCatalog
         # @example Print[RemoveAmong[12930, 0'2'4'6'8]]
         # @example ?? 12930
         #>>
-        "RemoveAmong" => lambda { |inst, list, ents|
+        "RemoveAmong" => AtFunction.from { |inst, list, ents|
             ents = ents.nil? ? [ents] : [*ents]
             iter = inst.cast_list(list)
             iter.reject! { |e| ents.include? e }
@@ -3219,7 +3219,7 @@ module AtFunctionCatalog
         # @example Print[Repeat[9, 1:5]]
         # @example ?? [[9], [9, 9], [9, 9, 9], [9, 9, 9, 9], [9, 9, 9, 9, 9]]
         #>>
-        "Repeat" => vectorize_dyad(RIGHT) { |inst, ent, amt|
+        "Repeat" => AtFunction.from(vectorize: [false, true]) { |inst, ent, amt|
             Array.new(amt) { ent }
         },
         #<<
@@ -3232,7 +3232,7 @@ module AtFunctionCatalog
         # @example  "m" 5
         # @example  "." 3
         #>>
-        "RLE" => lambda { |inst, list|
+        "RLE" => AtFunction.from { |inst, list|
             inst.cast_list(list)
                 .chunk { |e| e }
                 .map { |k, v| [k, v.size] }
@@ -3248,7 +3248,7 @@ module AtFunctionCatalog
         # @example ?? !Sorry
         # @genre list
         #>>
-        "Rotate" => vectorize_dyad(RIGHT) { |inst, list, amount=1|
+        "Rotate" => AtFunction.from(vectorize: [false, true]) { |inst, list, amount=1|
             iter = inst.cast_list list
             res = rotate iter, amount
             reform_list res, list
@@ -3265,7 +3265,7 @@ module AtFunctionCatalog
         # @example  5 1 2 3 4
         # @genre list
         #>>
-        "Rotations" => lambda { |inst, list|
+        "Rotations" => AtFunction.from { |inst, list|
             (0...list.size).map { |rot|
                 @@functions["Rotate"][inst, list, rot]
             }
@@ -3282,14 +3282,14 @@ module AtFunctionCatalog
         # @example ?? true
         # @genre list
         #>>
-        "Same" => lambda { |inst, *args|
+        "Same" => AtFunction.from { |inst, *args|
             list = args.flatten(1)
             list.all? { |e| e == list[0] }
         },
-        "Sample" => vectorize_dyad(RIGHT) { |inst, list, n=nil|
+        "Sample" => AtFunction.from(vectorize: [false, true]) { |inst, list, n=nil|
             sample list, n
         },
-        "Set" => lambda { |inst, ent, key, val|
+        "Set" => AtFunction.from { |inst, ent, key, val|
             if String === ent
                 scope = inst.locals.last
                 scope = inst.variables unless scope.has_key? ent
@@ -3311,7 +3311,7 @@ module AtFunctionCatalog
         # @example Print[Sparse[vals]]
         # @example ?? {11=>1, 32=>1, 35=>1, 43=>1, 51=>1, 55=>1, 67=>1, 71=>1, 86=>1}
         #>>
-        "Sparse" => lambda { |inst, list, search=0|
+        "Sparse" => AtFunction.from { |inst, list, search=0|
             ret = {}
             list.each_with_index { |e, i|
                 if e != search
@@ -3320,20 +3320,20 @@ module AtFunctionCatalog
             }
             ret
         },
-        "Keys" => lambda { |inst, hash|
+        "Keys" => AtFunction.from { |inst, hash|
             hash.keys
         },
-        "Skip" => vectorize_dyad(RIGHT) { |inst, ent, by|
+        "Skip" => AtFunction.from(vectorize: [false, true]) { |inst, ent, by|
             list = inst.cast_list(ent)
             filtered = list.select.with_index { |e, i|
                 i % by == 0
             }
             reform_list filtered, ent
         },
-        "SetMatrix" => lambda { |inst, mat, row, col, val|
+        "SetMatrix" => AtFunction.from { |inst, mat, row, col, val|
             mat[row][col] = val
         },
-        "Size" => lambda { |inst, list|
+        "Size" => AtFunction.from { |inst, list|
             if Numeric === list
                 list.abs.to_s.size
             elsif class_has? list, "$size"
@@ -3355,7 +3355,7 @@ module AtFunctionCatalog
         # @example Print[Slices[1:6, 2]]
         # @example ?? [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]
         #>>
-        "Slices" => lambda { |inst, list, skew=(1..list.size).to_a|
+        "Slices" => AtFunction.from { |inst, list, skew=(1..list.size).to_a|
             if skew.is_a? Array
                 skew.flat_map { |e|
                     @@functions["Slices"][inst, list, e]
@@ -3413,10 +3413,10 @@ module AtFunctionCatalog
             end
             res.map { |e| e - [:none] }
         },
-        "Smaller" => vectorize_dyad { |inst, *args|
+        "Smaller" => AtFunction.vectorize(2) { |inst, *args|
             args.min
         },
-        "Sort" => lambda { |inst, list, func=nil|
+        "Sort" => AtFunction.from { |inst, list, func=nil|
             if String === list
                 return @@functions["Sort"][inst, list.chars].join
             end
@@ -3428,7 +3428,7 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Sorted" => lambda { |inst, list|
+        "Sorted" => AtFunction.from { |inst, list|
             !@@functions["Delta"][inst, list].any?(&:negative?)
         },
         #<<
@@ -3461,7 +3461,7 @@ module AtFunctionCatalog
             }
             reform_list res, ent
         },
-        "SplitAt" => vectorize_dyad(RIGHT) { |inst, str, inds=[1]|
+        "SplitAt" => AtFunction.from(vectorize: [false, true]) { |inst, str, inds=[1]|
             split_at(inst.cast_list(str), inds).map { |e|
                 reform_list e, str
             }
@@ -3472,10 +3472,10 @@ module AtFunctionCatalog
         # @return number
         # @genre list
         #>>
-        "StdDev" => lambda { |inst, list|
+        "StdDev" => AtFunction.from { |inst, list|
             list.stddev
         },
-        "Stitch" => lambda { |inst, *args|
+        "Stitch" => AtFunction.from { |inst, *args|
             if args.all? { |e| String === e }
                 grid = @@functions["Grid"]
                 zipwith(*args.map { |e| grid[inst, e] }) { |*args|
@@ -3488,7 +3488,7 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Subslices" => lambda { |inst, list, n=list.size, exclude=[]|
+        "Subslices" => AtFunction.from { |inst, list, n=list.size, exclude=[]|
             # p list, n, exclude
             if n < 0
                 n = (list.size + n) % list.size
@@ -3498,30 +3498,30 @@ module AtFunctionCatalog
             res.concat @@functions["Slices"][inst, list, (1..n).to_a]
             res.delete_if { |e| exclude.include? e.size }
         },
-        "WithoutOnce" => lambda { |inst, a, b|
+        "WithoutOnce" => AtFunction.from { |inst, a, b|
             b.each { |e|
                 a = @@functions["RemoveFirst"][inst, a, e]
             }
             a
         },
         # i.e. "radation hardened"
-        "Radiations" => lambda { |inst, list, n=list.size|
+        "Radiations" => AtFunction.from { |inst, list, n=list.size|
             @@functions["Subslices"][inst, list, n].map { |sub|
                 @@functions["WithoutOnce"][inst, list, sub]
             }
         },
         # same as Combinations
-        "Subsets" => lambda { |inst, list|
+        "Subsets" => AtFunction.from { |inst, list|
             @@functions["Combinations"][inst, list]
         },
-        "Sum" => lambda { |inst, list|
+        "Sum" => AtFunction.from { |inst, list|
             list = inst.cast_list(list)
             head = String === list.first ? "" : 0 rescue 0
             list.inject(head) { |a, e|
                 @@operators["+"][inst, a, e]
             }
         },
-        "UnSlices" => lambda { |inst, list|
+        "UnSlices" => AtFunction.from { |inst, list|
             list[0...-1].map(&:first) + list[-1]
         },
         #<<
@@ -3539,7 +3539,7 @@ module AtFunctionCatalog
         # @example ?? [3, nil, 4, nil, nil, nil, 3]
         # @optional fill
         #>>
-        "UnSparse" => lambda { |inst, ent, fill=0|
+        "UnSparse" => AtFunction.from { |inst, ent, fill=0|
             if Array === ent && ent.all? { |e| Array === e && e.size == 2 }
                 ent = ent.to_h
             end
@@ -3565,7 +3565,7 @@ module AtFunctionCatalog
         # @type b number
         # @return [[number, number]]
         #>>
-        "TriangleRange" => lambda { |inst, a, b|
+        "TriangleRange" => AtFunction.from { |inst, a, b|
             pairs = []
 
             (a..b).each { |y|
@@ -3584,7 +3584,7 @@ module AtFunctionCatalog
         # @type cond fn
         # @return [[number, number]]
         #>>
-        "TriangleSelect" => lambda { |inst, cond, a, b|
+        "TriangleSelect" => AtFunction.from { |inst, cond, a, b|
             pairs = []
 
             (a..b).each { |y|
@@ -3601,7 +3601,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre list
         #>>
-        "Union" => lambda { |inst, *lists|
+        "Union" => AtFunction.from { |inst, *lists|
             lists.inject(&:|)
         },
         #<<
@@ -3631,7 +3631,7 @@ module AtFunctionCatalog
         # @example ?? "There are certain people her!"
         # @example ?? "There are certain people here!"
         #>>
-        "Unique" => vectorize_dyad(RIGHT) { |inst, list, count=1|
+        "Unique" => AtFunction.from(vectorize: [false, true]) { |inst, list, count=1|
             fl = inst.cast_list list
             occurrences = {}
             unique = fl.select { |e|
@@ -3689,11 +3689,11 @@ module AtFunctionCatalog
             }
             reform_list unique, list
         },
-        "Variance" => lambda { |inst, list|
+        "Variance" => AtFunction.from { |inst, list|
             list.variance
         },
 
-        "Shape" => lambda { |inst, arr|
+        "Shape" => AtFunction.from { |inst, arr|
             head = arr
             dims = []
             while Array === head
@@ -3702,8 +3702,8 @@ module AtFunctionCatalog
             end
             dims
         },
-        "Dimension" => lambda { |inst, arr|
-            recurse = lambda { |arr, dims|
+        "Dimension" => AtFunction.from { |inst, arr|
+            recurse = AtFunction.from { |arr, dims|
                 if Array === arr
                     arr.map { |e|
                         recurse[e, dims + [arr.size]]
@@ -3718,10 +3718,10 @@ module AtFunctionCatalog
         ##------------------##
         ## Matrix Functions ##
         ##------------------##
-        "Diagonal" => vectorize_dyad(RIGHT) { |inst, mat, diag=0|
+        "Diagonal" => AtFunction.from(vectorize: [false, true]) { |inst, mat, diag=0|
             diagonal mat, diag
         },
-        "Dim" => lambda { |inst, mat|
+        "Dim" => AtFunction.from { |inst, mat|
             dim mat
         },
         "Identity" => vectorize_monad { |inst, size|
@@ -3749,16 +3749,16 @@ module AtFunctionCatalog
         # @example ??  7 8 0
         # @genre list/matrix
         #>>
-        "LowerTriangle" => lambda { |inst, mat, strict=false|
+        "LowerTriangle" => AtFunction.from { |inst, mat, strict=false|
             lower_triangle mat, AtState.truthy?(strict)
         },
-        "MatrixRotate" => vectorize_dyad(RIGHT) { |inst, mat, n=1|
+        "MatrixRotate" => AtFunction.from(vectorize: [false, true]) { |inst, mat, n=1|
             n.times {
                 mat = mat.transpose.map(&:reverse)
             }
             mat
         },
-        "MatrixIota" => lambda { |inst, mat, fn=nil|
+        "MatrixIota" => AtFunction.from { |inst, mat, fn=nil|
             res = matrix_iota mat
             if fn
                 res.map { |row|
@@ -3795,7 +3795,7 @@ module AtFunctionCatalog
         "MooreN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
             widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
             moores = []
-            @@functions["Moore"][inst, list, lambda { |inst, mat|
+            @@functions["Moore"][inst, list, AtFunction.from { |inst, mat|
                 moores << mat
             }, r, **opts]
             if Array === widths
@@ -3829,7 +3829,7 @@ module AtFunctionCatalog
         "VonNeumannN" => configurable { |inst, list, widths=NOT_PROVIDED, r=1, **opts|
             widths = default_sentinel(widths) { (0..dim(list).prod).to_a }
             von_neumanns = []
-            @@functions["VonNeumann"][inst, list, lambda { |inst, mat|
+            @@functions["VonNeumann"][inst, list, AtFunction.from { |inst, mat|
                 moores << mat
             }, r, **opts]
             if Array === widths
@@ -3840,10 +3840,10 @@ module AtFunctionCatalog
                 von_neumanns[widths]
             end
         },
-        "Tr" => lambda { |inst, list|
+        "Tr" => AtFunction.from { |inst, list|
             list.transpose
         },
-        "Transpose" => lambda { |inst, list|
+        "Transpose" => AtFunction.from { |inst, list|
             list.transpose
         },
         #<<
@@ -3868,14 +3868,14 @@ module AtFunctionCatalog
         # @example ??  0 0 0
         # @genre list/matrix
         #>>
-        "UpperTriangle" => lambda { |inst, mat, strict=false|
+        "UpperTriangle" => AtFunction.from { |inst, mat, strict=false|
             upper_triangle mat, AtState.truthy?(strict)
         },
 
         ##------------------------##
         ## Combinatoric Functions ##
         ##------------------------##
-        "Combinations" => lambda { |inst, list, count=NOT_PROVIDED|
+        "Combinations" => AtFunction.from { |inst, list, count=NOT_PROVIDED|
             count = default_sentinel(count) {
                 (0..inst.cast_list(list).size).to_a
             }
@@ -3890,7 +3890,7 @@ module AtFunctionCatalog
                 }
             end
         },
-        "Permutations" => vectorize_dyad(RIGHT) { |inst, list, count=NOT_PROVIDED|
+        "Permutations" => AtFunction.from(vectorize: [false, true]) { |inst, list, count=NOT_PROVIDED|
             listified = inst.cast_list(list)
             size = listified.size
             count = default_sentinel(count, size)
@@ -3898,11 +3898,11 @@ module AtFunctionCatalog
                 reform_list perm, list
             }.to_a
         },
-        "Zip" => lambda { |inst, a, *b|
+        "Zip" => AtFunction.from { |inst, a, *b|
             inst.cast_list(a).zip(*b.map { |e| inst.cast_list e })
         },
-        "ZipWith" => lambda { |inst, fn, a=nil, b=nil|
-            l = lambda { |inst, a, b|
+        "ZipWith" => AtFunction.from { |inst, fn, a=nil, b=nil|
+            l = AtFunction.from { |inst, a, b|
                 zipwith(inst.cast_list(a), inst.cast_list(b)) { |x, y| fn[inst, x, y] }
             }
             if a.nil?
@@ -4003,16 +4003,16 @@ module AtFunctionCatalog
             }
             results
         },
-        "Map" => vectorize_dyad(LEFT) { |inst, f, list=nil|
+        "Map" => AtFunction.from(vectorize: [true, false]) { |inst, f, list=nil|
             if AtState.func_like? list
                 g = list
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     g[inst, *args].map { |e|
                         f[inst, e]
                     }
                 }
             elsif list.nil?
-                lambda { |inst, list|
+                AtFunction.from { |inst, list|
                     @@functions["Map"][inst, f, list]
                 }
             elsif class_has? list, "$map"
@@ -4023,11 +4023,11 @@ module AtFunctionCatalog
                 list.map { |e| f[inst, e] }
             end
         },
-        "MapArgs" => lambda { |inst, f, list, *args|
+        "MapArgs" => AtFunction.from { |inst, f, list, *args|
             if AtState.func_like? list
                 g = list
                 n = args[0] || 1
-                lambda { |inst, list, *args|
+                AtFunction.from { |inst, list, *args|
                     g[inst, list].map { |e|
                         f[inst, e, *resize(args + [list, e], n)]
                     }
@@ -4045,7 +4045,7 @@ module AtFunctionCatalog
         # note: at *least* 2 arguments
         "Outer" => curry(2) { |inst, f, *lists|
             if lists.empty?
-                lambda { |inst, *lists|
+                AtFunction.from { |inst, *lists|
                     combine(*lists) { |*e|
                         f[inst, *e]
                     }
@@ -4065,7 +4065,7 @@ module AtFunctionCatalog
         },
         "Select" => curry { |inst, f, list|
             if AtState.func_like? list
-                lambda { |inst, arg|
+                AtFunction.from { |inst, arg|
                     @@functions["Select"][inst, f,
                         list[inst, arg]
                     ]
@@ -4085,10 +4085,10 @@ module AtFunctionCatalog
                 }
             }
         },
-        "Reject" => lambda { |inst, f, list|
+        "Reject" => AtFunction.from { |inst, f, list|
             if AtState.func_like? list
                 g = list
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     @@functions["Reject"][inst, f, g[inst, *args]]
                 }
             else
@@ -4124,7 +4124,7 @@ module AtFunctionCatalog
         # @example Print[FindHead[options, choice]]
         # @example ?? stop
         #>>
-        "FindHead" => lambda { |inst, opts, val|
+        "FindHead" => AtFunction.from { |inst, opts, val|
             if Hash === opts
                 opts = opts.keys
             end
@@ -4142,7 +4142,7 @@ module AtFunctionCatalog
         # @example Print[Format["%s is a %s", "Java", "Joke"]]
         # @example ?? Java is a Joke
         #>>
-        "Format" => lambda { |inst, str, *args|
+        "Format" => AtFunction.from { |inst, str, *args|
             str % args
         },
         #<<
@@ -4158,7 +4158,7 @@ module AtFunctionCatalog
         # @example ?? ["W", "o", "r", "l", "d", " ", " ", " "]
         # @example ?? ["o", "f", " ", "m", "i", "n", "e", "!"]
         #>>
-        "Grid" => lambda { |inst, str, inner=" "|
+        "Grid" => AtFunction.from { |inst, str, inner=" "|
             str = str.lines rescue str
             grid = str.map(&:chomp).map(&:chars) rescue str
             pad_grid grid, inner
@@ -4171,7 +4171,7 @@ module AtFunctionCatalog
         # @return string
         # @genre string
         #>>
-        "Join" => vectorize_dyad(RIGHT) { |inst, list, joiner=""|
+        "Join" => AtFunction.from(vectorize: [false, true]) { |inst, list, joiner=""|
             list.join joiner
         },
         #<<
@@ -4189,10 +4189,10 @@ module AtFunctionCatalog
         # @example Print[match2vowels["Hello, loopy man!"]]
         # @example ?? "loopy"
         #>>
-        "Match" => vectorize_dyad { |inst, source, match|
+        "Match" => AtFunction.vectorize(2) { |inst, source, match|
             if match.nil?
                 match = source
-                lambda { |inst, source|
+                AtFunction.from { |inst, source|
                     @@functions["Match"][inst, source, match]
                 }
             else
@@ -4221,10 +4221,10 @@ module AtFunctionCatalog
         # @example Print[match2vowels["Hello, loopy man!"]]
         # @example ?? ["loopy"]
         #>>
-        "MatchAll" => vectorize_dyad { |inst, source, match|
+        "MatchAll" => AtFunction.vectorize(2) { |inst, source, match|
             if match.nil?
                 match = source
-                lambda { |inst, source|
+                AtFunction.from { |inst, source|
                     @@functions["MatchAll"][inst, source, match]
                 }
             else
@@ -4251,7 +4251,7 @@ module AtFunctionCatalog
         # @example Print[Ord[33]]
         # @example ?? 33
         #>>
-        "Ord" => vectorize_dyad { |inst, ent, offset=0|
+        "Ord" => AtFunction.vectorize(2) { |inst, ent, offset=0|
             Numeric === ent ? ent : ent[offset].ord
         },
         #<<
@@ -4287,7 +4287,7 @@ module AtFunctionCatalog
         # @example Print[PadLeft[1:3, 6]]
         # @example ?? [0, 0, 0, 1, 2, 3]
         #>>
-        "PadLeft" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
+        "PadLeft" => AtFunction.from { |inst, ent, amt, fill=NOT_PROVIDED|
             case ent
                 when String
                     fill = default_sentinel(fill, " ")
@@ -4317,7 +4317,7 @@ module AtFunctionCatalog
         # @example Print[PadRight[1:3, 6]]
         # @example ?? [1, 2, 3, 0, 0, 0]
         #>>
-        "PadRight" => lambda { |inst, ent, amt, fill=NOT_PROVIDED|
+        "PadRight" => AtFunction.from { |inst, ent, amt, fill=NOT_PROVIDED|
             case ent
                 when String
                     fill = default_sentinel(fill, " ")
@@ -4351,7 +4351,7 @@ module AtFunctionCatalog
         # @example ?? 11911
         # @genre string
         #>>
-        "Center" => lambda { |inst, ent, amt, pad=NOT_PROVIDED|
+        "Center" => AtFunction.from { |inst, ent, amt, pad=NOT_PROVIDED|
             list = inst.cast_list(ent)
             deficit = amt - list.size
             return reform_list(list, ent) if deficit <= 0
@@ -4376,7 +4376,7 @@ module AtFunctionCatalog
         # @return [string]
         # @genre string
         #>>
-        "Split" => vectorize_dyad { |inst, str, sep=/\s+/|
+        "Split" => AtFunction.vectorize(2) { |inst, str, sep=/\s+/|
             str.split sep
         },
         #<<
@@ -4393,7 +4393,7 @@ module AtFunctionCatalog
         # @example Print[Translate["No one is here today, James", "a-zA-Z", "A-Za-z"]]
         # @example ?? "nO ONE IS HERE TODAY, jAMES"
         #>>
-        "Translate" => lambda { |inst, str, source, repl|
+        "Translate" => AtFunction.from { |inst, str, source, repl|
             str.tr source, repl
         },
         #<<
@@ -4418,7 +4418,7 @@ module AtFunctionCatalog
         # @param Default: <code>""</code>.
         # @genre string
         #>>
-        "Replace" => lambda { |inst, str, search, replace=""|
+        "Replace" => AtFunction.from { |inst, str, search, replace=""|
             replace str, search, replace
         },
         #<<
@@ -4435,7 +4435,7 @@ module AtFunctionCatalog
         # @example ]]
         # @example ?? Hen, Worqd!
         #>>
-        "ReplaceMultiple" => lambda { |inst, str, *args|
+        "ReplaceMultiple" => AtFunction.from { |inst, str, *args|
             str = str.dup
             args.map(&:to_a).each { |k, v|
                 str.gsub!(Regexp.new(k), v)
@@ -4452,12 +4452,12 @@ module AtFunctionCatalog
         # @example Print[ReplaceF["Student 9234-B hsa received a 97.03% on their test.", /"\\d+", Reverse]]
         # @example ?? Student 4329-B hsa received a 79.30% on their test.
         #>>
-        "ReplaceF" => lambda { |inst, str, search, func|
+        "ReplaceF" => AtFunction.from { |inst, str, search, func|
             str.gsub(search) { |e|
                 func[inst, e]
             }
         },
-        "Repr" => lambda { |inst, ent|
+        "Repr" => AtFunction.from { |inst, ent|
             ent.inspect
         },
         #<<
@@ -4473,7 +4473,7 @@ module AtFunctionCatalog
         # @example ?? Hello, World!
         # @genre string
         #>>
-        "Rot" => vectorize_dyad(RIGHT) { |inst, str, amount=13|
+        "Rot" => AtFunction.from(vectorize: [false, true]) { |inst, str, amount=13|
             rotN(str, amount)
         },
         #<<
@@ -4482,10 +4482,10 @@ module AtFunctionCatalog
         # @return string
         # @genre conversion
         #>>
-        "String" => lambda { |inst, ent, *modes|
+        "String" => AtFunction.from { |inst, ent, *modes|
             inst.cast_string ent, *modes
         },
-        "Strip" => lambda { |inst, str|
+        "Strip" => AtFunction.from { |inst, str|
             str.strip
         },
         #<<
@@ -4496,7 +4496,7 @@ module AtFunctionCatalog
         # @genre string
         # @param to_chomp For strings, defaults to <code>"\n"</code>; otherwise, <code>0</code>.
         #>>
-        "Chomp" => lambda { |inst, ent, to_chomp=NOT_PROVIDED|
+        "Chomp" => AtFunction.from { |inst, ent, to_chomp=NOT_PROVIDED|
             if String === ent
                 to_chomp = default_sentinel to_chomp, "\n"
                 ent.chomp to_chomp
@@ -4535,7 +4535,7 @@ module AtFunctionCatalog
         "Upcase" => vectorize_monad { |inst, str|
             str.upcase
         },
-        "UnGrid" => lambda { |inst, str|
+        "UnGrid" => AtFunction.from { |inst, str|
             str.map(&:join).join "\n"
         },
         #<<
@@ -4573,19 +4573,19 @@ module AtFunctionCatalog
         ########################
         #### DATE FUNCTIONS ####
         ########################
-        "Date" => lambda { |inst, *args|
+        "Date" => AtFunction.from { |inst, *args|
             Time.new *args
         },
-        "DateFormat" => lambda { |inst, fmt="%B %-d, %Y", date=Time.now|
+        "DateFormat" => AtFunction.from { |inst, fmt="%B %-d, %Y", date=Time.now|
             date.strftime fmt
         },
-        "DayOfYear" => vectorize_dyad { |inst, n, date=Time.now|
+        "DayOfYear" => AtFunction.vectorize(2) { |inst, n, date=Time.now|
             if date.is_a? Numeric
                 date = Time.new date
             end
             date.day_of_year n
         },
-        "YearDays" => lambda { |inst, date=Time.now|
+        "YearDays" => AtFunction.from { |inst, date=Time.now|
             res = []
             dates = date.is_a?(Array) ? date : [date]
             dates.each { |date|
@@ -4606,17 +4606,17 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
-        "IntegerPart" => lambda { |inst, n|
+        "IntegerPart" => AtFunction.from { |inst, n|
             n.floor
         },
-        "FractionalPart" => lambda { |inst, n|
+        "FractionalPart" => AtFunction.from { |inst, n|
             n - n.floor
         },
-        "Parts" => lambda { |inst, n|
+        "Parts" => AtFunction.from { |inst, n|
             f = n.floor
             [f, n - f]
         },
-        "Place" => lambda { |inst, arr, range, val|
+        "Place" => AtFunction.from { |inst, arr, range, val|
             arr = arr.dup
             [*range].each { |r|
                 r += arr.size if r < 0
@@ -4624,7 +4624,7 @@ module AtFunctionCatalog
             }
             arr
         },
-        "Debug_" => lambda { |inst, arg|
+        "Debug_" => AtFunction.from { |inst, arg|
             di "debugging function instance"
             p arg.raw
             p arg
@@ -4634,10 +4634,10 @@ module AtFunctionCatalog
         "BigDecimal" => vectorize_monad { |inst, n|
             BigDecimal.new n
         },
-        "Error" => lambda { |inst, name, msg="An error has occured."|
+        "Error" => AtFunction.from { |inst, name, msg="An error has occured."|
             AtError.new name, msg
         },
-        "EscapeRegex" => lambda { |inst, str|
+        "EscapeRegex" => AtFunction.from { |inst, str|
             Regexp.escape str.to_s
         },
         #<<
@@ -4646,10 +4646,10 @@ module AtFunctionCatalog
         # @return string
         # @genre string/HTML
         #>>
-        "HTMLEscape" => lambda { |inst, str|
+        "HTMLEscape" => AtFunction.from { |inst, str|
             str.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\"", "&quot;")
         },
-        "DoSafe" => lambda { |inst, body|
+        "DoSafe" => AtFunction.from { |inst, body|
             begin
                 inst.evaluate_node body
                 nil
@@ -4657,7 +4657,7 @@ module AtFunctionCatalog
                 e
             end
         },
-        "TryCatch" => lambda { |inst, body, catch|
+        "TryCatch" => AtFunction.from { |inst, body, catch|
             res = inst.evaluate_node body
             if AtError === res
                 inst.evaluate_node catch, [res], check_error: false
@@ -4667,7 +4667,7 @@ module AtFunctionCatalog
             end
         },
         "Safely" => configurable { |inst, func, catch=nil, **opts|
-            rec = lambda { |inst, *args|
+            rec = AtFunction.from { |inst, *args|
                 begin
                     func[inst, *args]
                 rescue Exception => e
@@ -4684,7 +4684,7 @@ module AtFunctionCatalog
                 end
             }
         },
-        "Commonest" => lambda { |inst, ent, n=1|
+        "Commonest" => AtFunction.from { |inst, ent, n=1|
             commonest = ent.each_with_object(Hash.new(0)) { |m, h|
                 h[m] += 1
             }
@@ -4705,7 +4705,7 @@ module AtFunctionCatalog
             reaper = reap_end
             reaper.build
         },
-        "Sow" => lambda { |inst, expr, tag=nil|
+        "Sow" => AtFunction.from { |inst, expr, tag=nil|
             reap_sow expr, tag
         },
     }
@@ -4735,7 +4735,7 @@ module AtFunctionCatalog
         # @example Print[john.name, john.age, joiner->", "]
         # @examlpe ?? John Smith, 43
         #>>
-        "." => lambda { |inst, obj, prop|
+        "." => AtFunction.from { |inst, obj, prop|
             if Node === prop
                 raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
             end
@@ -4751,10 +4751,11 @@ module AtFunctionCatalog
                 )
             end
         },
-        ":=" => lambda { |inst, var, val|
+        ":=" => held(true, true) { |inst, var, val|
+            # p inst, var, val
             inst.set_global var, val
         },
-        ".=" => lambda { |inst, var, val|
+        ".=" => AtFunction.from { |inst, var, val|
             inst.set_local var, val
         },
         "≔" => held(true, true) { |inst, var, val|
@@ -4805,7 +4806,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "*" => vectorize_dyad { |inst, a, b|
+        "*" => AtFunction.vectorize(2) { |inst, a, b|
             if class_has? a, "$mul"
                 a["$mul"][inst, b]
             elsif class_has? b, "$rmul"
@@ -4823,7 +4824,7 @@ module AtFunctionCatalog
         # @return number
         # @genre operator
         #>>
-        "/" => vectorize_dyad { |inst, a, b|
+        "/" => AtFunction.vectorize(2) { |inst, a, b|
             # p 'div',a,b
             if class_has? a, "$div"
                 a["$div"][inst, b]
@@ -4845,9 +4846,9 @@ module AtFunctionCatalog
         # @paramtype fn a Returns a function which, given <code>e</code>, returns <code>Nest[a, e, b]</code>.
         # @genre operator
         #>>
-        "//" => vectorize_dyad { |inst, a, b|
+        "//" => AtFunction.vectorize(2) { |inst, a, b|
             if AtState.func_like? a
-                lambda { |inst, e|
+                AtFunction.from { |inst, e|
                     @@functions["Nest"][inst, a, e, b]
                 }
             else
@@ -4861,7 +4862,7 @@ module AtFunctionCatalog
         # @return rational
         # @genre operator
         #>>
-        "⁄" => vectorize_dyad { |inst, a, b|
+        "⁄" => AtFunction.vectorize(2) { |inst, a, b|
             Rational(a, b)
         },
         #<<
@@ -4871,7 +4872,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "-" => vectorize_dyad { |inst, a, b|
+        "-" => AtFunction.vectorize(2) { |inst, a, b|
             if class_has? a, "$sub"
                 a["$sub"][inst, b]
             elsif class_has? b, "$rsub"
@@ -4887,7 +4888,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "+" => vectorize_dyad { |inst, a, b|
+        "+" => AtFunction.vectorize(2) { |inst, a, b|
             if class_has? a, "$add"
                 a["$add"][inst, b]
             elsif class_has? b, "$radd"
@@ -4903,7 +4904,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "±" => vectorize_dyad { |inst, a, b|
+        "±" => AtFunction.vectorize(2) { |inst, a, b|
             @@functions["PlusMinus"][inst, a, b]
         },
         #<<
@@ -4913,7 +4914,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "^" => vectorize_dyad { |inst, a, b|
+        "^" => AtFunction.vectorize(2) { |inst, a, b|
             if class_has? a, "$pow"
                 a["$pow"][inst, b]
             elsif class_has? b, "$rpow"
@@ -4929,7 +4930,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "%" => vectorize_dyad { |inst, a, b|
+        "%" => AtFunction.vectorize(2) { |inst, a, b|
             if class_has? a, "$mod"
                 a["$mod"][inst, b]
             elsif class_has? b, "$rmod"
@@ -4946,7 +4947,7 @@ module AtFunctionCatalog
         # @genre operator/logic
         # @paramtype fn b When <code>b</code> a function, calls <code>b[a]</code>.
         #>>
-        "|" => vectorize_dyad { |inst, a, b|
+        "|" => AtFunction.vectorize(2) { |inst, a, b|
             if AtState.func_like? b
                 b[inst, a]
             else
@@ -4960,7 +4961,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "|>" => lambda { |inst, x, y|
+        "|>" => AtFunction.from { |inst, x, y|
             y[inst, x]
         },
         #<<
@@ -4970,7 +4971,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "▷" => lambda { |inst, x, y|
+        "▷" => AtFunction.from { |inst, x, y|
             @@operators["|>"][inst, x, y]
         },
         #<<
@@ -4980,7 +4981,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "<|" => lambda { |inst, x, y|
+        "<|" => AtFunction.from { |inst, x, y|
             x[inst, y]
         },
         #<<
@@ -4990,7 +4991,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "◁" => lambda { |inst, x, y|
+        "◁" => AtFunction.from { |inst, x, y|
             @@operators["<|"][inst, x, y]
         },
         #<<
@@ -5000,7 +5001,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "=" => vectorize_dyad { |inst, x, y|
+        "=" => AtFunction.vectorize(2) { |inst, x, y|
             x == y
         },
         #<<
@@ -5011,7 +5012,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "/=" => vectorize_dyad { |inst, x, y|
+        "/=" => AtFunction.vectorize(2) { |inst, x, y|
             x != y
         },
         #<<
@@ -5021,7 +5022,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "≠" => vectorize_dyad { |inst, x, y|
+        "≠" => AtFunction.vectorize(2) { |inst, x, y|
             x != y
         },
         #<<
@@ -5031,7 +5032,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "==" => lambda { |inst, x, y|
+        "==" => AtFunction.from { |inst, x, y|
             if class_has? x, "$equal"
                 x["$equal"][inst, y]
             elsif class_has? y, "$equal"
@@ -5051,7 +5052,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "is" => lambda { |inst, x, y|
+        "is" => AtFunction.from { |inst, x, y|
             @@operators["=="][inst, x, y]
         },
         #<<
@@ -5061,7 +5062,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "=/=" => lambda { |inst, x, y|
+        "=/=" => AtFunction.from { |inst, x, y|
             x != y
         },
         #<<
@@ -5071,7 +5072,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        ">" => vectorize_dyad { |inst, x, y|
+        ">" => AtFunction.vectorize(2) { |inst, x, y|
             x > y
         },
         #<<
@@ -5081,7 +5082,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "<" => vectorize_dyad { |inst, x, y|
+        "<" => AtFunction.vectorize(2) { |inst, x, y|
             x < y
         },
         #<<
@@ -5091,7 +5092,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        ">=" => vectorize_dyad { |inst, x, y|
+        ">=" => AtFunction.vectorize(2) { |inst, x, y|
             x >= y
         },
         #<<
@@ -5101,7 +5102,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "≥" => vectorize_dyad { |inst, x, y|
+        "≥" => AtFunction.vectorize(2) { |inst, x, y|
             x >= y
         },
         #<<
@@ -5111,7 +5112,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "<=" => vectorize_dyad { |inst, x, y|
+        "<=" => AtFunction.vectorize(2) { |inst, x, y|
             x <= y
         },
         #<<
@@ -5121,7 +5122,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "≤" => vectorize_dyad { |inst, x, y|
+        "≤" => AtFunction.vectorize(2) { |inst, x, y|
             x <= y
         },
         #<<
@@ -5136,9 +5137,9 @@ module AtFunctionCatalog
         # @example Print[add_rev[23, 45]]
         # @example ?? 86
         #>>
-        ":" => vectorize_dyad { |inst, x, y|
+        ":" => AtFunction.from(vectorize: [true, true]) { |inst, x, y|
             if AtState.func_like?(x) && AtState.func_like?(y)
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     x[inst, *args.map { |e|
                         y[inst, e]
                     }]
@@ -5160,7 +5161,7 @@ module AtFunctionCatalog
         # @example Print[-3::-6]
         # @example ?? [-3, -4, -5, -6]
         #>>
-        "::" => vectorize_dyad { |inst, x, y|
+        "::" => AtFunction.vectorize(2) { |inst, x, y|
             if x < y
                 @@operators[":"][inst, x, y]
             else
@@ -5174,7 +5175,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre operator
         #>>
-        ".." => vectorize_dyad { |inst, x, y|
+        ".." => AtFunction.vectorize(2) { |inst, x, y|
             (x..y).to_a
         },
         #<<
@@ -5184,7 +5185,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre operator
         #>>
-        "‥" => vectorize_dyad { |inst, x, y|
+        "‥" => AtFunction.vectorize(2) { |inst, x, y|
             @@operators[".."][inst, x, y]
         },
         #<<
@@ -5194,7 +5195,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre operator
         #>>
-        "..." => vectorize_dyad { |inst, x, y|
+        "..." => AtFunction.vectorize(2) { |inst, x, y|
             (x...y).to_a
         },
         #<<
@@ -5204,7 +5205,7 @@ module AtFunctionCatalog
         # @return [number]
         # @genre operator
         #>>
-        "…" => vectorize_dyad { |inst, x, y|
+        "…" => AtFunction.vectorize(2) { |inst, x, y|
             @@operators["..."][inst, x, y]
         },
         #<<
@@ -5218,7 +5219,7 @@ module AtFunctionCatalog
         # @example Print[30 in 1:5]
         # @example ?? false
         #>>
-        "in" => lambda { |inst, x, y|
+        "in" => AtFunction.from { |inst, x, y|
             @@functions["Has"][inst, y, x]
         },
         #<<
@@ -5232,7 +5233,7 @@ module AtFunctionCatalog
         # @example Print[30 !in 1:5]
         # @example ?? true
         #>>
-        "!in" => lambda { |inst, x, y|
+        "!in" => AtFunction.from { |inst, x, y|
             !@@functions["Has"][inst, y, x]
         },
         #<<
@@ -5242,7 +5243,7 @@ module AtFunctionCatalog
         # @type klass class
         # @genre operator/logic
         #>>
-        "is_a" => lambda { |inst, el, klass|
+        "is_a" => AtFunction.from { |inst, el, klass|
             # https://www.strawpoll.me/15544904/r
             # el.parent == klass rescue false
             el.kind_of? klass rescue false
@@ -5254,7 +5255,7 @@ module AtFunctionCatalog
         # @type klass class
         # @genre operator/logic
         #>>
-        "is_an" => lambda { |inst, el, klass|
+        "is_an" => AtFunction.from { |inst, el, klass|
             @@operators["is_a"][inst, el, klass]
         },
 
@@ -5265,7 +5266,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator/logic
         #>>
-        "or" => lambda { |inst, a, b|
+        "or" => AtFunction.from { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
@@ -5290,7 +5291,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "xor" => lambda { |inst, a, b|
+        "xor" => AtFunction.from { |inst, a, b|
             # no short circuiting, since both values must be compared
             AtState.truthy?(a) ^ AtState.truthy?(b)
         },
@@ -5301,7 +5302,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "⊻" => lambda { |inst, a, b|
+        "⊻" => AtFunction.from { |inst, a, b|
             @@operators["xor"][inst, a, b]
         },
         #<<
@@ -5311,7 +5312,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "nand" => lambda { |inst, a, b|
+        "nand" => AtFunction.from { |inst, a, b|
             if AtState.falsey? inst.evaluate_node_safe a
                 true
             elsif AtState.falsey? inst.evaluate_node_safe b
@@ -5337,7 +5338,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "and" => lambda { |inst, a, b|
+        "and" => AtFunction.from { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.falsey? lres
                 lres
@@ -5362,7 +5363,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "else" => lambda { |inst, a, b|
+        "else" => AtFunction.from { |inst, a, b|
             lres = inst.evaluate_node_safe a
             if AtState.truthy? lres
                 lres
@@ -5377,7 +5378,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "nor" => lambda { |inst, a, b|
+        "nor" => AtFunction.from { |inst, a, b|
             if AtState.truthy? inst.evaluate_node_safe a
                 false
             elsif AtState.truthy? inst.evaluate_node_safe b
@@ -5406,7 +5407,7 @@ module AtFunctionCatalog
         # @example Print[Select[even_nonpos, [-4, -3, -2, 0, 2, 3, 4]]]
         # @example ?? [-4, -2, 0]
         #>>
-        "not" => lambda { |inst, a, b|
+        "not" => AtFunction.from { |inst, a, b|
             # A && !B
             rres = inst.evaluate_node_safe b
             if AtState.truthy? rres
@@ -5422,7 +5423,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre operator
         #>>
-        "∩" => lambda { |inst, a, b|
+        "∩" => AtFunction.from { |inst, a, b|
             a & b
         },
         #<<
@@ -5432,7 +5433,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre operator
         #>>
-        "∪" => lambda { |inst, a, b|
+        "∪" => AtFunction.from { |inst, a, b|
             a | b
         },
         #<<
@@ -5442,7 +5443,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre operator
         #>>
-        "∆" => lambda { |inst, a, b|
+        "∆" => AtFunction.from { |inst, a, b|
             (a | b) - (a & b)
         },
         #<<
@@ -5452,7 +5453,7 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre operator
         #>>
-        "Ø" => lambda { |inst, a, b|
+        "Ø" => AtFunction.from { |inst, a, b|
             a - b
         },
         #<<
@@ -5469,7 +5470,7 @@ module AtFunctionCatalog
         # @example ?? 15
         # @genre operator
         #>>
-        "^^" => lambda { |inst, a, b|
+        "^^" => AtFunction.from { |inst, a, b|
             if AtState.func_like? a
                 @@functions["Fold"][inst, a, b]
             elsif AtState.func_like? b
@@ -5485,49 +5486,49 @@ module AtFunctionCatalog
         # @return [(*)]
         # @genre operator
         #>>
-        "⩓" => lambda { |inst, a, b|
+        "⩓" => AtFunction.from { |inst, a, b|
             @@functions["Remove"][inst, a, b]
         },
 
 
         ## -- functional -- #
-        "@" => lambda { |inst, f, g|
+        "@" => AtFunction.from { |inst, f, g|
             if AtState.func_like? g
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     f[inst, g[inst, *args]]
                 }
             else
                 f[g] rescue f[inst, g]
             end
         },
-        "@@" => lambda { |inst, f, g|
+        "@@" => AtFunction.from { |inst, f, g|
             if AtState.func_like? g
-                lambda { |inst, *args| f[inst, *g[inst, *args]] }
+                AtFunction.from { |inst, *args| f[inst, *g[inst, *args]] }
             else
                 f[inst, *g] rescue @@functions["FlatGet"][inst, f, g]
             end
         },
-        "@%" => lambda { |inst, f, g|
-            lambda { |inst, *args|
+        "@%" => AtFunction.from { |inst, f, g|
+            AtFunction.from { |inst, *args|
                 g[inst, *args]
                 f[inst]
             }
         },
-        "##" => lambda { |inst, f, g|
+        "##" => AtFunction.from { |inst, f, g|
             @@operators["@"][inst, f, g]
         },
-        "#" => lambda { |inst, x, y|
+        "#" => AtFunction.from { |inst, x, y|
             Train.new *x, *y
         },
         "'" => @@functions["Tie"],
         "''" => @@functions["TieArray"],
-        "&" => lambda { |inst, a, b|
+        "&" => AtFunction.from { |inst, a, b|
             if AtState.func_like? a
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     a[inst, *args, b]
                 }
             elsif AtState.func_like? b
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     b[inst, a, *args]
                 }
             else
@@ -5540,33 +5541,33 @@ module AtFunctionCatalog
                 end
             end
         },
-        "&:" => lambda { |inst, a, b|
+        "&:" => AtFunction.from { |inst, a, b|
             if AtState.func_like? a
-                lambda { |inst, *args| a[inst, b, *args] }
+                AtFunction.from { |inst, *args| a[inst, b, *args] }
             elsif AtState.func_like? b
-                lambda { |inst, *args| b[inst, *args, a] }
+                AtFunction.from { |inst, *args| b[inst, *args, a] }
             else
                 raise AttacheUnimplementedError.new("&: is not defined for non-functional arguments", inst.position)
             end
         },
         "=>" => @@functions["Map"],
-        "&>" => lambda { |inst, f, l|
+        "&>" => AtFunction.from { |inst, f, l|
             f = @@unary_operators["&"][inst, f]
             @@functions["Map"][inst, f, l]
         },
-        "@>" => lambda { |inst, f, l|
+        "@>" => AtFunction.from { |inst, f, l|
             f = @@unary_operators["@"][inst, f]
             f[inst, l]
         },
         "⇒" => @@functions["Map"],
-        ":>" => lambda { |inst, source, func|
+        ":>" => AtFunction.from { |inst, source, func|
             source.map { |x| func[inst, x] }
         },
-        "↠" => lambda { |inst, source, func|
+        "↠" => AtFunction.from { |inst, source, func|
             @@operators[":>"][inst, source, func]
         },
 
-        "<:" => lambda { |inst, arr, get|
+        "<:" => AtFunction.from { |inst, arr, get|
             # Basically a <: b  <===>  ZipWith[Get, a, b]
             if Array === get
                 transposed = true
@@ -5588,11 +5589,11 @@ module AtFunctionCatalog
                 arr.map { |e| e[get] }
             end
         },
-        "↞" => lambda { |inst, arr, get|
+        "↞" => AtFunction.from { |inst, arr, get|
             @@operators["<:"][inst, arr, get]
         },
         "\\" => @@functions["Select"],
-        "~" => lambda { |inst, left, right|
+        "~" => AtFunction.from { |inst, left, right|
             @@functions["Count"][inst, left, right]
         },
         #<<
@@ -5602,7 +5603,7 @@ module AtFunctionCatalog
         # @return ConfigureValue
         # @genre operator
         #>>
-        "->" => lambda { |inst, key, value|
+        "->" => held(true, false) { |inst, key, value|
             if key.is_a?(Node) && key.head.raw == "V"
                 # make a function
                 params = key.children.map(&:raw)
@@ -5625,18 +5626,18 @@ module AtFunctionCatalog
         # @return ConfigureValue
         # @genre operator
         #>>
-        "→" => lambda { |inst, key, value|
+        "→" => AtFunction.from { |inst, key, value|
             @@operators["->"][inst, key, value]
         },
-        ";;" => lambda { |inst, x, y| y },
-        "!" => lambda { |inst, a, b|
+        ";;" => AtFunction.from { |inst, x, y| y },
+        "!" => AtFunction.from { |inst, a, b|
             if AtState.func_like? a
                 a[inst, b]
             else
                 raise AttacheUnimplementedError.new("a!b is not defined for non-functional arguments", inst.position)
             end
         },
-        "!!" => lambda { |inst, a, b|
+        "!!" => AtFunction.from { |inst, a, b|
             if AtState.func_like? a
                 a[inst, b]
             else
@@ -5647,9 +5648,9 @@ module AtFunctionCatalog
 
     @@unary_operators = {
         "-" => vectorize_monad { |inst, n| -n },
-        "#" => lambda { |inst, n|
+        "#" => AtFunction.from { |inst, n|
             if n.is_a? Train
-                lambda { |inst, args|
+                AtFunction.from { |inst, args|
                     n[inst, *args]
                 }
             else
@@ -5657,14 +5658,14 @@ module AtFunctionCatalog
             end
         },
         # make constant
-        "`" => lambda { |inst, n|
-            lambda { |inst, *discard|
+        "`" => AtFunction.from { |inst, n|
+            AtFunction.from { |inst, *discard|
                 n
             }
         },
         # propda
         "." => held(HOLD_ALL) { |inst, property|
-            lambda { |inst, ent| @@operators["."][inst, ent, property] }
+            AtFunction.from { |inst, ent| @@operators["."][inst, ent, property] }
         },
 
         #<<
@@ -5681,31 +5682,31 @@ module AtFunctionCatalog
         # @example Print[a]
         # @example ?? 93
         #>>
-        "'" => lambda { |inst, func|
+        "'" => AtFunction.from { |inst, func|
             func.descend = func.ascend = false
             func
         },
         # matrix size
-        "##" => lambda { |inst, n|
+        "##" => AtFunction.from { |inst, n|
             dim n
         },
         "±" => vectorize_monad { |inst, a|
             [a, @@unary_operators["-"][inst, a]]
         },
-        "/" => lambda { |inst, r|
+        "/" => AtFunction.from { |inst, r|
             if r.is_a? String
                 make_regex r
             elsif AtState.func_like? r
-                lambda { |inst, *args, last|
+                AtFunction.from { |inst, *args, last|
                     r[inst, last]
                 }
             else
                 raise AttacheUnimplementedError.new("/ is not defined for `#{r.class.name}`", inst.position)
             end
         },
-        "\\" => lambda { |inst, f|
+        "\\" => AtFunction.from { |inst, f|
             if AtState.func_like? f
-                lambda { |inst, first, *args|
+                AtFunction.from { |inst, first, *args|
                     f[inst, first]
                 }
             else
@@ -5713,7 +5714,7 @@ module AtFunctionCatalog
             end
         },
         # vectorize
-        "@" => lambda { |inst, f|
+        "@" => AtFunction.from { |inst, f|
             if AtState.func_like? f
                 vectorize { |inst, *args|
                     f[inst, *args]
@@ -5723,9 +5724,9 @@ module AtFunctionCatalog
             end
         },
         # equiv. f[*x]
-        "&" => lambda { |inst, f|
+        "&" => AtFunction.from { |inst, f|
             if AtState.func_like? f
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     # p args
                     # (lambda{|*b|p b})[*args]
                     f[inst, *args.flatten(1)]
@@ -5737,7 +5738,7 @@ module AtFunctionCatalog
         # reverses arguments
         "~" => vectorize_monad { |inst, f|
             if AtState.func_like? f
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     f[inst, *args.reverse]
                 }
             else
@@ -5746,7 +5747,7 @@ module AtFunctionCatalog
         },
         "!" => vectorize_monad { |inst, n|
             if AtState.func_like? n
-                lambda { |inst, *args|
+                AtFunction.from { |inst, *args|
                     @@functions["Permutations"][inst, *args].map { |perm|
                         n[inst, perm]
                     }
@@ -5764,7 +5765,7 @@ module AtFunctionCatalog
         # @return class|nil
         # @genre unary operator
         #>>
-        "parentof" => lambda { |inst, el|
+        "parentof" => AtFunction.from { |inst, el|
             el.parent rescue nil
         },
         #<<
@@ -5773,7 +5774,7 @@ module AtFunctionCatalog
         # @return Type
         # @genre unary operator
         #>>
-        "typeof" => lambda { |inst, el|
+        "typeof" => AtFunction.from { |inst, el|
             AtState.typeof(el)
         },
         #<<
@@ -5782,13 +5783,13 @@ module AtFunctionCatalog
         # @return bool
         # @genre unary operator
         #>>
-        "not" => lambda { |inst, arg|
+        "not" => AtFunction.from { |inst, arg|
             AtState.falsey? inst.evaluate_node arg
         },
-        "..." => lambda { |inst, arg|
+        "..." => AtFunction.from { |inst, arg|
             Applicator.new arg
         },
-        "…" => lambda { |inst, arg|
+        "…" => AtFunction.from { |inst, arg|
             @@unary_operators["..."][inst, arg]
         },
     }

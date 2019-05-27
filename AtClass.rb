@@ -1,7 +1,8 @@
 #!/usr/bin/ruby
 
-require_relative 'AtState.rb'
+# require_relative 'AtState.rb'
 
+class AtLambda; end
 class AtClassMethod < AtLambda
     def initialize(inner_ast, params=[], raw: [])
         super(inner_ast, params, raw: raw)

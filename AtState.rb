@@ -1,6 +1,6 @@
 require_relative 'lib.rb'
 require_relative 'tokenize.rb'
-# require_relative 'AtClass.rb'
+require_relative 'AtClass.rb'
 # require_relative 'AtFunctions.rb'
 # later in file
 
@@ -300,6 +300,12 @@ def get_abstract_number(abstract, default=0)
     $& ? $&.to_i - 1 : default
 end
 
+# used for property overloading
+def class_has?(klass, prop)
+    return false unless AtClassInstance === klass
+    klass.methods.has_key? "#{prop}"
+end
+
 def vectorizes?(ent)
     Array === ent || class_has?(ent, "$map")
 end
@@ -398,16 +404,68 @@ def vectorize(&fn)
     }
 end
 
+def vectorize_arity(args, depths, &fn)
+    unless Array === depths
+        depths = Hash.new(depths)
+    end
+    arity = args.size
+    checks = args.map.with_index { |e, i|
+        depths[i] && vectorizes?(e)
+    }
+    # assert same size
+    if checks.none?
+        fn[*args]
+    else
+        unique_sizes = args.select.with_index { |e, i| checks[i] }.map(&:size).uniq
+        raise "bad lengths" unless unique_sizes.size == 1
+        size = unique_sizes[0]
+
+        (0...size).map { |i|
+            them = args.map.with_index { |e, j|
+                if checks[j] && depths[i]
+                    e[i]
+                else
+                    e
+                end
+            }
+
+            vectorize_arity(them, depths, &fn)
+        }
+    end
+end
+
+# def nth_vectorize(cases, depths)
+#     lambda { |*args|
+#         arity = args.size
+#         fn = cases[arity]
+#         depth = depths[arity]
+#         vectorize_arity(args, depth, &fn)
+#     }
+# end
+
+# exit
+
 class AtFunction
-    def initialize(fn, held: held=[], config: config=false, arity: nil)
+    def initialize(
+        fn,
+        config: false,
+        arity: nil,
+        held: [],
+        vectorize: nil
+    )
         @held = held
         @config = config
         @fn = fn
         @arity = arity || fn.arity rescue fn.size rescue 0
+        @vectorize = vectorize
     end
 
     def AtFunction.from(**opts, &fn)
         AtFunction.new(fn, **opts)
+    end
+
+    def AtFunction.vectorize(arity=nil, &fn)
+        AtFunction.new(fn, vectorize: true, arity: arity)
     end
 
     def size
@@ -415,7 +473,13 @@ class AtFunction
     end
 
     def [](inst, *args)
-        @fn[inst, *args]
+        if @vectorize.nil?
+            @fn[inst, *args]
+        else
+            vectorize_arity(args, @vectorize) { |*vector_args|
+                @fn[inst, *vector_args]
+            }
+        end
     end
 
     attr_accessor :held, :config, :fn, :arity
@@ -502,7 +566,7 @@ class AtLambda
     end
 
     def bind(inst)
-        lambda { |*args|
+        AtFunction.new { |other_inst, *args|
             self[inst, *args]
         }
     end
@@ -612,7 +676,7 @@ class Applicator
 end
 
 def make_curry(args, func)
-    lambda { |inst, *others|
+    AtFunction.from { |inst, *others|
         abstracts = []
         to_remove = []
 
@@ -667,9 +731,9 @@ end
 
 def curry(arity=nil, &fn)
     arity ||= fn.arity - 1
-    rec = lambda { |inst, *args|
+    rec = AtFunction.from { |inst, *args|
         if args.size < arity
-            lambda { |inst, *more|
+            AtFunction.from { |inst, *more|
                 rec[inst, *args, *more]
             }
         else
@@ -754,12 +818,6 @@ def display(entity)
             p entity
     end
     entity
-end
-
-# used for property overloading
-def class_has?(klass, prop)
-    return false unless AtClassInstance === klass
-    klass.methods.has_key? "#{prop}"
 end
 
 class Type
@@ -1330,8 +1388,16 @@ class AtState
         if AtFunction === func
             held = func.held
             configurable = func.config
-            func = func.fn
+            # func = func.fn
+            # p func
         elsif node.head.is_a? Token
+            callstack = begin
+                raise
+            rescue Exception => e
+                e
+            end
+            warn callstack.backtrace.map { |e| " " * 4 + e }
+            warn "Warning: non-AtFunction callables will be deprecated."
             held = @@held_arguments[node.head.raw] || []
             configurable = false
             # @@configurable.include?(head.raw) rescue false
@@ -1371,7 +1437,7 @@ class AtState
         if AtFunction === func
             configurable = func.config
             held = func.held
-            func = func.fn
+            # func = func.fn
         end
 
         # check if error occured
