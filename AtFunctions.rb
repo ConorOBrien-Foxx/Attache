@@ -175,7 +175,10 @@ module AtFunctionCatalog
         #>>
         "EvalHere" => AtFunction.from { |inst, str, blanks=[]|
             ast(str).map { |tree|
-                inst.evaluate_node tree, blanks
+                inst.save_blanks blanks
+                value = inst.evaluate_node tree
+                inst.pop_blanks
+                value
             }.last
         },
         #<<
@@ -237,7 +240,9 @@ module AtFunctionCatalog
         #>>
         "Modify" => AtFunction.held(false, true) { |inst, head, body|
             init = inst.get_variable head
-            result = inst.evaluate_node body, [init]
+            inst.save_blanks [init]
+            result = inst.evaluate_node body
+            inst.pop_blanks
             inst.define head, result
         },
         #<<
@@ -2346,7 +2351,9 @@ module AtFunctionCatalog
             res
         },
         #<<
-        # For every value <code>el</code> in <code>ent</code>, evaluates <code>body</code>, setting the first abstract value to <code>el</code>, and the second to its index.
+        # For every value <code>el</code> in <code>ent</code>, evaluates
+        # <code>body</code>, setting the first abstract value to
+        # <code>el</code>, and the second to its index.
         # @genre logic
         # @type ent [(*)]
         # @return nil
@@ -2355,7 +2362,10 @@ module AtFunctionCatalog
             arr = inst.cast_list(ent)
 
             arr.each_with_index { |x, i|
-                inst.evaluate_node body, [x, i]
+                inst.save_blanks [x, i]
+                value = inst.evaluate_node body
+                inst.pop_blanks
+                value
             }
 
             nil
@@ -4696,7 +4706,9 @@ module AtFunctionCatalog
         "TryCatch" => AtFunction.held { |inst, body, catch|
             res = inst.evaluate_node body
             if AtError === res
-                inst.evaluate_node catch, [res], check_error: false
+                inst.save_blanks [res]
+                inst.evaluate_node catch, check_error: false
+                inst.pop_blanks
                 nil
             else
                 res
