@@ -7,9 +7,11 @@ ClassNamed[Entry]! {
     input .= _1
     output .= _2
 
-    $map[f] .= [f[input], f[output]]
-    $equal[other] .= All[[input, output] = other]
+    $map[f] .= [f[$.input], f[$.output]]
+    $equal[other] .= All[[$.input, $.output] = other]
 }
+
+Entry := V
 
 previous := []
 head := "A> "

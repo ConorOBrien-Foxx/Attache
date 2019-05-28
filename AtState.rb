@@ -1312,10 +1312,10 @@ class AtState
         position_holder = node.head == Node ? node.head.raw : node.head
         @position = position_holder.position rescue nil
 
-        is_format_string = head.type == :format_string rescue false
+        is_format_string = node.head.type == :format_string rescue false
         # special cases
         args = []
-
+        
         func = is_format_string ? nil : get_value(node.head)
 
         # 1st pass at characteristic checking

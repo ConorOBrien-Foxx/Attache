@@ -1059,7 +1059,7 @@ module AtFunctionCatalog
                     random(n, m)
                 end
             }
-            fn[*args]
+            fn[inst, *args]
         },
         #<<
         # Returns an RNG, seeded with <code>seed</code>, or a random value if unspecified.

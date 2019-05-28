@@ -18,10 +18,12 @@ class AtClassMethod < AtLambda
     def [](inst, *args)
     end
 
-    def old_call(inst, *args)
-        inst.locals.push @scope
-        inst.abstract_references << self
-        inst.define_local ARG_CONST, args
+    def [](inst, *args)
+        inst.locals.push {}
+        inst.abstract_references << @parent
+        # inst.define_local ARG_CONST, args
+
+        # define the parameters within the scope
         @params.each_with_index { |name, i|
             inst.define_local name, args[i]
         }
@@ -31,10 +33,11 @@ class AtClassMethod < AtLambda
             inst.save_blanks args
             res = inst.evaluate_node group
             inst.pop_blanks
-            update_scope inst.locals.last
+            # update_scope inst.locals.last
         }
 
-        update_scope inst.locals.pop
+        inst.abstract_references.pop
+        inst.locals.pop
         res
     end
 
