@@ -1051,16 +1051,15 @@ module AtFunctionCatalog
         # @return number
         # @genre numeric/random
         #>>
-        "Random" => AtFunction.configurable { |inst, *args, **conf|
-            p [3, args]
-            "lolno"
-            # AtFunction.vectorize(2) { |inst, n=nil, m=nil, **opts|
-            #     if opts.has_key? :RNG
-            #         random(n, m, random: opts[:RNG])
-            #     else
-            #         random(n, m)
-            #     end
-            # },
+        "Random" => AtFunction.from(configurable: true) { |inst, *args, **opts|
+            fn = AtFunction.vectorize(2) { |inst, n=nil, m=nil|
+                if opts.has_key? :RNG
+                    random(n, m, random: opts[:RNG])
+                else
+                    random(n, m)
+                end
+            }
+            fn[*args]
         },
         #<<
         # Returns an RNG, seeded with <code>seed</code>, or a random value if unspecified.

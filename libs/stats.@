@@ -78,17 +78,17 @@ RandomNormal[numtrials] := (
 ClassNamed[NormalDistribution] {
     mean .= _1
     dev .= _2
-    
+
     $add[other] .= NormalDistribution[mean + other.mean, Sqrt[dev^2 + other.dev^2]]
     $sub[other] .= NormalDistribution[mean - other.mean, Sqrt[dev^2 + other.dev^2]]
 
     $string[] .= $"N(${mean}, ${dev})"
-    
+
     ?? normalCdf(x) = 1/2 + 1/2 * erf(x / sqrt(2))
     CDF[x] .= 0.5 + 0.5 * Erf[x / Sqrt[2]]
-    
+
     P[lower, upper] .= CDF[upper] - CDF[lower]
-    
+
     ?? scaling RandomNormal[]
     ?? doesn't currently work
     Random .= {

@@ -16,6 +16,9 @@ class AtClassMethod < AtLambda
     end
 
     def [](inst, *args)
+    end
+
+    def old_call(inst, *args)
         inst.locals.push @scope
         inst.abstract_references << self
         inst.define_local ARG_CONST, args
@@ -25,7 +28,9 @@ class AtClassMethod < AtLambda
 
         res = nil
         @tokens.each { |group|
-            res = inst.evaluate_node group, args
+            inst.save_blanks args
+            res = inst.evaluate_node group
+            inst.pop_blanks
             update_scope inst.locals.last
         }
 
