@@ -38,8 +38,9 @@ module AtFunctionCatalog
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
     def self.hold_all_but(*ns)
-        a = HOLD_ALL.dup
+        a = {}
         ns.each { |k| a[k] = false }
+        a.default = true
         a
     end
 

@@ -35,7 +35,11 @@ Interpolate[left, right, index, mode] := Switch[mode,
 Percentile := Configurable[[p, list] -> {
     mode .= GetOption[$interp, $linear]
     ind .= p / 100.0 * (#list - 1)
+    midpoints .= CallEach[Floor'Ceiling, ind]
+    Print[midpoints, ind]
+    Print[Sort[list][midpoints]]
     l'r .= Sort[list][CallEach[Floor'Ceiling, ind]]
+    Print[l, r, ind % 1, mode]
     Interpolate[l, r, ind % 1, mode]
 }]
 
@@ -92,7 +96,6 @@ ClassNamed[NormalDistribution] {
     ?? scaling RandomNormal[]
     ?? doesn't currently work
     Random .= {
-        Print[$]
         (RandomNormal[] + $.mean) / Sqrt[1 + $.mean^2] * $.dev
     }
 }
@@ -109,4 +112,4 @@ Sqrt(1 + K^2) / SD = H
 *)
 
 ND := NormalDistribution
-SND := ND[1, 0]
+SND := ND[0, 1]

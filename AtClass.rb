@@ -19,7 +19,7 @@ class AtClassMethod < AtLambda
     end
 
     def [](inst, *args)
-        inst.locals.push {}
+        inst.locals << {}
         inst.abstract_references << @parent
         # inst.define_local ARG_CONST, args
 

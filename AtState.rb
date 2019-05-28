@@ -351,7 +351,7 @@ def vectorize_arity(args, depths, &fn)
 
         (0...size).map { |i|
             them = args.map.with_index { |e, j|
-                if checks[j] && depths[i]
+                if checks[j] && depths[j]
                     e[i]
                 else
                     e
@@ -392,8 +392,10 @@ class AtFunction
         AtFunction.new(fn, **opts, vectorize: true, arity: arity)
     end
 
-    def AtFunction.held(*held, **opts, &fn)
-        if held.empty?
+    def AtFunction.held(*held, &fn)
+        if Hash === held[0]
+            held = held[0]
+        elsif held.empty?
             held = true
         end
         AtFunction.new(fn, held: held)
@@ -1315,7 +1317,7 @@ class AtState
         is_format_string = node.head.type == :format_string rescue false
         # special cases
         args = []
-        
+
         func = is_format_string ? nil : get_value(node.head)
 
         # 1st pass at characteristic checking
