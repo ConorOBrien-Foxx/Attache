@@ -5,8 +5,24 @@ html, body {
     margin: 5px;
 }
 
+#toc {
+    border-collapse: separate;
+    border-spacing: 10px;
+}
+#toc td {
+    padding: 5px;
+}
 #toc td:first-child {
     text-align: left;
+    border-right: 1px solid #999;
+    /* from https://stackoverflow.com/a/4407335/4119004 */
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
 }
 
 code, pre {
@@ -169,7 +185,6 @@ div.example {
 pre.markdown {
     background: #EEE;
     padding: 5px;
-    before: 0;
     margin: 5px;
 }
 
