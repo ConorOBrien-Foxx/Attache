@@ -972,6 +972,15 @@ module AtFunctionCatalog
         "N" => AtFunction.from { |inst, ent|
             force_number ent
         },
+        #<<
+        # Converts <code>ent</code> to a floating-point number.
+        # @type ent BigDecimal|complex|(*)
+        # @return number
+        # @genre conversion
+        # @paramtype BigDecimal ent Obtains the floating point value of <code>ent</code>.
+        # @paramtype complex ent Forces each component of <code>ent</code> to be a floating point number.
+        # @paramtype (*) ent Calls <code><a href="#N">N</a>[ent]</code>, then converts to that float.
+        #>>
         "F" => AtFunction.from { |inst, ent|
             if BigDecimal === ent
                 ent.to_f
