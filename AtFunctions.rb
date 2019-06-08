@@ -1271,17 +1271,77 @@ module AtFunctionCatalog
         "Nand" => AtFunction.from { |inst, a, b|
             !(AtState.truthy?(a) && AtState.truthy?(b))
         },
+        #<<
+        # Logical disjunction. Returns <code>true</code> if at least one of <code>a</code>
+        # and <code>b</code> are truthy, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @example Print[TruthTrablePretty["Or", 2]]
+        # @example ??  A | B | Or[A, B]
+        # @example ?? ---+---+----------
+        # @example ??  0 | 0 |    0
+        # @example ??  0 | 1 |    1
+        # @example ??  1 | 0 |    1
+        # @example ??  1 | 1 |    1
+        # @genre logic
+        #>>
         "Or" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) || AtState.truthy?(b)
         },
+        #<<
+        # Logical joint denial. Returns <code>true</code> if at both <code>a</code>
+        # and <code>b</code> are falsey, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @example Print[TruthTrablePretty["Nor", 2]]
+        # @example ??  A | B | Nor[A, B]
+        # @example ?? ---+---+-----------
+        # @example ??  0 | 0 |     1
+        # @example ??  0 | 1 |     0
+        # @example ??  1 | 0 |     0
+        # @example ??  1 | 1 |     0
+        # @genre logic
+        #>>
         "Nor" => AtFunction.from { |inst, a, b|
             !(AtState.truthy?(a) || AtState.truthy?(b))
         },
+        #<<
+        # Logical exclusive disjunction. Returns <code>true</code> if exactly one
+        # of <code>a</code> and <code>b</code> are truthy, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @example Print[TruthTrablePretty["Xor", 2]]
+        # @example ??  A | B | Xor[A, B]
+        # @example ?? ---+---+-----------
+        # @example ??  0 | 0 |     0
+        # @example ??  0 | 1 |     1
+        # @example ??  1 | 0 |     1
+        # @example ??  1 | 1 |     0
+        # @genre logic
+        #>>
         "Xor" => AtFunction.from { |inst, a, b|
-            AtState.truthy?(a) == AtState.truthy?(b)
-        },
-        "Xnor" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) != AtState.truthy?(b)
+        },
+        #<<
+        # Logical biconditional. Returns <code>true</code> if both <code>a</code>
+        # and <code>b</code> are truthy or falsey, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @example Print[TruthTrablePretty["Xnor", 2]]
+        # @example ??  A | B | Xnor[A, B]
+        # @example ?? ---+---+------------
+        # @example ??  0 | 0 |     1
+        # @example ??  0 | 1 |     0
+        # @example ??  1 | 0 |     0
+        # @example ??  1 | 1 |     1
+        # @genre logic
+        #>>
+        "Xnor" => AtFunction.from { |inst, a, b|
+            AtState.truthy?(a) == AtState.truthy?(b)
         },
         "BitAnd" => AtFunction.from { |inst, a, b|
             a & b
