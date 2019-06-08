@@ -787,3 +787,20 @@ E[dist] :=
     Sum[`* &> dist]
 
 HashFrom := Hash@Stitch
+
+TruthTable[f, n] :=
+    { _ ' f@@_ } => BinBelow[n]
+
+?? TODO: generalize into a table function
+TruthTrablePretty[name, n] := (
+    f .= EvalHere[name];;
+    args .= ALPHA[0...n];;
+    header .= args ' $"${name}[${Join[args, ", "]}]";;
+    sizes .= 2 + `# => header;;
+    values .= S@N @> TruthTable[f, n];;
+    Join[ [
+        Join[" " + header + " ", "|"] ,
+        Join["-" * sizes, "+"],
+        ...Join&"|"@Center&sizes => values
+    ], lf]
+)

@@ -4437,21 +4437,23 @@ module AtFunctionCatalog
         # @example ?? 11911
         # @genre string
         #>>
-        "Center" => AtFunction.from { |inst, ent, amt, pad=NOT_PROVIDED|
+        "Center" => AtFunction.vectorize([false, true, true]) { |inst, ent, amt, pad=NOT_PROVIDED|
             list = inst.cast_list(ent)
             deficit = amt - list.size
-            return reform_list(list, ent) if deficit <= 0
+            if deficit <= 0
+                reform_list(list, ent)
+            else
+                pad = default_sentinel(pad) {
+                    inst.default_cell_type(list[0]) rescue 0
+                }
 
-            pad = default_sentinel(pad) {
-                inst.default_cell_type(list[0]) rescue 0
-            }
+                before = deficit / 2
+                after = deficit - before
 
-            before = deficit / 2
-            after = deficit - before
+                result = Array.new(before) { pad } + list + Array.new(after) { pad }
 
-            result = Array.new(before) { pad } + list + Array.new(after) { pad }
-
-            reform_list(result, ent)
+                reform_list(result, ent)
+            end
         },
         #<<
         # Splits <code>str</code> on occurrences of <code>sep</code>. When
