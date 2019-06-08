@@ -1235,9 +1235,25 @@ module AtFunctionCatalog
         ##------------------##
         ## Binary Functions ##
         ##------------------##
+        #<<
+        # Logical conjunction. Returns <code>true</code> if both <code>a</code>
+        # and <code>b</code> are truthy, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre logic
+        #>>
         "And" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) && AtState.truthy?(b)
         },
+        #<<
+        # Logical alternative denial. Returns <code>true</code> if at least one of <code>a</code>
+        # and <code>b</code> are falsey, <code>false</code> otherwise.
+        # @type a (*)
+        # @type b (*)
+        # @return bool
+        # @genre logic
+        #>>
         "Nand" => AtFunction.from { |inst, a, b|
             !(AtState.truthy?(a) && AtState.truthy?(b))
         },
