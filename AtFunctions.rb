@@ -1241,6 +1241,13 @@ module AtFunctionCatalog
         # @type a (*)
         # @type b (*)
         # @return bool
+        # @example Print[TruthTrablePretty["And", 2]]
+        # @example ??  A | B | And[A, B]
+        # @example ?? ---+---+-----------
+        # @example ??  0 | 0 |     0
+        # @example ??  0 | 1 |     0
+        # @example ??  1 | 0 |     0
+        # @example ??  1 | 1 |     1
         # @genre logic
         #>>
         "And" => AtFunction.from { |inst, a, b|
@@ -1252,6 +1259,13 @@ module AtFunctionCatalog
         # @type a (*)
         # @type b (*)
         # @return bool
+        # @example Print[TruthTrablePretty["Nand", 2]]
+        # @example ??  A | B | Nand[A, B]
+        # @example ?? ---+---+------------
+        # @example ??  0 | 0 |     1
+        # @example ??  0 | 1 |     1
+        # @example ??  1 | 0 |     1
+        # @example ??  1 | 1 |     0
         # @genre logic
         #>>
         "Nand" => AtFunction.from { |inst, a, b|
