@@ -478,6 +478,10 @@ class Node
         res.chomp
     end
 
+    def is_arrow_pair?
+        @head&.raw == "->" && !@children.empty?
+    end
+
     def inspect(color: true)
         (color ? "#\x1b[33mNode\x1b[0m<" : "#Node<") + "#{@head}>{#{@children.inspect}}"
     end

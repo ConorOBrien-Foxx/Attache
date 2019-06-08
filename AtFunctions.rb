@@ -2238,6 +2238,17 @@ module AtFunctionCatalog
             end
         },
         "Switch" => AtFunction.held(hold_all_but(0)) { |inst, search, *pairs|
+            else_case = nil
+            unless Node === pairs.last && pairs.last.is_arrow_pair?
+                else_case = pairs.pop
+            end
+            # check arguments
+            all_correctly_formated = pairs.all? { |pair|
+                Node === pair && pair.is_arrow_pair?
+            }
+            unless all_correctly_formated
+                raise AttacheValueError.new("Expected all inputs to be `->` separted")
+            end
             res = pairs.map { |config|
                 config.children
             }.find { |cmp, value|
@@ -2245,7 +2256,11 @@ module AtFunctionCatalog
                 @@operators["=="][inst, search, cmp]
             }
             if res.nil?
-                res
+                if else_case.nil?
+                    nil
+                else
+                    inst.evaluate_node else_case
+                end
             else
                 inst.evaluate_node res[1]
             end
