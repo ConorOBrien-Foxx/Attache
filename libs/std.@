@@ -796,11 +796,17 @@ TruthTrablePretty[name, n] := (
     f .= EvalHere[name];;
     args .= ALPHA[0...n];;
     header .= args ' $"${name}[${Join[args, ", "]}]";;
-    sizes .= 2 + `# => header;;
-    values .= S@N @> TruthTable[f, n];;
+    sizes .= 4 + `# => header;;
+    values .= {
+        [
+            ...S => _,
+            If[Numeric[_2], S[_2], $"${_2} (${N[_2]})"]
+        ]
+    }#&f => BinBelow[n];;
+    center .= Center&sizes;;
     Join[ [
-        Join[" " + header + " ", "|"] ,
+        Join[center[header], "|"] ,
         Join["-" * sizes, "+"],
-        ...Join&"|"@Center&sizes => values
+        ...Map[Join&"|"@center, values]
     ], lf]
 )

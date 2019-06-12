@@ -4506,7 +4506,7 @@ module AtFunctionCatalog
         # @example Print[Center[[1, 2], 6]]
         # @example ?? [0, 0, 1, 2, 0, 0]
         # @example Print[Center["Hi!", 10, "~"]]
-        # @example "~~~Hi!~~~~"
+        # @example ?? "~~~Hi!~~~~"
         # @example Print[Center[9, 5, 1]]
         # @example ?? 11911
         # @genre string
