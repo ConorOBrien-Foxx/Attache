@@ -1183,7 +1183,8 @@ class AtState
             get_blank(raw)
 
         elsif type == :counter_reference
-            ARGV[raw[1] == "$" ? raw[1..-1].to_i + 1 : -raw[2..-1].to_i]
+            index = raw[1] == "$" ? -raw[2..-1].to_i : raw[1..-1].to_i + 1
+            ARGV[index]
 
         else
             puts "Unidentified get_value thing #{type.inspect}"
