@@ -4511,7 +4511,7 @@ module AtFunctionCatalog
         # @example ?? 11911
         # @genre string
         #>>
-        "Center" => AtFunction.vectorize([false, true, true]) { |inst, ent, amt, pad=NOT_PROVIDED|
+        "Center" => AtFunction.from(vectorize: [false, true, true]) { |inst, ent, amt, pad=NOT_PROVIDED|
             list = inst.cast_list(ent)
             deficit = amt - list.size
             if deficit <= 0
