@@ -4768,6 +4768,34 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
+        "NTS" => AtFunction.vectorize(1) { |inst, x|
+            head = inst.get_variable "NTS_dict_head"
+            after = inst.get_variable "NTS_dict_after"
+            dm = @@functions["DivMod"][inst, x, head.size].reverse
+            el = dm.pop
+            if AtState.truthy? el
+                dm.push *@@functions["ToBase"][inst, el, after.size]
+            end
+            @@functions["Join"][inst, [
+                head[dm[0]],
+                *dm[1..-1].map { |e| after[e] }
+            ]]
+        },
+        "STN" => AtFunction.vectorize(1) { |inst, x|
+            head = inst.get_variable "NTS_dict_head"
+            after = inst.get_variable "NTS_dict_after"
+            md = @@functions["SplitAt"][inst, x]
+            sum = @@functions["Index"][inst, head, md[0]]
+            if AtState.truthy? md[1]
+                sum += 52 * @@functions["FromBase"][inst,
+                    @@functions["Index"][inst,
+                        after, @@functions["Chars"][inst, md[1]]
+                    ],
+                    after.size
+                ]
+            end
+            sum
+        },
         "IntegerPart" => AtFunction.from { |inst, n|
             n.floor
         },

@@ -43,6 +43,7 @@ $WORD = /[[:alpha:]][[[:alpha:]]\w]*/
 $ABSTRACT = /_+\d*/
 $NUMBER = /(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:i?x?|x?i?)/
 $REFERENCE = /\$#$WORD/
+$COMPRESSED_NUMBER = /\$`#$WORD/
 $COUNTER_REFERENCE = /\$\$?[0-9]+/
 $ABSTRACT_REFERENCE = /\$+/
 $BRACKET_OPEN = /\[|do\b/
@@ -207,6 +208,7 @@ $TYPES = {
     $FORMAT_STRING_BEGIN => :format_string_begin,
     $STRING             => :string,
     $NUMBER             => :number,
+    $COMPRESSED_NUMBER  => :compressed_number,
     $ABSTRACT           => :abstract,
     $NAMED_FUNC_START   => :named_func_start,
     $FUNC_END           => :func_end,
@@ -222,6 +224,7 @@ $TYPES = {
 $DATA = [
     :word,
     :number,
+    :compressed_number,
     :reference,
     :abstract_reference,
     :counter_reference,

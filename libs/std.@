@@ -654,22 +654,6 @@ ClassNamed[MatrixShapeGenerator]! {
 
 EulerPhi := @${ Sum[GCD&x => 1:x = 1] }
 
-NTS_dict_after := Join[0:9] + alpha + ALPHA
-NTS_dict_head  := alpha + ALPHA
-NTS := @${
-    dm .= Reverse! DivMod[x, #NTS_dict_head]
-    el .= Pop[dm]
-    If[el, Push[dm, ...ToBase[el, #NTS_dict_after]]]
-    Join[NTS_dict_head[dm@0] ' NTS_dict_after[Behead! dm]]
-}
-STN := @${
-    md .= SplitAt[x]
-    sum .= Index[NTS_dict_head, md@0]
-    If[md@1,
-        sum .= sum + 52 * FromBase[Index[NTS_dict_after, Chars! md@1], #NTS_dict_after]
-    ]
-    sum
-}
 
 ?? Generates a matrix of 1's and 0's
 DrawMatrix := Curry[[s, n] -> {

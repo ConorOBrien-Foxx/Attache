@@ -909,6 +909,8 @@ class AtState
         # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
+        "NTS_dict_after" => "0123456789#$ALPHA_LOWER#$ALPHA_UPPER",
+        "NTS_dict_head" => "#$ALPHA_LOWER#$ALPHA_UPPER",
         "ascii" => (32..126).map(&:chr).join,
     }
     @@extended_variables = {}
@@ -1169,6 +1171,9 @@ class AtState
 
         elsif type == :number
             parse_number raw
+
+        elsif type == :compressed_number
+            @@functions["STN"][self, raw[2..-1]]
 
         elsif type == :make_lambda
             AtLambda.new(ast(raw), raw: raw)
