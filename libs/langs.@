@@ -68,120 +68,120 @@ ClassNamed[D2State]! {
         cmd .= $.cmds[cell];;
         If[IsNumeric[cell],
             Push[$.stack, N[cell]],
-            If[cmd, ('cmd)[]]
+            If[cmd, cmd[$]]
         ]
     )
 
     cmds .= <~
-        ">" -> { dip .= Point[1, 0] },
-        "<" -> { dip .= Point[-1, 0] },
-        "^" -> { dip .= Point[0, -1] },
-        "v" -> { dip .= Point[0, 1] },
-        "p" -> { Print! pop[] },
-        "P" -> { Print! last[] },
-        "o" -> { Print[Char! pop[], after->es] },
-        "O" -> { Print[Char! last[], after->es] },
-        "s" -> { Push[stack, #stack] },
-        "[" -> { Push[stack, 1]; exec["-"] },
-        "]" -> { Push[stack, 1]; exec["+"] },
-        ";" -> { running .= false },
-        ":" -> { Push[stack, last[]] },
-        "." -> { pop[] },
+        ">" -> { _.dip .= Point[1, 0] },
+        "<" -> { _.dip .= Point[-1, 0] },
+        "^" -> { _.dip .= Point[0, -1] },
+        "v" -> { _.dip .= Point[0, 1] },
+        "p" -> { Print! _.pop[] },
+        "P" -> { Print! _.last[] },
+        "o" -> { Print[Char! _.pop[], after->es] },
+        "O" -> { Print[Char! _.last[], after->es] },
+        "s" -> { Push[_.stack, #_.stack] },
+        "[" -> { Push[_.stack, 1]; _.exec["-"] },
+        "]" -> { Push[_.stack, 1]; _.exec["+"] },
+        ";" -> { _.running .= false },
+        ":" -> { Push[_.stack, _.last[]] },
+        "." -> { _.pop[] },
         "i" -> {
             res .= -1
             DoSafe[res .= ReadInt[]]
-            Push[stack, res]
+            Push[_.stack, res]
         },
         "j" -> {
-            Push[stack, ReadChar[]]
+            Push[_.stack, ReadChar[]]
         },
         "|" -> {
-            If[last[], "^", "v"] |> exec
+            If[_.last[], "^", "v"] |> _.exec
         },
         "V" -> {
-            If[pop[], "^", "v"] |> exec
+            If[_.pop[], "^", "v"] |> _.exec
         },
         "_" -> {
-            If[last[], "<", ">"] |> exec
+            If[_.last[], "<", ">"] |> _.exec
         },
         "L" -> {
-            If[pop[], "<", ">"] |> exec
+            If[_.pop[], "<", ">"] |> _.exec
         },
         "?" -> {
-            If[last[], exec["v"]]
+            If[_.last[], _.exec["v"]]
         },
         "C" -> {
-            If[pop[], exec["v"]]
+            If[_.pop[], _.exec["v"]]
         },
         "#" -> {
-            advance[]
+            _.advance[]
         },
         "@" -> {
-            Print[stack]
+            Print[_.stack]
         },
         "+" -> {
-            Push[stack, &~`+ <| CallN[pop, 2]]
+            Push[_.stack, &~`+ <| CallN[_.pop, 2]]
         },
         "-" -> {
-            Push[stack, &~`- <| CallN[pop, 2]]
+            Push[_.stack, &~`- <| CallN[_.pop, 2]]
         },
         "*" -> {
-            Push[stack, &~`* <| CallN[pop, 2]]
+            Push[_.stack, &~`* <| CallN[_.pop, 2]]
         },
         "/" -> {
-            Push[stack, &~`/ <| CallN[pop, 2]]
+            Push[_.stack, &~`/ <| CallN[_.pop, 2]]
         },
         "(" -> {
-            Push[stack, N <| &~`< <| CallN[pop, 2]]
+            Push[_.stack, N <| &~`< <| CallN[_.pop, 2]]
         },
         ")" -> {
-            Push[stack, N <| &~`> <| CallN[pop, 2]]
+            Push[_.stack, N <| &~`> <| CallN[_.pop, 2]]
         },
         "=" -> {
-            Push[stack, N <| &~`= <| CallN[pop, 2]]
+            Push[_.stack, N <| &~`= <| CallN[_.pop, 2]]
         },
         "~" -> {
-            Push[stack, ...CallN[pop, 2]]
+            Push[_.stack, ...CallN[_.pop, 2]]
         },
         "r" -> {
-            stack .= Reverse[stack]
+            _.stack .= Reverse[_.stack]
         },
         "$" -> {
-            advance[]
-            next .= grid[ip.y][ip.x]
-            amount .= pop[]
-            ForEach[1:amount, exec[next]]
+            _.advance[]
+            next .= _.grid[_.ip.y][_.ip.x]
+            amount .= _.pop[]
+            ex .= _.exec
+            ForEach[1:amount, ex[next]]
         },
         "'" -> {
-            advance[]
-            Push[stack, grid[ip.y][ip.x] |> Ord]
+            _.advance[]
+            Push[_.stack, _.grid[_.ip.y][_.ip.x] |> Ord]
         },
         """" -> {
-            mode .= 1
+            _.mode .= 1
         },
         "`" -> {
-            amount .= pop[]
-            str .= Char[Reverse[CallN[pop, amount]]]
+            amount .= _.pop[]
+            str .= Char[Reverse[CallN[_.pop, amount]]]
             If[IsAlphaNumeric[str],
                 fn .= Eval[str];;
-                args .= Reverse! CallN[pop, #fn];;
-                Push[stack, Apply[fn, args]]
+                args .= Reverse! CallN[_.pop, #fn];;
+                Push[_.stack, Apply[fn, args]]
             ]
         },
         "!" -> {
-            arity .= pop[]
-            amount .= pop[]
-            str .= Char[Reverse[CallN[pop, amount]]]
+            arity .= _.pop[]
+            amount .= _.pop[]
+            str .= Char[Reverse[CallN[_.pop, amount]]]
             If[IsAlphaNumeric[str],
                 fn .= Eval[str];;
-                args .= Reverse! CallN[pop, arity];;
-                Push[stack, Apply[fn, args]]
+                args .= Reverse! CallN[_.pop, arity];;
+                Push[_.stack, Apply[fn, args]]
             ]
         }
     ~>
 
     advance .= {
-        Print[$.ip]
         $.ip .= $.ip + $.dip
         $.ip .= $.ip % Reverse[##$.grid]
     }
@@ -198,10 +198,11 @@ ClassNamed[D2State]! {
 
     step .= {
         cell .= $.grid[$.ip.y][$.ip.x]
+        ?? Print["EXECUTING:", cell]
         If[$.mode = 0,
             $.exec[cell],
 
-            If[$.cell = """",
+            If[cell = """",
                 $.mode .= 0,
                 Push[$.stack, Ord[cell]]
             ]
@@ -210,7 +211,10 @@ ClassNamed[D2State]! {
     }
 
     run .= {
-        While[$.running, If[$.debug_state, $.debug[]] ;; $.step[]]
+        While[$.running,
+            If[$.debug_state, $.debug[]];;
+            $.step[]
+        ]
     }
 
     debug_ .= ($string .= {

@@ -873,9 +873,9 @@ class Type
 end
 
 class AttacheError < Exception
-    def initialize(message, line=nil)
+    def initialize(message, pos=nil)
         @message = message
-        @line = line
+        @pos = pos
     end
 
     def AttacheError.descendants
@@ -883,12 +883,14 @@ class AttacheError < Exception
     end
 
     def readable
-        "#{self.class.name}: #{@line ? "(#{@line})" : ""} #{@message}"
+        "#{self.class.name}: #{@pos ? "(#{@pos})" : ""} #{@message}"
     end
 end
 
 # when an operator is used incorrectly
 class AttacheOperatorError < AttacheError; end
+# when a value is undefined
+class AttacheUndefinedError < AttacheError; end
 # for behaviour not yet implemented
 class AttacheUnimplementedError < AttacheError; end
 # a syntax error...
@@ -1261,7 +1263,10 @@ class AtState
             AtLambda.new(ast(raw), raw: raw)
 
         elsif type == :word
-            error "Reference Error: Undefined variable #{raw.inspect}"
+            raise AttacheUndefinedError.new(
+                "Undefined variable #{raw.inspect}",
+                obj.position
+            )
 
         elsif type == :abstract_reference
             @abstract_references[-raw.size]
