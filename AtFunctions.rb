@@ -4948,7 +4948,9 @@ module AtFunctionCatalog
             inst.set_global var, val
         },
         ".=" => AtFunction.held { |inst, var, val|
+            # p inst.variables.keys
             inst.set_local var, val
+            # p inst.variables.keys
         },
         "≔" => AtFunction.held { |inst, var, val|
             @@operators[":="][inst, var, val]
@@ -4998,12 +5000,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "*" => AtFunction.vectorize(2) { |inst, a, b|
-            if class_has? a, "$mul"
-                a["$mul"][inst, b]
-            elsif class_has? b, "$rmul"
-                b["$rmul"][inst, a]
-            elsif String === b
+        "*" => AtFunction.vectorize(2, operator: "mul", associative: true) { |inst, a, b|
+            if String === b
                 b * a
             else
                 a * b
@@ -5016,13 +5014,8 @@ module AtFunctionCatalog
         # @return number
         # @genre operator
         #>>
-        "/" => AtFunction.vectorize(2) { |inst, a, b|
-            # p 'div',a,b
-            if class_has? a, "$div"
-                a["$div"][inst, b]
-            elsif class_has? b, "$rdiv"
-                b["$rdiv"][inst, a]
-            elsif AtState.func_like? a
+        "/" => AtFunction.vectorize(2, operator: "div") { |inst, a, b|
+            if AtState.func_like? a
                 AtFunction.from(arity: b) { |inst, *args|
                     a[inst, *args]
                 }
@@ -5064,14 +5057,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "-" => AtFunction.vectorize(2) { |inst, a, b|
-            if class_has? a, "$sub"
-                a["$sub"][inst, b]
-            elsif class_has? b, "$rsub"
-                b["$rsub"][inst, a]
-            else
-                a - b
-            end
+        "-" => AtFunction.vectorize(2, operator: "sub") { |inst, a, b|
+            a - b
         },
         #<<
         # Addition.
@@ -5080,14 +5067,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "+" => AtFunction.vectorize(2) { |inst, a, b|
-            if class_has? a, "$add"
-                a["$add"][inst, b]
-            elsif class_has? b, "$radd"
-                b["$radd"][inst, a]
-            else
-                a + b
-            end
+        "+" => AtFunction.vectorize(2, operator: "add", associative: true) { |inst, a, b|
+            a + b
         },
         #<<
         # Returns <code><a href="#PlusMinus">PlusMinus</a>[a, b]</a></code>.
@@ -5096,7 +5077,7 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "±" => AtFunction.vectorize(2) { |inst, a, b|
+        "±" => AtFunction.vectorize(2, operator: "pm") { |inst, a, b|
             @@functions["PlusMinus"][inst, a, b]
         },
         #<<
@@ -5106,14 +5087,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "^" => AtFunction.vectorize(2) { |inst, a, b|
-            if class_has? a, "$pow"
-                a["$pow"][inst, b]
-            elsif class_has? b, "$rpow"
-                b["$rpow"][inst, a]
-            else
-                a ** b
-            end
+        "^" => AtFunction.vectorize(2, operator: "pow") { |inst, a, b|
+            a ** b
         },
         #<<
         # Modulo.
@@ -5122,14 +5097,8 @@ module AtFunctionCatalog
         # @return (*)
         # @genre operator
         #>>
-        "%" => AtFunction.vectorize(2) { |inst, a, b|
-            if class_has? a, "$mod"
-                a["$mod"][inst, b]
-            elsif class_has? b, "$rmod"
-                b["$rmod"][inst, a]
-            else
-                a % b
-            end
+        "%" => AtFunction.vectorize(2, operator: "mod") { |inst, a, b|
+            a % b
         },
         #<<
         # Returns <code>true</code> if <code>a</code> divides evenly into <code>b</code>.
@@ -5224,12 +5193,8 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "==" => AtFunction.from { |inst, x, y|
-            if class_has? x, "$equal"
-                x["$equal"][inst, y]
-            elsif class_has? y, "$equal"
-                y["$equal"][inst, x]
-            elsif Type === x
+        "==" => AtFunction.from(operator: "equal") { |inst, x, y|
+            if Type === x
                 x.to_s == y
             elsif Type === y
                 x == y.to_s
@@ -5438,7 +5403,21 @@ module AtFunctionCatalog
         "is_a" => AtFunction.from { |inst, el, klass|
             # https://www.strawpoll.me/15544904/r
             # el.parent == klass rescue false
-            el.kind_of? klass rescue false
+            if AtClassInstance === el
+                el.parent == klass
+            else
+                el.kind_of? klass rescue false
+            end
+        },
+        #<<
+        # Returns <code>false</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>true</code>.
+        # @return bool
+        # @type el (*)
+        # @type klass class
+        # @genre operator/logic
+        #>>
+        "is_not_a" => AtFunction.from { |inst, el, klass|
+            !@@operators["is_a"][inst, el, klass]
         },
         #<<
         # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.

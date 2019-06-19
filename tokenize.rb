@@ -135,6 +135,7 @@ $PRECEDENCE = {
     "!in"      => [80, :left],
     "is_a"     => [80, :left],
     "is_an"    => [80, :left],
+    "is_not_a" => [80, :left],
 
     ".."       => [70, :left],
     "‥"        => [70, :left], # .. alias

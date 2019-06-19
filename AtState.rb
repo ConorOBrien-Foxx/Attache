@@ -305,7 +305,8 @@ def class_has?(klass, prop)
 end
 
 def vectorizes?(ent)
-    Array === ent || class_has?(ent, "$map")
+    Array === ent
+    # Array === ent || class_has?(ent, "$map")
 end
 
 def map_vector(inst, vec, with_index: false, &fn)
@@ -326,11 +327,12 @@ def map_vector(inst, vec, with_index: false, &fn)
             res
         }
     end
-    if class_has? vec, "$map"
-        vec["$map"][inst, fn, vec]
-    else
-        vec.map { |e| fn[inst, e] }
-    end
+    vec.map { |e| fn[inst, e] }
+    # if class_has? vec, "$map"
+    #     vec["$map"][inst, fn, vec]
+    # else
+        # vec.map { |e| fn[inst, e] }
+    # end
 end
 
 def vectorize_arity(args, depths, &fn)
@@ -345,7 +347,10 @@ def vectorize_arity(args, depths, &fn)
     if checks.none?
         fn[*args]
     else
-        unique_sizes = args.select.with_index { |e, i| checks[i] }.map(&:size).uniq
+        args_to_check = args.select.with_index { |e, i|
+            checks[i]
+        }
+        unique_sizes = args_to_check.map(&:size).uniq
         raise "bad lengths" unless unique_sizes.size == 1
         size = unique_sizes[0]
 
@@ -368,10 +373,14 @@ class AtFunction
         fn,
         configurable: false,
         arity: nil,
+        operator: false,
+        associative: false,
         held: [],
         vectorize: nil
     )
         @held = held
+        @operator = operator
+        @associative = associative
         if @held == true
             @held = HOLD_ALL
         end
@@ -416,6 +425,71 @@ class AtFunction
     end
 
     def [](inst, *args)
+        if @operator
+            case args.size
+                when 2
+                    a, b = args
+                    # specificly defined operator
+                    left = "$#@operator"
+                    right = "$r#@operator"
+                    if class_has? a, left
+                        return a[left][inst, b]
+                    elsif class_has? b, right
+                        return b[right][inst, a]
+                    elsif @associative && class_has?(a, right)
+                        return a[right][inst, b]
+                    elsif @associative && class_has?(b, left)
+                        return b[left][inst, a]
+                    end
+                    # bin_op_left/right defined
+                    if class_has? a, "$bin_op_left"
+                        return a["$bin_op_left"][inst,
+                            @operator,
+                            self,
+                            b
+                        ]
+                    elsif class_has? b, "$bin_op_right"
+                        return b["$bin_op_right"][inst,
+                            @operator,
+                            self,
+                            a
+                        ]
+                    elsif @associative && class_has?(a, "$bin_op_right")
+                        return a["$bin_op_right"][inst,
+                            @operator,
+                            self,
+                            b
+                        ]
+                    elsif @associative && class_has?(b, "$bin_op_left")
+                        return b["$bin_op_left"][inst,
+                            @operator,
+                            self,
+                            a
+                        ]
+                    end
+
+                    # bin_op defined (ambidirectional)
+                    if class_has? a, "$bin_op"
+                        return a["$bin_op"][inst,
+                            "left",
+                            @operator,
+                            self,
+                            b
+                        ]
+                    elsif class_has? b, "$bin_op"
+                        return b["$bin_op"][inst,
+                            "right",
+                            @operator,
+                            self,
+                            a
+                        ]
+                    end
+                when 1
+                    raise "idk"
+                else
+                    raise "unknown operator arity #{args.size}"
+            end
+        end
         if @vectorize.nil?
             @fn[inst, *args]
         else
@@ -998,6 +1072,14 @@ class AtState
                 raise if is_vector #todo: fix
                 set_op_quote op, val, arity
                 return val
+
+            # child updating
+            elsif var.head.raw == "."
+                parent, prop = var.children
+                object = evaluate_node parent
+                res = evaluate_node val
+                object[prop.raw] = res
+
             else
                 #todo: pattern matching++
                 args = var.children.map { |e|
@@ -1400,7 +1482,7 @@ class AtState
 
         # error checking -- function/operator arity does not exist
         if func.nil?
-            if node.head.type == :unary_operator
+            if Token === node.head && node.head.type == :unary_operator
                 raise AttacheOperatorError.new("Operator #{node.head.raw.inspect} has no unary case.", node.head.position)
             end
             STDERR.puts "[in function execution] Error in retrieving value for #{node.head.inspect}"
@@ -1472,8 +1554,8 @@ class AtState
     end
 
     def cast_list(value)
-        if class_has? value, "$map"
-            map_vector(self, value)
+        if class_has? value, "$list"
+            value["$list"][self]
         else
             force_list value
         end

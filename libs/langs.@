@@ -19,7 +19,7 @@ FractranExample := Class! {
     encode .= _2
     decode .= _3
 
-    run[input, n] .= FRACTRAN[code, encode[input], n] |> decode
+    run[input, n] .= FRACTRAN[$.code, $.encode[input], n] |> $.decode
     $call .= run@V
 }
 
@@ -65,9 +65,9 @@ ClassNamed[D2State]! {
     running .= true
 
     exec[cell] .= (
-        cmd .= cmds[cell];;
+        cmd .= $.cmds[cell];;
         If[IsNumeric[cell],
-            Push[stack, N[cell]],
+            Push[$.stack, N[cell]],
             If[cmd, ('cmd)[]]
         ]
     )
@@ -181,49 +181,56 @@ ClassNamed[D2State]! {
     ~>
 
     advance .= {
-        ip .= ip + dip
-        ip .= ip % Reverse[##grid]
+        Print[$.ip]
+        $.ip .= $.ip + $.dip
+        $.ip .= $.ip % Reverse[##$.grid]
     }
 
     pop .= {
-        If[#stack, Pop[stack], 0]
+        If[#$.stack, Pop[$.stack], 0]
     }
 
     last .= {
-        res .= pop[]
-        Push[stack, res]
+        res .= $.pop[]
+        Push[$.stack, res]
         res
     }
 
     step .= {
-        cell .= grid[ip.y][ip.x]
-        If[mode = 0,
-            exec[cell],
+        cell .= $.grid[$.ip.y][$.ip.x]
+        If[$.mode = 0,
+            $.exec[cell],
 
-            If[cell = """",
-                mode .= 0,
-                Push[stack, Ord[cell]]
+            If[$.cell = """",
+                $.mode .= 0,
+                Push[$.stack, Ord[cell]]
             ]
         ]
-        advance[]
+        $.advance[]
     }
 
     run .= {
-        While[running, If[debug_state, debug[]] ;; step[]]
+        While[$.running, If[$.debug_state, $.debug[]] ;; $.step[]]
     }
 
     debug_ .= ($string .= {
-        left_axis .= (#grid + 1)&sp
+        left_axis .= (#$.grid + 1)&sp
         left_axis[ip.y] @= ">"
-        bot_axis .= (#grid[0])&sp
+        bot_axis .= (#$.grid[0])&sp
         bot_axis[ip.x] @= "^"
-        fmt .= Join[Stitch[left_axis, Join => grid], lf] + Join[bot_axis]
-        Format["ip: %s\ndip: %s\n[[GRID]]\n%s\n[[/GRID]]\n[[STACK]]\n%s\n[[/STACK]]", ip, dip, fmt, stack]
+        fmt .= Join[Stitch[left_axis, Join => $.grid], lf] + Join[bot_axis]
+        Format[
+            "ip: %s\ndip: %s\n[[GRID]]\n%s\n[[/GRID]]\n[[STACK]]\n%s\n[[/STACK]]",
+            $.ip,
+            $.dip,
+            fmt,
+            $.stack
+        ]
     })
-    
+
     debug .= {
         Cls[]
-        Print[debug_[] + lf]
+        Print[$.debug_[] + lf]
         Prompt["Press ENTER."]
     }
 }

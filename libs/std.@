@@ -211,13 +211,24 @@ Distance[p1, p2] := Norm[p1 - p2]
 ??? @example pythag := Point[3, 4]
 ??? @example Print[pythag]
 ??? @example ?? (3, 4)
-ClassNamed[Point]! {
+ClassNamed[Point] {
     x .= _1
     y .= _2
 
-    $map[f, vec] .= New[Point, f[x], f[y]]
+    $bin_op[dir, name, fn, other] .= (
+        value .= If[other is_a Point,
+            List@other,
+            2 & other
+        ];;
+        Point@@fn@@Switch[dir,
+            $left -> [List@$, value],
+            $right -> [value, List@$],
+            nil
+        ]
+    )
 
-    $string[] .= Format["(%s, %s)", x, y]
+    $list[] .= [$.x, $.y]
+    $string[] .= Format["(%s, %s)", $.x, $.y]
 }
 ??>>
 
@@ -746,9 +757,9 @@ ReadNumbers[] :=
 ClassNamed[Displayment]! {
     value .= _1
 
-    repr[] .= $"Displayment[${value}]"
+    repr[] .= $"Displayment[${$.value}]"
 
-    $string[] .= repr[]
+    $string[] .= $.repr[]
 }
 
 base_alpha := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"

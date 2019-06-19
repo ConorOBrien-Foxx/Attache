@@ -82,6 +82,10 @@ class AtClassInstance
         @vars[prop] || @methods[prop]
     end
 
+    def []=(prop, val)
+        @vars[prop] = val
+    end
+
     def inspect
         @vars.delete AtLambda::ARG_CONST
         # p @vars.keys
