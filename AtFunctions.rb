@@ -4859,21 +4859,22 @@ module AtFunctionCatalog
             end
         },
         "Safely" => AtFunction.configurable { |inst, func, catch=nil, **opts|
-            rec = AtFunction.from { |inst, *args|
-                begin
-                    func[inst, *args]
-                rescue Exception => e
-                    if catch.nil?
-                        e
-                    elsif AtState.func_like? catch
-                        catch[inst, e]
-                    else
-                        catch
+            fn = lambda { |inst, *args|
+                loop {
+                    begin
+                        func[inst, *args]
+                        break
+                    rescue Exception => e
+                        value = if catch.nil?
+                            e
+                        elsif AtState.func_like? catch
+                            catch[inst, e]
+                        else
+                            catch
+                        end
+                        break value unless opts[:redo]
                     end
-                    if opts[:redo]
-                        rec[inst, *args]
-                    end
-                end
+                }
             }
         },
         "Commonest" => AtFunction.from { |inst, ent, n=1|
