@@ -3,17 +3,15 @@ Needs[$visuals, $error]
 
 ??REPL := Safely[ReadLineLoop<~"A> ", Display@First@Save@EvalHere~>, redo->true]
 
-ClassNamed[Entry]! {
+ClassNamed[Entry] {
     input .= _1
     output .= _2
 
-    $map[f] .= [f[$.input], f[$.output]]
-    $equal[other] .= All[[$.input, $.output] = other]
+    $map[f] .= Entry[f[$.input], f[$.output]]
+    $equal[other] .= All[[$.input, $.output] = [other.input, other.output]]
 }
 
-Entry := V
-
-previous := []
+history := []
 head := "A> "
 REPL := {
     Safely[ReadLineLoop<~head, {
@@ -21,18 +19,21 @@ REPL := {
         ?? go to line, reset prompt
         Print["\e[1A" + head, after->""]
         Print[Highlight[line]]
-        res .= EvalHere[line, Last => previous]
+        res .= EvalHere[line, .output => history]
         next .= Entry[line, res]
-        If[#previous = 0 or Last[previous] =/= next,
-            Unshift[previous, Entry[line, res]]
+        If[#history = 0 or Last[history].input =/= next.input,
+            Unshift[history, Entry[line, res]]
         ]
         Display[res]
     }~>, {
         If[_ is_an AttacheError,
             Print[_.readable],
-            If[S[_] /= "exit",
-                Print["\e[31mInternal error: \e[1m" + S[_] + "\e[0m"];;
-                Print => _.backtrace
+            If[String[_] /= "exit",
+                Print["\e[31mInternal error: \e[1m" + String[_] + "\e[0m"];;
+                Print => If[#_.backtrace >= 10,
+                    _.backtrace[0:10] ' $"(...${#_.backtrace - 10} more items omitted)",
+                    _.backtrace
+                ]
             ]
         ]
     }, redo->true][]
