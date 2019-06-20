@@ -9,6 +9,14 @@ S := String
 ??>>
 
 ??<<
+??? Alias for <a href="AtFunctions.html#Average" target="_blank"><code>Average</code></a>.
+??? @type list [number]
+??? @return number
+??? @genre list
+Mean := Average
+??>>
+
+??<<
 ??? Returns a function with arguments <code>l</code> and <code>r</code> which
 ??? calls <code>f[e, r]</code> for each element <code>e</code> in <code>l</code>.
 ??? @type f fn
