@@ -4932,6 +4932,7 @@ module AtFunctionCatalog
             if Node === prop
                 raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
             end
+            p prop
 
             if AtClassInstance === obj || Hash === obj || AtPseudoClass === obj
                 obj[prop.raw]
@@ -5837,7 +5838,9 @@ module AtFunctionCatalog
         },
         # propda
         "." => AtFunction.held { |inst, property|
-            AtFunction.from { |inst, ent| @@operators["."][inst, ent, property] }
+            AtFunction.from { |inst, ent|
+                @@operators["."][inst, ent, property]
+            }
         },
 
         #<<

@@ -24,7 +24,7 @@ FormatStringInformation = Struct.new(:token, :count) {
     end
 }
 
-class AtParser
+class AtShunter
     def initialize(code)
         @stack = []
         @out = []
@@ -267,7 +267,7 @@ class AtParser
         @last_token = ent if type != :whitespace
     end
 
-    def parse
+    def shunt
         loop {
             running = step != :stop
             break unless running
@@ -289,8 +289,8 @@ class AtParser
     end
 end
 
-def parse(code)
-    AtParser.new(code).parse
+def shunt(code)
+    AtShunter.new(code).shunt
 end
 
 def get_abstract_number(abstract, default=0)
@@ -765,7 +765,7 @@ def ast(program)
     shunted = if program.is_a? Array
         program
     else
-        parse program
+        shunt program
     end
 
     roots = []
@@ -1080,7 +1080,14 @@ class AtState
                 parent, prop = var.children
                 object = evaluate_node parent
                 res = evaluate_node val
-                object[prop.raw] = res
+                if Node === prop
+                    p 'oh'
+                    3
+                elsif Token === prop
+                    object[prop.raw] = res
+                else
+                    raise AttacheUnimplementedError.new("Unhandled property type #{prop.class}")
+                end
 
             else
                 #todo: pattern matching++

@@ -21,7 +21,7 @@ AtState.function("Tokenize") { |inst, text|
 ## @return [token]
 ## @genre parsing
 AtState.function("Shunt") { |inst, text|
-    parse(text).map { |tok|
+    shunt(text).map { |tok|
         a, b, c = tok
         Token.new a, b.to_s, c
     }

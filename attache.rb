@@ -207,7 +207,7 @@ end
 if options[:tokenize] || options[:shunt]
     iter = {}
     iter[:tokenize] = :tokenize   if options[:tokenize]
-    iter[:shunt]    = :parse      if options[:shunt]
+    iter[:shunt]    = :shunt      if options[:shunt]
 
     iter.each { |display, option|
         puts "[#{display}]"
