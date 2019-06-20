@@ -4930,11 +4930,17 @@ module AtFunctionCatalog
         #>>
         "." => AtFunction.held(false, true) { |inst, obj, prop|
             if Node === prop
-                raise AttacheValueError.new("expected simple property instead of a Node", prop.head.position)
-            end
-            p prop
-
-            if AtClassInstance === obj || Hash === obj || AtPseudoClass === obj
+                if prop.head.raw == "V"
+                    prop.children.map { |child|
+                        @@operators["."][inst, obj, child]
+                    }
+                else
+                    raise AttacheUnimplementedError.new(
+                        "Unknown node head type #{prop.head.raw.inspect}",
+                        prop.position
+                    )
+                end
+            elsif AtClassInstance === obj || Hash === obj || AtPseudoClass === obj
                 obj[prop.raw]
             elsif obj.respond_to? prop.raw.to_sym
                 obj.send prop.raw.to_sym

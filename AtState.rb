@@ -61,6 +61,8 @@ class AtShunter
 
         return if type == :comment
 
+        # TODO: make this have better precedence
+        # (remove hack with !! operator)
         if raw == "{" && imp_call_start?(@last_token.type) && @last_token.line == ent.line
             ## call func
             @consume_queue << Token.new("!!", :operator)
@@ -100,6 +102,11 @@ class AtShunter
         flush_stack =
             (both_are_data || type == :statement_sep) &&
             @format_string_stack.empty?
+
+        # p ent
+        # p @out.map(&:raw)
+        # p @stack.map(&:raw)
+        # puts
 
         if flush_stack
             flush(@out, @stack, [:func_start, :named_func_start])
@@ -167,8 +174,12 @@ class AtShunter
             @stack.push ent
 
         elsif type == :bracket_open
+            # parse expression a.b[c] as (a.b)[c]
             if !@stack.empty? && @stack.last.raw == "."
-                @out.push @stack.pop
+                # but parse a.[b] as (a).([b])
+                if @last_token.raw != "."
+                    @out.push @stack.pop
+                end
             end
 
             # determine if a function call
