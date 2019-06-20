@@ -1092,8 +1092,24 @@ class AtState
                 object = evaluate_node parent
                 res = evaluate_node val
                 if Node === prop
-                    p 'oh'
-                    3
+                    if prop.head.raw == "V"
+                        prop.children.map.with_index { |child, i|
+                            begin
+                                value_at = res[i]
+                            rescue
+                                raise AttacheValueError.new(
+                                    "Error obtaining element at index #{i} of `#{res.inspect}`",
+                                    child.position
+                                )
+                            end
+                            object[child.raw] = res[i]
+                        }
+                    else
+                        raise AttacheUnimplementedError.new(
+                            "Unknown node head type #{prop.head.raw.inspect}",
+                            prop.position
+                        )
+                    end
                 elsif Token === prop
                     object[prop.raw] = res
                 else
