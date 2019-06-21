@@ -5678,7 +5678,11 @@ module AtFunctionCatalog
                     f[inst, g[inst, *args]]
                 }
             else
-                f[inst, g]
+                begin
+                    f[inst, g]
+                rescue TypeError, ArgumentError
+                    f[g]
+                end
             end
         },
         "@@" => AtFunction.from { |inst, f, g|
@@ -5688,7 +5692,7 @@ module AtFunctionCatalog
                 begin
                     f[inst, *g]
                 # TODO: restrict exception
-                rescue Exception => e
+                rescue TypeError, ArgumentError
                     @@functions["FlatGet"][inst, f, g]
                 end
             end
