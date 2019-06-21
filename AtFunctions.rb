@@ -4332,6 +4332,7 @@ module AtFunctionCatalog
         # @genre string
         #>>
         "Join" => AtFunction.from(vectorize: [false, true]) { |inst, list, joiner=""|
+            p ["Join!", list, joiner]
             list.join joiner
         },
         #<<
@@ -5677,14 +5678,19 @@ module AtFunctionCatalog
                     f[inst, g[inst, *args]]
                 }
             else
-                f[g] rescue f[inst, g]
+                f[inst, g]
             end
         },
         "@@" => AtFunction.from { |inst, f, g|
             if AtState.func_like? g
                 AtFunction.from { |inst, *args| f[inst, *g[inst, *args]] }
             else
-                f[inst, *g] rescue @@functions["FlatGet"][inst, f, g]
+                begin
+                    f[inst, *g]
+                # TODO: restrict exception
+                rescue Exception => e
+                    @@functions["FlatGet"][inst, f, g]
+                end
             end
         },
         "@%" => AtFunction.from { |inst, f, g|

@@ -347,6 +347,7 @@ def map_vector(inst, vec, with_index: false, &fn)
 end
 
 def vectorize_arity(args, depths, &fn)
+    p ["vectorize_arity", args, depths]
     unless Array === depths
         depths = Hash.new(depths)
     end
@@ -504,6 +505,7 @@ class AtFunction
         if @vectorize.nil?
             @fn[inst, *args]
         else
+            p ["vectorizing??", args]
             vectorize_arity(args, @vectorize) { |*vector_args|
                 @fn[inst, *vector_args]
             }
