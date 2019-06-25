@@ -1,15 +1,15 @@
 ClassNamed[Circle] {
     arity .= #__
-
     If[arity = 3,
-        x .= _1;;
-        y .= _2;;
+        center .= Point[_1, _2];;
         r .= _3
     ]
     If[arity = 2,
-        x ' y .= List@_1;;
+        center .= Point[..._1];;
         r .= _2
     ]
+
+    contains[point] .= Distance[point, $.center] <= $.r
 
     ClearLocal[$arity]
 }
