@@ -639,6 +639,8 @@ class AtLambda
                 end
             }
 
+            inst.pop_blanks
+
             inner
         }.last
 
