@@ -4332,7 +4332,6 @@ module AtFunctionCatalog
         # @genre string
         #>>
         "Join" => AtFunction.from(vectorize: [false, true]) { |inst, list, joiner=""|
-            p ["Join!", list, joiner]
             list.join joiner
         },
         #<<
