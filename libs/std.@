@@ -406,7 +406,7 @@ CellReplace := Curry[[cond, with, list] -> {
 ??? @example Print[Norm[-2+1i]]
 ??? @example ?? 2.23606797749979
 Norm[x] := (
-    list .= Flat[CellReplace[IsImaginary, ReIm, x]];;
+    list .= Flat[CellReplace[IsImaginary, ReIm, List@x]];;
     Sqrt[Sum[list^2]]
 )
 ??>>
