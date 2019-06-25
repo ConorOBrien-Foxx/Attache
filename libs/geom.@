@@ -8,8 +8,10 @@ ClassNamed[Circle] {
         center .= Point[..._1];;
         r .= _2
     ]
+    ClearLocal[$arity]
 
     contains[point] .= Distance[point, $.center] <= $.r
 
-    ClearLocal[$arity]
 }
+
+CircleEnclosing[...points] := points

@@ -190,6 +190,12 @@ class Array
     end
 end
 
+class String
+    def pluralize(count, suffix="s")
+        self + (count == 1 ? "" : suffix)
+    end
+end
+
 # extend TrueClass and FalseClass
 module TruthExtension
     def to_i

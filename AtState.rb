@@ -583,9 +583,11 @@ end
 class AtLambda
     ARG_CONST = "ARGUMENTS"
     OPTS_CONST = "OPTIONS"
-    def initialize(inner_ast, params=[], raw: [])
+    def initialize(inner_ast, params=[], splat_mask=[], raw: [])
         @tokens = [*inner_ast]
         @params = params
+        @splat_mask = splat_mask
+        @splat_count = splat_mask.count(true)
         @scope = {}
         @ascend = true
         @descend = true
@@ -609,14 +611,38 @@ class AtLambda
 
     def call(inst, args, opts=nil)
         inst.local_descend(@scope) if @descend
+
         # define locals
         inst.define_local ARG_CONST, args
         unless opts.nil?
             inst.define_local OPTS_CONST, opts.map { |k, v| [k.to_s, v] } .to_h
         end
         inst.abstract_references << self
-        @params.each_with_index { |name, i|
-            inst.define_local name, args[i]
+
+        arity = args.size
+        splat_domain = arity - @params.size + @splat_count
+        splat_each = splat_domain.to_f / @splat_count
+
+        # check if splats are valid
+        unless splat_each.to_i == splat_each
+            raise AttacheArgumentError.new(
+                "Argument count #{splat_domain} is incompatiable with #{@splat_count} " +
+                "splat".pluralize(@splat_count) +
+                "."
+            )
+        end
+        splat_each = splat_each.to_i
+
+        arg_index = 0
+        @params.zip(@splat_mask) { |name, is_splat|
+            if is_splat
+                value = args[arg_index...arg_index + splat_each]
+                arg_index += splat_each
+            else
+                value = args[arg_index]
+                arg_index += 1
+            end
+            inst.define_local name, value
         }
 
         temp_scope = @scope.dup
@@ -906,6 +932,8 @@ class AttacheOperatorError < AttacheError; end
 class AttacheUndefinedError < AttacheError; end
 # for behaviour not yet implemented
 class AttacheUnimplementedError < AttacheError; end
+# for invalid arguments (e.g. count)
+class AttacheArgumentError < AttacheError; end
 # a syntax error...
 class AttacheSyntaxError < AttacheError; end
 # when improper data is given to a function
@@ -1120,10 +1148,12 @@ class AtState
 
             else
                 #todo: pattern matching++
+                splat_mask = var.children.map { |arg|
+                    Node === arg && arg.head.raw == "..."
+                }
                 args = var.children.map { |e|
                     if Node === e
                         e.children[0].raw
-                        STDERR.puts "Note: undefined behaviour raised: unimplemented argument matching"
                     else
                         e.raw
                     end
@@ -1135,7 +1165,7 @@ class AtState
                     }
                     return val
                 else
-                    res = AtLambda.new [val], args
+                    res = AtLambda.new [val], args, splat_mask
 
                     attributes.each { |attr|
                         old = res
