@@ -13,8 +13,3 @@ ClassNamed[Circle] {
 
     ClearLocal[$arity]
 }
-
-Print[Circle[1, 3, 5]]
-
-p := Point[4, 5]
-Print[Circle[p, 4]]
