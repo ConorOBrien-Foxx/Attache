@@ -624,14 +624,14 @@ class AtLambda
         splat_each = splat_domain.to_f / @splat_count
 
         # check if splats are valid
-        unless splat_each.to_i == splat_each
+        unless @splat_count == 0 || splat_each.to_i == splat_each
             raise AttacheArgumentError.new(
                 "Argument count #{splat_domain} is incompatiable with #{@splat_count} " +
                 "splat".pluralize(@splat_count) +
                 "."
             )
         end
-        splat_each = splat_each.to_i
+        splat_each = splat_each.to_i unless splat_each.nan?
 
         arg_index = 0
         @params.zip(@splat_mask) { |name, is_splat|
