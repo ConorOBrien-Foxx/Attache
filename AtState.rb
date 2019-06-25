@@ -631,7 +631,7 @@ class AtLambda
                 "."
             )
         end
-        splat_each = splat_each.to_i unless splat_each.nan?
+        splat_each = splat_each.to_i rescue nil
 
         arg_index = 0
         @params.zip(@splat_mask) { |name, is_splat|
