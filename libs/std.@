@@ -220,8 +220,10 @@ Distance[p1, p2] := Norm[p1 - p2]
 ??? @example Print[pythag]
 ??? @example ?? (3, 4)
 ClassNamed[Point] {
-    x .= _1
-    y .= _2
+    If[#__ = 1,
+        x ' y .= _1,
+        x .= _1 ;; y .= _2
+    ]
 
     $bin_op[dir, name, fn, other] .= (
         value .= If[other is_a Point,
