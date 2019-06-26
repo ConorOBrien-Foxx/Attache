@@ -1,4 +1,8 @@
-Midpoint := Mean => Tr@Map[List]@V
+?? geometry tools - shapes etc
+
+Needs[$error]
+
+Midpoint := Mean => Tr#.List
 
 ClassNamed[Circle] {
     arity .= #__
@@ -16,12 +20,61 @@ ClassNamed[Circle] {
 
 }
 
+CircleFromTwoPoints[p1, p2] :=
+    Circle[Midpoint[p1, p2], Distance[p1, p2] / 2]
+
+?? TODO: make more elegant
+?? from gyanendra371 's article on GeeksforGeeks
+?? https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
+CircleFromThreePoints := &([p1, p2, p3] -> {
+    x12 .= p1.x - p2.x;
+    x13 .= p1.x - p3.x;
+
+    y12 .= p1.y - p2.y;
+    y13 .= p1.y - p3.y;
+
+    y31 .= p3.y - p1.y;
+    y21 .= p2.y - p1.y;
+
+    x31 .= p3.x - p1.x;
+    x21 .= p2.x - p1.x;
+
+    sx13 .= p1.x^2 - p3.x^2
+    sy13 .= p1.y^2 - p3.y^2
+    sx21 .= p2.x^2 - p1.x^2
+    sy21 .= p2.y^2 - p1.y^2
+
+    f .= (sx13 * x12 + sy13 * x12 + sx21 * x13 + sy21 * x13)
+         / (2 * (y31 * x12 - y21 * x13))
+
+    g .= (sx13 * y12 + sy13 * y12 + sx21 * y13 + sy21 * y13)
+         / (2 * (x31 * y12 - x21 * y13))
+
+    c .= (-(p1.x^2) - (p1.y^2) -
+         2 * g * p1.x - 2 * f * p1.y)
+
+    h .= -g
+    k .= -f
+    rsq .= h^2 + k^2 - c
+    r .= Sqrt[rsq]
+
+    If[Any[IsNaN, h'k'r],
+        Unique@[p1, p2, p3],
+        Circle[h, k, r]
+    ]
+
+})#:Point
+
+?? creates a circle using `points` as a perimeter
+CircleFrom[...points] :=
+    Switch[#points,
+        2 -> CircleFromTwoPoints[...points],
+        3 -> CircleFromThreePoints[...points],
+        UnimplementedError[$"`CircleFrom` is unimplemented for arity ${#points}"]
+    ]
+
 CircleEnclosing := [points] -> {
     candidates .= Combinations[points, 2]
-    circles .= candidates :> {
-        c .= Midpoint@@_
-        r .= Distance@@_ / 2
-        Circle[c, r]
-    }
+    circles .= CircleFromTwoPoints &> candidates
     Find[All&points@.contains, circles]
 }
