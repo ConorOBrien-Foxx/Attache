@@ -221,7 +221,7 @@ Distance[p1, p2] := Norm[p1 - p2]
 ??? @example ?? (3, 4)
 ClassNamed[Point] {
     If[#__ = 1,
-        x ' y .= _1,
+        x ' y .= List@_1,
         x .= _1 ;; y .= _2
     ]
 
