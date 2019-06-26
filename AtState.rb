@@ -653,12 +653,14 @@ class AtLambda
 
             if @ascend && @descend
                 temp = inst.locals.last.dup
-                @params.each { |param|
-                    temp.delete param
-                }
+                # NOTE: I have no idea why this was here, but commenting it out
+                # fixes a bug so I'm just going to do that.
+                # @params.each { |param|
+                #     temp.delete param
+                # }
                 temp_scope.merge! temp
             end
-
+            
             AtState.traverse(inner) { |atom|
                 if atom.kind_of? AtLambda
                     atom.scope.merge! temp_scope
