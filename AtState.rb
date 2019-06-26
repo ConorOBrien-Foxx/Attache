@@ -660,7 +660,7 @@ class AtLambda
                 # }
                 temp_scope.merge! temp
             end
-            
+
             AtState.traverse(inner) { |atom|
                 if atom.kind_of? AtLambda
                     atom.scope.merge! temp_scope
@@ -924,7 +924,7 @@ class AttacheError < Exception
     end
 
     def readable
-        "#{self.class.name}: #{@pos ? "(#{@pos})" : ""} #{@message}"
+        "#{self.class.name}: #{@pos ? "(#{@pos}) " : ""}#{@message}"
     end
 end
 
