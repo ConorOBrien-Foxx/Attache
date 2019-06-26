@@ -435,70 +435,95 @@ class AtFunction
         @arity
     end
 
+    # raised only by `operator_value`
+    class NoOperatorValueFoundError < Exception; end
+    def operator_value(inst, args)
+        case args.size
+            when 2
+                a, b = args
+                # specificly defined operator
+                left = "$#@operator"
+                right = "$r#@operator"
+                if class_has? a, left
+                    return a[left][inst, b]
+                elsif class_has? b, right
+                    return b[right][inst, a]
+                elsif @associative && class_has?(a, right)
+                    return a[right][inst, b]
+                elsif @associative && class_has?(b, left)
+                    return b[left][inst, a]
+                end
+                # bin_op_left/right defined
+                if class_has? a, "$bin_op_left"
+                    return a["$bin_op_left"][inst,
+                        @operator,
+                        self,
+                        b
+                    ]
+                elsif class_has? b, "$bin_op_right"
+                    return b["$bin_op_right"][inst,
+                        @operator,
+                        self,
+                        a
+                    ]
+                elsif @associative && class_has?(a, "$bin_op_right")
+                    return a["$bin_op_right"][inst,
+                        @operator,
+                        self,
+                        b
+                    ]
+                elsif @associative && class_has?(b, "$bin_op_left")
+                    return b["$bin_op_left"][inst,
+                        @operator,
+                        self,
+                        a
+                    ]
+                end
+
+                # bin_op defined (ambidirectional)
+                if class_has? a, "$bin_op"
+                    return a["$bin_op"][inst,
+                        "left",
+                        @operator,
+                        self,
+                        b
+                    ]
+                elsif class_has? b, "$bin_op"
+                    return b["$bin_op"][inst,
+                        "right",
+                        @operator,
+                        self,
+                        a
+                    ]
+                end
+            when 1
+                raise AttacheUnimplementedError.new("Unary class operators have not been implemented yet")
+            else
+                raise "unknown operator arity #{args.size}"
+        end
+        raise NoOperatorValueFoundError.new
+    end
+    private :operator_value
+
+    def call_operator(inst, *args)
+        found = true
+        value = begin
+            operator_value(inst, args)
+        rescue NoOperatorValueFoundError => e
+            found = false
+            nil
+        end
+        {
+            found: found,
+            value: value
+        }
+    end
+
     def [](inst, *args)
         if @operator
-            case args.size
-                when 2
-                    a, b = args
-                    # specificly defined operator
-                    left = "$#@operator"
-                    right = "$r#@operator"
-                    if class_has? a, left
-                        return a[left][inst, b]
-                    elsif class_has? b, right
-                        return b[right][inst, a]
-                    elsif @associative && class_has?(a, right)
-                        return a[right][inst, b]
-                    elsif @associative && class_has?(b, left)
-                        return b[left][inst, a]
-                    end
-                    # bin_op_left/right defined
-                    if class_has? a, "$bin_op_left"
-                        return a["$bin_op_left"][inst,
-                            @operator,
-                            self,
-                            b
-                        ]
-                    elsif class_has? b, "$bin_op_right"
-                        return b["$bin_op_right"][inst,
-                            @operator,
-                            self,
-                            a
-                        ]
-                    elsif @associative && class_has?(a, "$bin_op_right")
-                        return a["$bin_op_right"][inst,
-                            @operator,
-                            self,
-                            b
-                        ]
-                    elsif @associative && class_has?(b, "$bin_op_left")
-                        return b["$bin_op_left"][inst,
-                            @operator,
-                            self,
-                            a
-                        ]
-                    end
-
-                    # bin_op defined (ambidirectional)
-                    if class_has? a, "$bin_op"
-                        return a["$bin_op"][inst,
-                            "left",
-                            @operator,
-                            self,
-                            b
-                        ]
-                    elsif class_has? b, "$bin_op"
-                        return b["$bin_op"][inst,
-                            "right",
-                            @operator,
-                            self,
-                            a
-                        ]
-                    end
-                when 1
-                    raise "idk"
-                else
-                    raise "unknown operator arity #{args.size}"
+            result = call_operator(inst, *args)
+            if result[:found]
+                return result[:value]
             end
         end
         if @vectorize.nil?
