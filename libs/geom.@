@@ -1,3 +1,5 @@
+Midpoint := Mean => Tr@Map[List]@V
+
 ClassNamed[Circle] {
     arity .= #__
     If[arity = 3,
@@ -14,4 +16,12 @@ ClassNamed[Circle] {
 
 }
 
-CircleEnclosing[...points] := points
+CircleEnclosing := [points] -> {
+    candidates .= Combinations[points, 2]
+    circles .= candidates :> {
+        c .= Midpoint@@_
+        r .= Distance@@_ / 2
+        Circle[c, r]
+    }
+    Find[All&points@.contains, circles]
+}
