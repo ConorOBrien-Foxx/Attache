@@ -5719,6 +5719,13 @@ module AtFunctionCatalog
         "#" => AtFunction.from { |inst, x, y|
             Train.new *x, *y
         },
+        "#:" => AtFunction.from { |inst, fn, fmap|
+            AtFunction.from { |inst, *args|
+                fn[inst, *args.map { |arg|
+                    fmap[inst, arg]
+                }]
+            }
+        },
         "'" => @@functions["Tie"],
         "''" => @@functions["TieArray"],
         "&" => AtFunction.from { |inst, a, b|
