@@ -183,7 +183,7 @@ ClassNamed[D2State]! {
 
     advance .= {
         $.ip .= $.ip + $.dip
-        $.ip .= $.ip % Reverse[##$.grid]
+        $.ip .= $.ip % Point@Reverse[##$.grid]
     }
 
     pop .= {
