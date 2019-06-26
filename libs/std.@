@@ -237,6 +237,8 @@ ClassNamed[Point] {
         ]
     )
 
+    $equal[other] .= $.x = other.x and $.y = other.y
+
     $list[] .= [$.x, $.y]
     $string[] .= Format["(%s, %s)", $.x, $.y]
 }
