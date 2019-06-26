@@ -190,6 +190,22 @@ ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
 ??>>
 
 ??<<
+??? Returns the norm of <code>x</code>.
+??? @type x [(*)]
+??? @return number
+??? @genre list
+??? @example Print[Norm[3'4]]
+??? @example ?? 5.0
+??? @example Print[Norm[-2+1i]]
+??? @example ?? 2.23606797749979
+Norm[x] := (
+    x .= If[x is_a Point, List@x, x];;
+    list .= Flat[CellReplace[IsImaginary, ReIm, x]];;
+    Sqrt[Sum[list^2]]
+)
+??>>
+
+??<<
 ??? Returns the distance between points <code>p1</code> and <code>p2</code> on the
 ??? Euclidean plane.
 ??? @type p1 [(*)]
@@ -204,7 +220,11 @@ ChopInto[x, n] := Chop[x, Ceiling[#x / n]]
 ??? @example ?? 10.0
 ??? @example Print[Distance[ [0, 0], [1, 1] ]]
 ??? @example ?? 1.4142135623730951
-Distance[p1, p2] := Norm[p1 - p2]
+Distance[p1, p2] :=
+    If[p1 is_a Point xor p2 is_a Point,
+        Distance[Point@p1, Point@p2],
+        Norm[p1 - p2]
+    ]
 ??>>
 
 ??<<
@@ -402,21 +422,6 @@ CellReplace := Curry[[cond, with, list] -> {
         ]
     } @> list
 }]
-??>>
-
-??<<
-??? Returns the norm of <code>x</code>.
-??? @type x [(*)]
-??? @return number
-??? @genre list
-??? @example Print[Norm[3'4]]
-??? @example ?? 5.0
-??? @example Print[Norm[-2+1i]]
-??? @example ?? 2.23606797749979
-Norm[x] := (
-    list .= Flat[CellReplace[IsImaginary, ReIm, List@x]];;
-    Sqrt[Sum[list^2]]
-)
 ??>>
 
 ??<<
