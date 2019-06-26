@@ -4796,6 +4796,13 @@ module AtFunctionCatalog
             end
             sum
         },
+        "IsNaN" => AtFunction.from { |inst, n|
+            if n.respond_to? :nan?
+                n.nan?
+            else
+                false
+            end
+        },
         "IntegerPart" => AtFunction.from { |inst, n|
             n.floor
         },
@@ -5170,7 +5177,7 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "=" => AtFunction.vectorize(2) { |inst, x, y|
+        "=" => AtFunction.vectorize(2, operator: "equal") { |inst, x, y|
             x == y
         },
         #<<
@@ -5182,7 +5189,7 @@ module AtFunctionCatalog
         # @genre operator/logic
         #>>
         "/=" => AtFunction.vectorize(2) { |inst, x, y|
-            x != y
+            @@functions["Not"][inst, @@operators["="][inst, x, y]]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> does <em>not</em> equal <code>y</code>, <code>false</code> otherwise. See also: <a href="#/="><code>/=</code></a>.
@@ -5192,7 +5199,7 @@ module AtFunctionCatalog
         # @genre operator/logic
         #>>
         "≠" => AtFunction.vectorize(2) { |inst, x, y|
-            x != y
+            @@operators["/="][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> equals <code>y</code>, <code>false</code> otherwise.
@@ -5201,14 +5208,14 @@ module AtFunctionCatalog
         # @return bool
         # @genre operator/logic
         #>>
-        "==" => AtFunction.from(operator: "equal") { |inst, x, y|
+        "==" => AtFunction.from { |inst, x, y|
             if Type === x
-                x.to_s == y
-            elsif Type === y
-                x == y.to_s
-            else
-                x == y
+                x = x.to_s
             end
+            if Type === y
+                y = y.to_s
+            end
+            @@operators["="].call_normal inst, x, y
         },
         #<<
         # Synonym for <a href="#=="><code>==</code></a>.
@@ -5228,7 +5235,7 @@ module AtFunctionCatalog
         # @genre operator/logic
         #>>
         "=/=" => AtFunction.from { |inst, x, y|
-            x != y
+            !@@operators["=="][inst, x, y]
         },
         #<<
         # Returns <code>true</code> if <code>x</code> is greater than <code>y</code>, <code>false</code> otherwise.
