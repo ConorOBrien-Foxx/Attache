@@ -4,6 +4,25 @@ Needs[$error]
 
 Midpoint := Mean => Tr#.List
 
+ClassNamed[Rectangle] {
+    arity .= #__
+    If[arity = 4,
+        center .= Point[_1, _2];;
+        width .= _3;;
+        height .= _4
+    ]
+    If[arity = 3,
+        center .= Point[..._1];;
+        width .= _2;;
+        height .= _3
+    ]
+
+    area[] .= $.width * $.height
+
+    ?? TODO: class inheritance and generic regular polygons
+    ?? contains[point] .= nil
+}
+
 ClassNamed[Circle] {
     arity .= #__
     If[arity = 3,
@@ -15,6 +34,8 @@ ClassNamed[Circle] {
         r .= _2
     ]
     ClearLocal[$arity]
+
+    area[] .= PI * r^2
 
     contains[point] .= Distance[point, $.center] <= $.r
 
