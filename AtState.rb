@@ -519,18 +519,22 @@ class AtFunction
         }
     end
 
-    def [](inst, *args)
+    def call_normal(inst, *args)
         if @operator
             result = call_operator(inst, *args)
             if result[:found]
                 return result[:value]
             end
         end
+        @fn[inst, *args]
+    end
+
+    def [](inst, *args)
         if @vectorize.nil?
-            @fn[inst, *args]
+            call_normal inst, *args
         else
             vectorize_arity(args, @vectorize) { |*vector_args|
-                @fn[inst, *vector_args]
+                call_normal inst, *vector_args
             }
         end
     end
