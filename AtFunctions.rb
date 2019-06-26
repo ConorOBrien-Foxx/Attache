@@ -5413,6 +5413,17 @@ module AtFunctionCatalog
             # el.parent == klass rescue false
             if AtClassInstance === el
                 el.parent == klass
+
+            # special cases for class determiners
+            elsif AtFunction === klass
+                case klass
+                    when @@functions["String"]
+                        String === el
+                    else
+                        raise AttacheValueError.new(
+                            "Unrecognized class determiner"
+                        )
+                end
             else
                 el.kind_of? klass rescue false
             end

@@ -24,7 +24,10 @@ REPL := {
         If[#history = 0 or Last[history].input =/= next.input,
             Unshift[history, Entry[line, res]]
         ]
-        Display[res]
+        If[res is_a String,
+            Print[res],
+            Display[res]
+        ]
     }~>, {
         If[_ is_an AttacheError,
             Print[_.readable],
