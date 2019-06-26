@@ -237,7 +237,11 @@ ClassNamed[Point] {
         ]
     )
 
-    $equal[other] .= $.x = other.x and $.y = other.y
+    $equal[other] .=
+        If[other is_a Point,
+            $.x = other.x and $.y = other.y,
+            false
+        ]
 
     $list[] .= [$.x, $.y]
     $string[] .= Format["(%s, %s)", $.x, $.y]
