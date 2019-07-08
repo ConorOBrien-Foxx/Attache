@@ -1300,6 +1300,20 @@ class AtState
         res
     end
 
+    def closest_variables_to(name, limit=1)
+        possibilities = [@@functions, @variables, *@locals].flat_map { |scope|
+            scope.keys
+        }.map { |var|
+            [var, levenshtein_distance(var, name)]
+        }.select { |var, dist|
+            dist <= limit
+        }.sort_by { |var, dist|
+            dist
+        }.map { |var, dist|
+            var
+        }
+    end
+
     def get_value(obj)
         return obj unless obj.is_a? Token
 
@@ -1360,8 +1374,14 @@ class AtState
             AtLambda.new(ast(raw), raw: raw)
 
         elsif type == :word
+            closest = closest_variables_to raw
+            message = "Undefined variable #{raw.inspect}.\n"
+            message += "Did you mean?"
+            closest.each { |var|
+                message += "\n    #{var}"
+            }
             raise AttacheUndefinedError.new(
-                "Undefined variable #{raw.inspect}",
+                message,
                 obj.position
             )
 
