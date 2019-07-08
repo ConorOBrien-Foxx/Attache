@@ -1150,3 +1150,31 @@ class BigDecimal
         to_s(*args) + "x"
     end
 end
+
+def levenshtein_matrix(a, b)
+    mat = []
+    a.chars.each_with_index { |s, i|
+        mat << []
+        b.chars.each_with_index { |t, j|
+            el = if i == 0
+                j
+            elsif j == 0
+                i
+            else
+                cost = s == t ? 0 : 1
+                candidates = [
+                    mat[i - 1][j] + 1,
+                    mat[i][j - 1] + 1,
+                    mat[i - 1][j - 1] + cost
+                ]
+                candidates.min
+            end
+            mat.last << el
+        }
+    }
+    mat
+end
+
+def levenshtein_distance(a, b)
+    levenshtein_matrix(a, b).last.last
+end
