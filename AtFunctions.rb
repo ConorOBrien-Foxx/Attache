@@ -4275,6 +4275,15 @@ module AtFunctionCatalog
         # @return string
         # @type opts [string]|{string->(*)}
         # @type val string
+        # @example names := ["John", "James", "Mary"]
+        # @example Print[FindHead[names, "J"]]
+        # @example ?? John
+        # @example Print[FindHead[names, "Ja"]]
+        # @example ?? James
+        # @example Print[FindHead[names, "M"]]
+        # @example ?? Mary
+        # @example Print[nil = FindHead[names, "Z"]]
+        # @example ?? true
         # @example options := <~
         # @example   stop -> 0,
         # @example   continue -> 1,
@@ -4729,6 +4738,29 @@ module AtFunctionCatalog
         },
         "IsNumeric" => AtFunction.vectorize(1) { |inst, str|
             /^[[:digit:]]*$/ === str.to_s
+        },
+        "LevenshteinMatrix" => AtFunction.from { |inst, a, b|
+            levenshtein_matrix a, b
+        },
+        "LevenshteinDistance" => AtFunction.from { |inst, a, b|
+            levenshtein_distance a, b
+        },
+        "EditDistance" => AtFunction.configurable { |inst, a, b, **opts|
+            input_scheme = get_default opts, :scheme, "lev"
+            possible_schemes = ["levenshtein"]
+            scheme = @@functions["FindHead"][inst, possible_schemes, input_scheme]
+            case scheme
+                when "levenshtein"
+                    @@functions["LevenshteinDistance"][inst, a, b]
+                when nil
+                    raise AttacheValueError.new(
+                        "Scheme `#{input_scheme}` does not exist."
+                    )
+                else
+                    raise AttacheUnimplementedError.new(
+                        "Distance `#{scheme}` (`#{input_scheme}`) is not currently supported."
+                    )
+            end
         },
 
 
