@@ -826,3 +826,6 @@ TruthTrablePretty[name, n] := (
         ...Map[Join&"|"@center, values]
     ], lf]
 )
+
+Tally[list] :=
+    N @> Table[`=, Unique@list, list]
