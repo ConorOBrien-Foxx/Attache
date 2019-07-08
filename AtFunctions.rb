@@ -5446,6 +5446,16 @@ module AtFunctionCatalog
             !@@operators["is_a"][inst, el, klass]
         },
         #<<
+        # Returns <code>false</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>true</code>.
+        # @return bool
+        # @type el (*)
+        # @type klass class
+        # @genre operator/logic
+        #>>
+        "is_not_an" => AtFunction.from { |inst, el, klass|
+            !@@operators["is_a"][inst, el, klass]
+        },
+        #<<
         # Returns <code>true</code> if <code>el</code> is an instance of <code>klass</code>, otherwise <code>false</code>.
         # @return bool
         # @type el (*)
