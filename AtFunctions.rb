@@ -452,9 +452,25 @@ module AtFunctionCatalog
         "FileExists" => AtFunction.from { |inst, name|
             File.exists? name.strip
         },
-        "Wait" => AtFunction.from { |inst, n|
-            sleep n
+        #<<
+        # Sleeps for `n` seconds, or indefinitely if no argument is provided.
+        # Returns `n`.
+        # @type n number
+        # @return number
+        # @genre IO
+        #>>
+        "Wait" => AtFunction.from { |inst, n=NOT_PROVIDED|
+            if n == NOT_PROVIDED
+                loop { }
+            else
+                sleep n
+            end
         },
+        #<<
+        # Clears the console screen. Returns `true` if successful, `false` otherwise.
+        # @return bool
+        # @genre IO
+        #>>
         "Cls" => AtFunction.from { |inst|
             cls
         },
@@ -479,7 +495,6 @@ module AtFunctionCatalog
         # @genre class
         #>>
         "ClassNamed" => AtFunction.held { |inst, name, parent=nil|
-            #p name
             AtFunction.from { |inst, body|
                 inst.define name.raw, AtClass.new(inst, body, parent, name: name.raw)
             }
@@ -805,6 +820,17 @@ module AtFunctionCatalog
             args[0] = args[0].to_f
             args.inject(:/)
         },
+        #<<
+        # Simultaneously calculates division and modulus operations, returned as a pair.
+        # @type d number
+        # @type m number
+        # @return [number, number]
+        # @genre numeric
+        # @example Print[DivMod[23, 2]]
+        # @example ?? [11, 1]
+        # @example Print[DivMod[5, 20]]
+        # @example ?? [0, 5]
+        #>>
         "DivMod" => AtFunction.vectorize(2) { |inst, d, m|
             d.divmod m
         },
@@ -1343,6 +1369,7 @@ module AtFunctionCatalog
         "Xnor" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) == AtState.truthy?(b)
         },
+        # TODO: find a way to document these and assert numeric arguments
         "BitAnd" => AtFunction.from { |inst, a, b|
             a & b
         },
@@ -1724,6 +1751,13 @@ module AtFunctionCatalog
         "Numeric" => AtFunction.from { |inst, n|
             Numeric === n
         },
+        #<<
+        # Returns <code>true</code> if <code>n</code> is a perfect square (i.e.
+        # expressable as an integer multiplied by itself), otherwise <code>false</code>.
+        # @type n number
+        # @return bool
+        # @genre numeric/logic
+        #>>
         "IsSquare" => AtFunction.from { |inst, n|
             CMath::sqrt(n).to_i ** 2 == n
         },
@@ -1850,12 +1884,44 @@ module AtFunctionCatalog
             }
             res
         },
-        "Configurable" => AtFunction.from { |inst, fn|
-            a = fn
+        #<<
+        # Gives <code>f</code> access to any options passed to it, i.e. through
+        # <a href="#GetOption"><code>GetOption</code></a>.
+        # @type f fn
+        # @return fn
+        # @genre functional
+        # @example nameOf := Configurable { GetOption[$name] }
+        # @example Print[nameOf[name -> "John"]]
+        # @example ?? John
+        # @example Print[nameOf[]]
+        # @example ?? nil
+        #>>
+        "Configurable" => AtFunction.from { |inst, f|
+            a = f
             AtFunction.configurable { |inst, *args, **opts|
                 a.call inst, args, opts
             }
         },
+        #<<
+        # Gives the function easy access to the <code>OPTIONS</code> variable, if defined.
+        # If the requested option was not passed, the first non-nil element in
+        # <code>others</code> will be returned, if any.
+        # @type name string
+        # @type others (*)
+        # @return (*)
+        # @genre functional
+        # @example calibrate := Configurable {
+        # @example     sens .= GetOption[$sensitivity, 0.01]
+        # @example     If[_ <= sens,
+        # @example         "no reading",
+        # @example         $"reading: ${_ * sens}"
+        # @example     ]
+        # @example }
+        # @example Print[calibrate[5]]
+        # @example ?? reading: 0.05
+        # @example Print[calibrate[5, sensitivity->100]]
+        # @example ?? no reading
+        #>>
         "GetOption" => AtFunction.from { |inst, name, *others|
             opts = inst.get_variable("OPTIONS")
             if opts.nil?
