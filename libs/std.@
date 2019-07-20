@@ -829,3 +829,10 @@ TruthTrablePretty[name, n] := (
 
 Tally[list] :=
     N @> Table[`=, Unique@list, list]
+
+Mirror := Concat#Reverse
+
+GrayCodeTransform[list, key .= ["0", "1"]] := (
+    list .= S @> list;;
+    Concat[key@0 + list, key@1 + Reverse[list]]
+)
