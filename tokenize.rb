@@ -34,6 +34,10 @@ class Token
         "#{line}:#{column}"
     end
 
+    def readable
+        "#{position} #{@raw.inspect}"
+    end
+
     def inspect(color: true)
         (color ? "#\x1b[33mToken\x1b[0m<" : "#Token<") + to_ary.map { |item| color_inspect(item, color: color) }.join(", ") + ">"
     end
@@ -105,7 +109,7 @@ $PRECEDENCE = {
     "⩓"         => [170, :left], # ^^ alias
 
     "~"         => [165, :left],
-    
+
     "!"         => [160, :right],
     "^"         => [150, :right],
     "?"         => [150, :left],

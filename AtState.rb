@@ -612,15 +612,24 @@ end
 class AtLambda
     ARG_CONST = "ARGUMENTS"
     OPTS_CONST = "OPTIONS"
-    def initialize(inner_ast, params=[], splat_mask=[], raw: [])
+    def initialize(
+        inner_ast,
+        params=[],
+        splat_mask=[],
+        default_hash: {},
+        raw: [],
+        name: "<anonymous>"
+    )
         @tokens = [*inner_ast]
         @params = params
         @splat_mask = splat_mask
         @splat_count = splat_mask.count(true)
+        @default_hash = default_hash
         @scope = {}
         @ascend = true
         @descend = true
         @ignore_other = false
+        @name = name
         @raw = token_join raw
     end
 
@@ -654,10 +663,22 @@ class AtLambda
 
         # check if splats are valid
         unless @splat_count == 0 || splat_each.to_i == splat_each
+            non_splat_count = @params.size - @splat_count
             raise AttacheArgumentError.new(
-                "Argument count #{splat_domain} is incompatiable with #{@splat_count} " +
-                "splat".pluralize(@splat_count) +
-                "."
+                "Given #{
+                    arity
+                } #{
+                    "argument".pluralize(splat_domain)
+                }; incompatiable with #{
+                    @splat_count
+                } #{
+                    "splat".pluralize(@splat_count)
+                } and #{
+                    non_splat_count
+                } #{
+                    "regular argument".pluralize(non_splat_count)
+                }.",
+                @name
             )
         end
         splat_each = splat_each.to_i rescue nil
@@ -668,7 +689,20 @@ class AtLambda
                 value = args[arg_index...arg_index + splat_each]
                 arg_index += splat_each
             else
-                value = args[arg_index]
+                if arg_index >= args.size
+                    if @default_hash.has_key? name
+                        value = inst.evaluate_node @default_hash[name], @scope
+                    else
+                        raise AttacheArgumentError.new(
+                            "No value passed for parameter #{
+                                name.inspect
+                            }.",
+                            @name
+                        )
+                    end
+                else
+                    value = args[arg_index]
+                end
                 arg_index += 1
             end
             inst.define_local name, value
@@ -1182,9 +1216,26 @@ class AtState
                 splat_mask = var.children.map { |arg|
                     Node === arg && arg.head.raw == "..."
                 }
-                args = var.children.map { |e|
+                default_hash = {}
+                args = var.children.map.with_index { |e, i|
                     if Node === e
-                        e.children[0].raw
+                        if e.head.raw == ".="
+                            name = e.children[0].raw
+                            raw_default = e.children[1]
+                            default_hash[name] = raw_default
+                            name
+                        elsif e.head.raw = "..."
+                            e.children[0].raw
+                        else
+                            raise AttacheUnimplementedError.new(
+                                "Unidentified expression in parameter #{
+                                    i + 1
+                                } (symbol #{
+                                    e.head.inspect
+                                })",
+                                e.head.position
+                            )
+                        end
                     else
                         e.raw
                     end
@@ -1196,7 +1247,13 @@ class AtState
                     }
                     return val
                 else
-                    res = AtLambda.new [val], args, splat_mask
+                    res = AtLambda.new(
+                        [val],
+                        args,
+                        splat_mask,
+                        default_hash: default_hash,
+                        name: var.head.readable
+                    )
 
                     attributes.each { |attr|
                         old = res
