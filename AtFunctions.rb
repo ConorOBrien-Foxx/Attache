@@ -4900,6 +4900,25 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
+        "WildcardParse" => AtFunction.from { |inst, string|
+            # to explain the below regexes:
+            # \\\* and \\\? correspond to a literal "*" and "?" in the input
+            # (\\\\\\\\) matches an even number of escapes
+            # (?<!\\\\) asserts that there is no escape before this sequence
+            # in effect, this replaces any "*" and "?" not preceded by an
+            # odd number of escapes with the appropriate symbol.
+            Regexp.new(
+                "^" +
+                Regexp.escape(string)
+                      .gsub(/(?<!\\\\)(\\\\\\\\)*\\\*/, '\1.*')
+                      .gsub(/(?<!\\\\)(\\\\\\\\)*\\\?/, '\1.') +
+                "$"
+            )
+        },
+        "Like" => curry(2) { |inst, pattern, string|
+            regex = @@functions["WildcardParse"][inst, pattern]
+            regex === string
+        },
         "NTS" => AtFunction.vectorize(1) { |inst, x|
             head = inst.get_variable "NTS_dict_head"
             after = inst.get_variable "NTS_dict_after"
