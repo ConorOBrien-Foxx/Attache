@@ -997,6 +997,8 @@ end
 
 # when an operator is used incorrectly
 class AttacheOperatorError < AttacheError; end
+# when an error is raised during runtime, usually by the user
+class AttacheRuntimeError < AttacheError; end
 # when a value is undefined
 class AttacheUndefinedError < AttacheError; end
 # for behaviour not yet implemented

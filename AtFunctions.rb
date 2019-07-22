@@ -4982,8 +4982,11 @@ module AtFunctionCatalog
         "BigDecimal" => AtFunction.vectorize(1) { |inst, n|
             BigDecimal.new n
         },
-        "Error" => AtFunction.from { |inst, name, msg="An error has occured."|
-            AtError.new name, msg
+        # "Error" => AtFunction.from { |inst, name, msg="An error has occured."|
+        #     AtError.new name, msg
+        # },
+        "Error" => AtFunction.from { |inst, message|
+            raise AttacheRuntimeError.new(message)
         },
         "EscapeRegex" => AtFunction.from { |inst, str|
             Regexp.escape str.to_s
