@@ -120,28 +120,28 @@ ClassNamed[D2State]! {
             Print[_.stack]
         },
         "+" -> {
-            Push[_.stack, &~`+ <| CallN[_.pop, 2]]
+            Push[_.stack, &~`+ <| Twice[_.pop]]
         },
         "-" -> {
-            Push[_.stack, &~`- <| CallN[_.pop, 2]]
+            Push[_.stack, &~`- <| Twice[_.pop]]
         },
         "*" -> {
-            Push[_.stack, &~`* <| CallN[_.pop, 2]]
+            Push[_.stack, &~`* <| Twice[_.pop]]
         },
         "/" -> {
-            Push[_.stack, &~`/ <| CallN[_.pop, 2]]
+            Push[_.stack, &~`/ <| Twice[_.pop]]
         },
         "(" -> {
-            Push[_.stack, N <| &~`< <| CallN[_.pop, 2]]
+            Push[_.stack, N <| &~`< <| Twice[_.pop]]
         },
         ")" -> {
-            Push[_.stack, N <| &~`> <| CallN[_.pop, 2]]
+            Push[_.stack, N <| &~`> <| Twice[_.pop]]
         },
         "=" -> {
-            Push[_.stack, N <| &~`= <| CallN[_.pop, 2]]
+            Push[_.stack, N <| &~`= <| Twice[_.pop]]
         },
         "~" -> {
-            Push[_.stack, ...CallN[_.pop, 2]]
+            Push[_.stack, ...Twice[_.pop]]
         },
         "r" -> {
             _.stack .= Reverse[_.stack]
@@ -162,20 +162,20 @@ ClassNamed[D2State]! {
         },
         "`" -> {
             amount .= _.pop[]
-            str .= Char[Reverse[CallN[_.pop, amount]]]
+            str .= Char[Reverse[Do[_.pop, amount]]]
             If[IsAlphaNumeric[str],
                 fn .= Eval[str];;
-                args .= Reverse! CallN[_.pop, #fn];;
+                args .= Reverse! Do[_.pop, #fn];;
                 Push[_.stack, Apply[fn, args]]
             ]
         },
         "!" -> {
             arity .= _.pop[]
             amount .= _.pop[]
-            str .= Char[Reverse[CallN[_.pop, amount]]]
+            str .= Char[Reverse[Do[_.pop, amount]]]
             If[IsAlphaNumeric[str],
                 fn .= Eval[str];;
-                args .= Reverse! CallN[_.pop, arity];;
+                args .= Reverse! Do[_.pop, arity];;
                 Push[_.stack, Apply[fn, args]]
             ]
         }
