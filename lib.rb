@@ -649,6 +649,7 @@ def simplify_number(n)
     return n if BigDecimal === n
     return n if n.abs == Infinity
     return n.to_i if n == n.to_i rescue nil
+    return n.floor if n == n.floor rescue nil
     return n
 end
 
