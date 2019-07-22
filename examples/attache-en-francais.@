@@ -1,0 +1,38 @@
+?? pour https://codegolf.stackexchange.com/q/51109/31957
+Needs[$metattache]
+
+file_name := Arg[-1]
+source := FileRead[file_name]
+
+substitutions :=  <~
+    "file_name"     -> "nom_fichier",
+    "FileRead"      -> "FichierLire",
+    "If"            -> "Si",
+    "translate"     -> "traduisez",
+    "token"         -> "marque",
+    "tokens"        -> "marques",
+    "raw"           -> "brut",
+    "in"            -> "dans",
+    "Tokenize"      -> "Marquez",
+    "Map"           -> "Désignez",
+    "Join"          -> "Joignez",
+    "Print"         -> "Imprimer",
+    "after"         -> "après",
+    "final"         -> "ultime",
+    "Needs"         -> "Demande",
+    "Arg"           -> "Param"
+
+    ?? ce qui suit sont le même dans les deux langues
+    ?? "substitutions" -> "substitutions"
+    ?? "source" -> "source"
+~>
+
+translate[token] :=
+    If[token.raw in substitutions,
+        substitutions[token.raw],
+        token.raw
+    ]
+
+tokens := Tokenize[source]
+final := Map[translate, tokens]
+Print[Join[final], after->""]
