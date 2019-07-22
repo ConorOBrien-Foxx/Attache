@@ -73,6 +73,7 @@ $COMMENT_CLOSE = /\*\)/
 $CURRY_OPEN = /<~|«/
 $CURRY_CLOSE = /~>|»/
 $STATEMENT_SEP = /;/
+$INFINITY = /∞/
 
 $PRECEDENCE = {
     "."         => [99999, :left],
@@ -228,6 +229,7 @@ $TYPES = {
     $WHITESPACE         => :whitespace,
     $PAREN_OPEN         => :paren_open,
     $PAREN_CLOSE        => :paren_close,
+    $INFINITY           => :infinity,
     $UNKNOWN            => :unknown,
 }
 $DATA = [
@@ -246,7 +248,8 @@ $DATA = [
     :curry_func,
     :function,
     :abstract,
-    :make_lambda
+    :make_lambda,
+    :infinity,
 ]
 $DATA_SIGNIFIER = $DATA + [
     :bracket_close,
