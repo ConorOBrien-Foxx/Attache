@@ -385,6 +385,7 @@ class AtFunction
         configurable: false,
         arity: nil,
         operator: false,
+        memoize: false,
         associative: false,
         held: [],
         vectorize: nil
@@ -392,6 +393,8 @@ class AtFunction
         @held = held
         @operator = operator
         @associative = associative
+        @memoize = memoize
+        @memo = {}
         if @held == true
             @held = HOLD_ALL
         end
@@ -410,6 +413,10 @@ class AtFunction
 
     def AtFunction.vectorize(arity=nil, **opts, &fn)
         AtFunction.new(fn, **opts, vectorize: true, arity: arity)
+    end
+
+    def AtFunction.memoize(arity=nil, **opts, &fn)
+        AtFunction.new(fn, **opts, memoize: true, arity: arity)
     end
 
     def AtFunction.held(*held, &fn)
@@ -526,7 +533,14 @@ class AtFunction
                 return result[:value]
             end
         end
-        @fn[inst, *args]
+        if @memoize && @memo.has_key?(args)
+            return @memo[args]
+        end
+        value = @fn[inst, *args]
+        if @memoize
+            @memo[args] = value
+        end
+        value
     end
 
     def [](inst, *args)
@@ -1171,6 +1185,7 @@ class AtState
         "#" => :configurable,
         "@" => :vector,
         "&" => :curry,
+        "!" => :memoize,
     }
     def set_variable(var, val, dest=:define)
         if Node === var
@@ -1280,11 +1295,21 @@ class AtState
                         old = res
                         res = case attr
                             when :curry
-                                curry(args.size) { |inst, *args| old[inst, *args] }
+                                curry(args.size) { |inst, *args|
+                                    old[inst, *args]
+                                }
                             when :vector
-                                vectorize { |inst, *args| old[inst, *args] }
+                                AtFunction.vectorize { |inst, *args|
+                                    old[inst, *args]
+                                }
                             when :configurable
-                                configurable { |inst, *args, **configurable| old[inst, *args, **configurable] }
+                                AtFunction.configurable { |inst, *args, **configurable|
+                                    old[inst, *args, **configurable]
+                                }
+                            when :memoize
+                                AtFunction.memoize { |inst, *args|
+                                    old[inst, *args]
+                                }
                             else
                                 raise AttacheUnimplementedError.new("unknown attribute " + attr.to_s)
                         end

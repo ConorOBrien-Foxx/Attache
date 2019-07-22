@@ -1931,9 +1931,15 @@ module AtFunctionCatalog
         # @example ?? nil
         #>>
         "Configurable" => AtFunction.from { |inst, f|
+            # TODO: figure out if this line `a = f` is necessary
             a = f
             AtFunction.configurable { |inst, *args, **opts|
                 a.call inst, args, opts
+            }
+        },
+        "Memoize" => AtFunction.from { |inst, f|
+            AtFunction.memoize { |inst, *args|
+                f[inst, *args]
             }
         },
         #<<
