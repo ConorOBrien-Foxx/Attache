@@ -1,0 +1,12 @@
+?? https://www.hackerrank.com/challenges/plus-minus/problem
+
+?? size := ReadInt[]
+nums := ReadNumbers[]
+
+counts := [
+    Positive ~ nums,
+    Negative ~ nums,
+    Zero ~ nums
+] / #nums
+
+Print => counts
