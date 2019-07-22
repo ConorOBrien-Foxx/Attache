@@ -753,22 +753,23 @@ Thrice[f] := [f[], f[], f[]]
 ??>>
 
 ??<<
-??? TCO compatible implementation of `Do`. Note: Attache does not yet internally
-??? support TCO, so this is really rather useless. But it's a nice thought.
-??? @genre functional
+??? Iterative implementation of <a href="#Do"><code>Do</code></a>.
 ??? @type f fn
 ??? @type n number
 ??? @type c [(*)]
 ??? @return [(*)]
-DoHelper[f, n, c] :=
-    If[n > 0,
-        DoHelper[f, n - 1, c ' f[]],
-        c
-    ]
+DoHelper[f, n, c .= []] := (
+    While[n > 0,
+        n .= n - 1;;
+        Push[c, f[]]
+    ];;
+    c
+)
 ??>>
 
 ??<<
-??? Calls <code>f</code> <code>n</code> times with no arguments, collectin the results into an array.
+??? Calls <code>f</code> <code>n</code> times with no arguments, collecting the
+??? results into an array.
 ??? @type f fn
 ??? @return [(*)]
 ??? @genre functional
