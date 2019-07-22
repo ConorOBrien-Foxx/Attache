@@ -956,6 +956,10 @@ class Type
         @value.to_s
     end
 
+    def ===(other)
+        self == Type.of(other)
+    end
+
     def Type.of(el)
         case el
             when String
@@ -1005,6 +1009,21 @@ class AttacheSyntaxError < AttacheError; end
 class AttacheValueError < AttacheError; end
 # for deprecating various aspsects of Attache, particularly internal functions
 class AttacheDeprecationError < AttacheError; end
+
+
+class AttacheValueError
+    def self.assert_type(type, *values, source: nil)
+        values.each { |value|
+            unless type === value
+                raise self.new("Expected value to be #{
+                    type
+                }, got #{
+                    Type.of(value)
+                }.", source)
+            end
+        }
+    end
+end
 
 
 require_relative 'AtClass.rb'

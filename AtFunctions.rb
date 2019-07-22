@@ -1369,26 +1369,60 @@ module AtFunctionCatalog
         "Xnor" => AtFunction.from { |inst, a, b|
             AtState.truthy?(a) == AtState.truthy?(b)
         },
-        # TODO: find a way to document these and assert numeric arguments
-        "BitAnd" => AtFunction.from { |inst, a, b|
+        "BitAnd" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitAnd"
+            )
             a & b
         },
-        "BitOr" => AtFunction.from { |inst, a, b|
+        "BitOr" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitOr"
+            )
             a | b
         },
-        "BitXor" => AtFunction.from { |inst, a, b|
+        "BitXor" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitXor"
+            )
             a ^ b
         },
-        "BitNot" => AtFunction.from { |inst, a|
+        "BitNot" => AtFunction.vectorize(1) { |inst, a|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a,
+                source: "BitNot"
+            )
             ~a
         },
-        "BitNand" => AtFunction.from { |inst, a, b|
+        "BitNand" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitNand"
+            )
             ~(a & b)
         },
-        "BitNor" => AtFunction.from { |inst, a, b|
+        "BitNor" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitNor"
+            )
             ~(a | b)
         },
-        "BitXnor" => AtFunction.from { |inst, a, b|
+        "BitXnor" => AtFunction.vectorize(2) { |inst, a, b|
+            AttacheValueError.assert_type(
+                Type::NUMBER,
+                a, b,
+                source: "BitXnor"
+            )
             ~(a ^ b)
         },
 
