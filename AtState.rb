@@ -1735,7 +1735,7 @@ class AtState
         @@functions[name] = fn
 
         aliases.each { |ali|
-            @@functions[ali] = ali
+            @@functions[ali] = fn
         }
     end
 
