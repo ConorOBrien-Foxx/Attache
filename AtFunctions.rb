@@ -2807,7 +2807,7 @@ module AtFunctionCatalog
         #>>
         "Count" => curry { |inst, f, list|
             list = inst.cast_list list
-            if f.is_a?(Proc) || f.is_a?(AtLambda)
+            if AtState.func_like? f
                 list.count { |e| f[inst, e] }
             else
                 list.count f
