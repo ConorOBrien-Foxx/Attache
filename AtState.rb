@@ -1403,8 +1403,12 @@ class AtState
         res
     end
 
+    def all_variables
+        [@@functions, @variables, *@locals]
+    end
+
     def closest_variables_to(name, limit=1)
-        possibilities = [@@functions, @variables, *@locals].flat_map { |scope|
+        possibilities = all_variables.flat_map { |scope|
             scope.keys
         }.map { |var|
             [var, levenshtein_distance(var, name)]
