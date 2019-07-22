@@ -267,7 +267,6 @@ class Float
     include CallReturnSelf
 end
 
-
 def yearlike(n)
     case n
         when Numeric
@@ -353,22 +352,32 @@ module TimeExtension
         @@WEEKDAYS[wday]
     end
 end
+
 class Time
     include TimeExtension
 end
 
-module FloatExtension
+class Float
     def times(&fn)
-        if self.infinite?
-            loop &fn if self.positive?
+        if infinite?
+            loop &fn if positive?
         else
             to_i.times { fn[] }
         end
     end
-end
 
-class Float
-    include FloatExtension
+    alias :_old_to_s :to_s
+
+    def to_s
+        if infinite?
+            sign = negative? ? "-" : ""
+            sign + "inf"
+        elsif nan?
+            "nan"
+        else
+            _old_to_s
+        end
+    end
 end
 
 module ReadableArrays

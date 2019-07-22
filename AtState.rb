@@ -1107,6 +1107,7 @@ class AtState
         "true" => true,
         "false" => false,
         "nil" => nil,
+        "nan" => Float::NAN,
         "lf" => "\n",
         "cr" => "\r",
         "nul" => "\0",
@@ -1123,7 +1124,6 @@ class AtState
         "erng" => AtRNG.new(42),
         "NOT_PROVIDED" => AtFunctionCatalog::NOT_PROVIDED,
         "NP" => AtFunctionCatalog::NOT_PROVIDED,
-        # perhaps temporary
         "alpha" => $ALPHA_LOWER,
         "ALPHA" => $ALPHA_UPPER,
         "NTS_dict_after" => "0123456789#$ALPHA_LOWER#$ALPHA_UPPER",
