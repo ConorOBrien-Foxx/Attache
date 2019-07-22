@@ -1,7 +1,20 @@
 carpet_init := [[1, 1, 1],
                 [1, 0, 1],
                 [1, 1, 1]]
-carpet[n] :=
-    UnGrid[" #"[Nest[{ArrayFlatten[[0, _][_]]}, carpet_init, n]]]
+
+carpet_iteration[carpet] :=
+    ArrayFlatten[[0, carpet][carpet]]
+
+?? carpet[n] :=
+??     UnGrid[" #"[Nest[carpet_iteration, carpet_init, n]]]
+
+carpet_helper := Memoize {
+    If[_ <= 0,
+        carpet_init,
+        carpet_iteration[carpet_helper[_ - 1]]
+    ]
+}
+
+carpet[n] := UnGrid[" #"[carpet_helper@n]]
 
 ReadLine@%Print@carpet => 0:2
