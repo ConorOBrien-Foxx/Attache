@@ -1,18 +1,36 @@
 Print["== Quadratic Formula Solver =="]
 Print["ax^2 + bx + c = 0"]
 
-read_var[name] := Print[name + " = ", after -> es] and Define[name, ReadNumber[]]
+read_var[name] :=
+    Print[name + " = ", after -> es] and Define[name, ReadNumber[]]
 
-read_var => [$a, $b, $c]
+read_inputs[...names] :=
+    read_var => names
+
+read_inputs[$a, $b, $c]
+
+If[a = 0,
+    Print["The equation is not quadratic."];;
+    If[b = 0,
+        Print["There are", If[c = 0, "infinite", "no"], "solutions."],
+        Print["x =", -c // b]
+    ];;
+    Exit[]
+]
 
 d := b^2 - 4*a*c
-num := -b ± Sqrt[d]
-den := 2*a
+Print[d]
+numerator := -b ± N[Sqrt@d]
+denominator := 2*a
+solutions := numerator / denominator
 
-solns := Round[num / den, 3]
+If[Round[solutions, 5] == solutions,
+    solutions := Map[N, numerator // denominator]
+]
 
-im := Imaginary \ solns
-re := Real \ solns
+display_solution[type, elems] :=
+    Print["There are", #elems, type, "roots"] and
+    If[#elems, Print["x =", Join[elems, " and "]]]
 
-Print["There are", #re, "real solutions:", re]
-Print["There are", #im, "imaginary solutions:", im]
+display_solution["real", Real \ solutions]
+display_solution["imaginary", Imaginary \ solutions]
