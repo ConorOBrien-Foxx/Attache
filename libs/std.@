@@ -758,6 +758,7 @@ Thrice[f] := [f[], f[], f[]]
 ??? @type n number
 ??? @type c [(*)]
 ??? @return [(*)]
+??? @genre functional
 DoHelper[f, n, c .= []] := (
     While[n > 0,
         n .= n - 1;;
