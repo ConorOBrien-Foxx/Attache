@@ -4715,7 +4715,7 @@ module AtFunctionCatalog
         "ReplaceMultiple" => AtFunction.from { |inst, str, *args|
             str = str.dup
             args.map(&:to_a).each { |k, v|
-                str.gsub!(Regexp.new(k), v)
+                str.gsub!(make_regex(k), v)
             }
             str
         },
@@ -4913,7 +4913,7 @@ module AtFunctionCatalog
             # (?<!\\\\) asserts that there is no escape before this sequence
             # in effect, this replaces any "*" and "?" not preceded by an
             # odd number of escapes with the appropriate symbol.
-            Regexp.new(
+            make_regex(
                 "^" +
                 Regexp.escape(string)
                       .gsub(/(?<!\\\\)(\\\\\\\\)*\\\*/, '\1.*')
