@@ -1,9 +1,11 @@
 #!/usr/bin/ruby
 
-load 'boilerplates.rb'
-require_relative 'AtState.rb'
-require_relative 'tio.rb'
+require_relative 'boilerplates.rb'
+require_relative '../AtState.rb'
+require_relative '../tio.rb'
 require 'redcarpet'
+
+DOC_PATH = "docs"
 
 $inst = AtState.new "Needs[$visuals]"
 $inst.run
@@ -492,7 +494,9 @@ tutorial_pages.each { |page|
 nav += "</ul>"
 
 tutorial_pages.each { |page|
-    File.write "docs/tutorial/#{page.base}.html", page.result.join(nav)
+    page_location = File.join DOC_PATH, "tutorial/#{page.base}.html"
+    p page_location
+    File.write page_location, page.result.join(nav)
 }
 index += "</ul>"
 
@@ -502,7 +506,7 @@ index += "<h2>Documented files</h2>"
 index += "<ul>"
 sources.each { |source|
     base = File.basename source, ".*"
-    dest = "docs/#{base}.html"
+    dest = File.join DOC_PATH, "#{base}.html"
 
     data = generate source
     File.write dest, data[:content]
@@ -511,7 +515,8 @@ sources.each { |source|
 }
 index += "</ul>"
 
-File.write "docs/index.html", BOILERPLATES[:html] % {
+index_path = File.join DOC_PATH, "index.html"
+File.write index_path, BOILERPLATES[:html] % {
     title: "Attache: Documentation",
     body: index
 }
