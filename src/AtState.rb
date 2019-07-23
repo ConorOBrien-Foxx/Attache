@@ -1,16 +1,13 @@
 require_relative 'lib.rb'
 require_relative 'tokenize.rb'
 require_relative 'AtClass.rb'
+require_relative 'directory.rb'
 # require_relative 'AtFunctions.rb'
 # later in file
 
 def atstate_init(argv)
     $ARGV = argv
 end
-
-FOLDER_LOCATION = File.dirname(__FILE__)
-# we are in the src/ folder; go up
-INSTALLATION_LOCATION = File.split(FOLDER_LOCATION)[0]
 
 def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
