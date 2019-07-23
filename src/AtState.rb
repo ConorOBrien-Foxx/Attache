@@ -653,7 +653,7 @@ class AtLambda
     end
 
     def bind(inst)
-        AtFunction.new { |other_inst, *args|
+        lambda { |*args|
             self[inst, *args]
         }
     end
