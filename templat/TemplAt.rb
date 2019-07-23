@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-require_relative 'AtState.rb'
+require_relative '../src/AtState.rb'
 require 'nokogiri'
 
 # <attache>...</attache>
