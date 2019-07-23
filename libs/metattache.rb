@@ -1,7 +1,5 @@
 # attache module
 
-require_relative '../AtState.rb'
-
 ##<<
 ## Returns the tokens of <code>text</code>.
 ## @type text string
