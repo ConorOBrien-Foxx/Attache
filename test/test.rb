@@ -55,9 +55,31 @@ def environment_test(program)
 end
 
 # allows for {a:NaN} == {a:NaN}
-# todo: make more "safe"?
 def same_rough(a, b)
-    a == b || Marshal.dump(a) == Marshal.dump(b)
+    # a == b || Marshal.dump(a) == Marshal.dump(b)
+    if Exception === a
+        return same_rough b, a.to_s
+    elsif Exception === b
+        return same_rough b, a
+    elsif Hash === a
+        return false unless same_rough a.keys, b.keys
+        a.keys.each { |key|
+            return false unless same_rough a[key], b[key]
+        }
+        true
+    elsif Array === a
+        return false unless a.size == b.size
+        a.zip(b).all? { |l, r| same_rough l, r }
+    elsif a == a
+        a == b
+    elsif a.class != b.class
+        return false
+    elsif Float === a
+        # a float not equal to itself must be nan
+        a.nan? && b.nan?
+    else
+        a == b
+    end
 end
 
 options = {
