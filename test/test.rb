@@ -5,6 +5,11 @@ require 'json'
 require_relative '../src/AtState.rb'
 require_relative 'directory.rb'
 
+# ensure we have normal representations for JSON
+class Float
+    alias :to_s :_old_to_s
+end
+
 JSON_LOCATION = File.join TEST_LOCATION, "tests.json"
 
 def indent(text, width = 2)
@@ -37,9 +42,15 @@ def eval_test(text)
     safe_run(text) { |e| eval e }
 end
 
+$inst = AtState.new("Inject := EvalHere")
+$inst.run
+def inject_statement(statement)
+    $inst.variables["Inject"][$inst, statement]
+end
+
 def environment_test(program)
     safe_run(program) { |e|
-        AtState.execute(e).last
+        inject_statement(e)
     }
 end
 
