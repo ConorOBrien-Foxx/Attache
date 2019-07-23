@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require_relative 'AtState.rb'
+require_relative 'src/AtState.rb'
 
 class AttacheParser
     FILENAME = File.basename __FILE__
