@@ -220,7 +220,7 @@ if options[:generate_seen]
                     i += 1
                 when "j"
                     puts "Please enter the index number:"
-                    i = gets.to_i
+                    i = gets.to_i - 1
                 when "d"
                     cases.delete_at i
                 when "m", "c", "r"
@@ -278,7 +278,7 @@ options[:mode].uniq.each { |mode|
     method = data["method"]
     cases = data["cases"]
     passed = 0
-    cases.each.with_index { |hash, i|
+    cases.each.with_index(1) { |hash, i|
         input = hash["input"]
         output = hash["output"]
         result = send(method, input)
