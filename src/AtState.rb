@@ -406,6 +406,12 @@ class AtFunction
         @vectorize = vectorize
     end
 
+    def bind(inst)
+        lambda { |*args|
+            self[inst, *args]
+        }
+    end
+
     def AtFunction.from(**opts, &fn)
         AtFunction.new(fn, **opts)
     end
