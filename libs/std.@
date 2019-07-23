@@ -813,7 +813,7 @@ OctString   := ToBaseString&8
 UnOctString := FromBaseString&8
 
 ?? expected value
-E[dist] :=
+Ex[dist] :=
     Sum[`* &> dist]
 
 HashFrom := Hash@Stitch
