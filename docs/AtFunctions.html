@@ -689,11 +689,11 @@ SOURCE_LIST["Collatz"] = "\"Collatz\" => AtFunction.vectorize(1) { |inst, n|\n  
 SOURCE_LIST["CollatzSize"] = "\"CollatzSize\" => AtFunction.vectorize(1) { |inst, n|\n    collatz(n).size - 1\n},";
 SOURCE_LIST["Complement"] = "\"Complement\" => AtFunction.from { |inst, parent, *args|\n    any = args.map { |e|\n        inst.cast_list e\n    }.flatten(1)\n    inst.cast_list(parent).reject { |e| any.include? e }\n},";
 SOURCE_LIST["Concat"] = "\"Concat\" => AtFunction.from { |inst, *args|\n    args.flatten(1)\n},";
-SOURCE_LIST["Configurable"] = "\"Configurable\" => AtFunction.from { |inst, f|\n    a = f\n    AtFunction.configurable { |inst, *args, **opts|\n        a.call inst, args, opts\n    }\n},";
+SOURCE_LIST["Configurable"] = "\"Configurable\" => AtFunction.from { |inst, f|\n    AtFunction.configurable { |inst, *args, **opts|\n        f.call inst, args, opts\n    }\n},";
 SOURCE_LIST["Configure"] = "\"Configure\" => AtFunction.configurable { |inst, func, **opts|\n    AtFunction.from { |inst, *args|\n        func[inst, *args, **opts]\n    }\n},";
 SOURCE_LIST["Cos"] = "\"Cos\" => AtFunction.vectorize(1) { |inst, n|\n    CMath::cos n\n},";
 SOURCE_LIST["Cosh"] = "\"Cosh\" => AtFunction.vectorize(1) { |inst, n|\n    CMath::cosh n\n},";
-SOURCE_LIST["Count"] = "\"Count\" => curry { |inst, f, list|\n    list = inst.cast_list list\n    if f.is_a?(Proc) || f.is_a?(AtLambda)\n        list.count { |e| f[inst, e] }\n    else\n        list.count f\n    end\n},";
+SOURCE_LIST["Count"] = "\"Count\" => curry { |inst, f, list|\n    list = inst.cast_list list\n    if AtState.func_like? f\n        list.count { |e| f[inst, e] }\n    else\n        list.count f\n    end\n},";
 SOURCE_LIST["Curry"] = "       \"Curry\" => AtFunction.from { |inst, f, arity=f.arity|\n           if arity.negative?\n               arity = ~arity\n           end\n           arity += 1 if AtLambda === f || AtFunction === f\n           rec = AtFunction.from { |fn, inst, *args, **opts|\n               # parse arguments\n               args.reject! { |e|\n                   if ConfigureValue === e\n                       opts[e.key.to_sym] = e.value\n                       true\n                   else\n                       false\n                   end\n               }\n               # p args, opts\n               if args.size >= arity - 1\n                   if AtState.configurable? fn\n                       fn[inst, *args, **opts]\n                   elsif opts.empty?\n                       fn[inst, *args]\n                   else\n                       STDERR.puts \"Excess parameter options in curried function: \#{opts}\"\n                       fn[inst, *args]\n                   end\n               else\n                   AtFunction.from { |inst, *more, **moreopts|\n                       rec[fn, inst, *args, *more, **moreopts.merge(opts)]\n                   }\n               end\n           }\n           rec[f, inst]\n       },";
 SOURCE_LIST["Decreasing"] = "\"Decreasing\" => AtFunction.from { |inst, list|\n    inst.cast_list(list).delta.all?(&:negative?) rescue false\n},";
 SOURCE_LIST["Define"] = "\"Define\" => AtFunction.from { |inst, name, value|\n    inst.define name, value\n},";
@@ -876,7 +876,7 @@ SOURCE_LIST["RemoveLast"] = "\"RemoveLast\" => AtFunction.from { |inst, list, en
 SOURCE_LIST["Repeat"] = "\"Repeat\" => AtFunction.from(vectorize: [false, true]) { |inst, ent, amt|\n    Array.new(amt) { ent }\n},";
 SOURCE_LIST["Replace"] = "\"Replace\" => AtFunction.from { |inst, str, search, replace=\"\"|\n    replace str, search, replace\n},";
 SOURCE_LIST["ReplaceF"] = "\"ReplaceF\" => AtFunction.from { |inst, str, search, func|\n    str.gsub(search) { |e|\n        func[inst, e]\n    }\n},";
-SOURCE_LIST["ReplaceMultiple"] = "\"ReplaceMultiple\" => AtFunction.from { |inst, str, *args|\n    str = str.dup\n    args.map(&:to_a).each { |k, v|\n        str.gsub!(Regexp.new(k), v)\n    }\n    str\n},";
+SOURCE_LIST["ReplaceMultiple"] = "\"ReplaceMultiple\" => AtFunction.from { |inst, str, *args|\n    str = str.dup\n    args.map(&:to_a).each { |k, v|\n        str.gsub!(make_regex(k), v)\n    }\n    str\n},";
 SOURCE_LIST["Resize"] = "\"Resize\" => AtFunction.from { |inst, list, size|\n    res = resize inst.cast_list(list), size\n    reform_list res, list\n},";
 SOURCE_LIST["Retrieve"] = "\"Retrieve\" => AtFunction.from { |inst, name|\n    inst.get_variable name\n},";
 SOURCE_LIST["Reverse"] = "\"Reverse\" => AtFunction.from { |inst, ent|\n    reverse ent\n},\n";
