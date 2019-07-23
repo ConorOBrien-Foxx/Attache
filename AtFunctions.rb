@@ -32,8 +32,7 @@ end
 
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
-
-    # TODO: remove @@held_arguments in favor of `held`
+    
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
