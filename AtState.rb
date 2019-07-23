@@ -1041,7 +1041,6 @@ class AttacheValueError
     end
 end
 
-
 require_relative 'AtClass.rb'
 require_relative 'AtFunctions.rb'
 

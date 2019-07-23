@@ -1,6 +1,3 @@
-# assumes included at a certain position in `AtState.rb`
-# TODO: fix that
-
 # NOTE: prefer `inst.cast_list` over `force_list`
 
 def default_sentinel(*values, sentinel: AtFunctionCatalog::NOT_PROVIDED, &final)
