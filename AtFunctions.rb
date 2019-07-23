@@ -32,7 +32,7 @@ end
 
 module AtFunctionCatalog
     NOT_PROVIDED = :not_provided
-    
+
     # functions whose arguments are not evaluated at once
     # (true = not evaluated, false = evaluated (normal))
     HOLD_ALL = Hash.new(true)
@@ -1930,10 +1930,8 @@ module AtFunctionCatalog
         # @example ?? nil
         #>>
         "Configurable" => AtFunction.from { |inst, f|
-            # TODO: figure out if this line `a = f` is necessary
-            a = f
             AtFunction.configurable { |inst, *args, **opts|
-                a.call inst, args, opts
+                f.call inst, args, opts
             }
         },
         "Memoize" => AtFunction.from { |inst, f|
