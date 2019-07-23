@@ -2,7 +2,10 @@
 
 require 'optparse'
 require 'json'
-require_relative 'AtState.rb'
+require_relative '../src/AtState.rb'
+require_relative 'directory.rb'
+
+JSON_LOCATION = File.join TEST_LOCATION, "tests.json"
 
 def indent(text, width = 2)
     text.gsub(/^/m, " " * width)
@@ -54,7 +57,7 @@ $default_size = options.size
 filename = File.basename __FILE__
 parser = OptionParser.new { |opts|
     opts.banner = "Usage: #{filename} [options]"
-            
+
     opts.separator ""
     opts.separator "[options]"
     opts.separator "  test methods:"
@@ -97,7 +100,7 @@ if ARGV.empty? && options[:mode].empty? && options.size == $default_size
     exit
 end
 
-$config = JSON::parse File.read("tests.json"), allow_nan: true
+$config = JSON::parse File.read(JSON_LOCATION), allow_nan: true
 # deep clone hash
 $old_config = Marshal.load Marshal.dump $config.clone
 
@@ -141,7 +144,7 @@ if options[:generate_seen]
             puts "Press ENTER to confirm."
             STDIN.gets
         end
-        File.write "tests.json", JSON::generate($config, allow_nan: true)
+        File.write JSON_LOCATION, JSON::generate($config, allow_nan: true)
         puts "tests.json updated."
     else
         # interactive modification
@@ -152,22 +155,22 @@ if options[:generate_seen]
         else
             method = options[:mode].first.to_s
         end
-        
+
         if $config[method].nil?
             opt = read_option "#{method} does not currently exist. Would you like to create it?", $YES_NO
             exit -3 if opt == "n"
-            
+
             $config[method] ||= {}
-            
+
             used_method = prompt_input "Which method does #{method} use? "
-            
+
             $config[method]["method"] = used_method
             $config[method]["cases"] = []
         end
         data = $config[method]
         cases = data["cases"]
         i = 0
-        
+
         loop {
             cls
             record = cases[i]
@@ -211,7 +214,7 @@ if options[:generate_seen]
                     cases.delete_at i
                 when "m", "c", "r"
                     i = cases.size if action == "c"
-                    
+
                     cases[i] ||= {}
                     if action == "r"
                         input = cases[i]["input"]
@@ -219,7 +222,7 @@ if options[:generate_seen]
                         input = prompt_input "What should the input case be? "
                         cases[i]["input"] = input
                     end
-                    
+
                     output = send data["method"], input
                     puts "Received output and error:"
                     pind show_tokens output
@@ -235,14 +238,14 @@ if options[:generate_seen]
                     break
             end
         }
-        
+
         data["cases"] = cases
         $config[method] = data
-        
+
         # only write if necessary
         unless same_rough $old_config, $config
             begin
-                File.write "tests.json", JSON::generate($config, allow_nan: true)
+                File.write JSON_LOCATION, JSON::generate($config, allow_nan: true)
             rescue
                 puts "Error writing JSON file. Perhaps malformed JSON?"
                 # p $config
@@ -268,11 +271,11 @@ options[:mode].uniq.each { |mode|
         input = hash["input"]
         output = hash["output"]
         result = send(method, input)
-        
+
         if result.is_a? Enumerator
             result = result.to_a
         end
-        
+
         if output.nil?
             puts "Incomplete test: in #{mode.inspect}: Test #{i}:"
             p [input, output]
