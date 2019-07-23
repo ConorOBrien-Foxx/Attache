@@ -1578,7 +1578,7 @@ class AtState
 
     def evaluate_leaf(token, merge_with, check_error: true)
         unless token.is_a? Token
-            raise "#{node.inspect} is not a token"
+            raise "#{token.inspect} is not a token"
         end
         res = nil
 

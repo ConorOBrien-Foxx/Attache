@@ -6170,7 +6170,7 @@ module AtFunctionCatalog
         # @genre unary operator
         #>>
         "not" => AtFunction.from { |inst, arg|
-            AtState.falsey? inst.evaluate_node arg
+            AtState.falsey? arg
         },
         "..." => AtFunction.from { |inst, arg|
             Applicator.new arg
