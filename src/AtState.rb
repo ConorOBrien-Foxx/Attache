@@ -9,6 +9,8 @@ def atstate_init(argv)
 end
 
 FOLDER_LOCATION = File.dirname(__FILE__)
+# we are in the src/ folder; go up
+INSTALLATION_LOCATION = File.split(FOLDER_LOCATION)[0]
 
 def flush(out, stack, fin=[])
     out.push stack.pop until stack.empty? || fin.include?(stack.last.type)
@@ -1155,7 +1157,7 @@ class AtState
     end
 
     def load_lib(name)
-        loc = Dir[File.join(FOLDER_LOCATION, "libs", name + ".*")]
+        loc = Dir[File.join(INSTALLATION_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
         if loc
             ext = File.extname loc
