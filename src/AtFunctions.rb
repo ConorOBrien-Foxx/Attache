@@ -3770,8 +3770,8 @@ module AtFunctionCatalog
             }
         },
         # same as Combinations
-        "Subsets" => AtFunction.from { |inst, list|
-            @@functions["Combinations"][inst, list]
+        "Subsets" => AtFunction.from { |inst, list, count=NOT_PROVIDED|
+            @@functions["Combinations"][inst, list, count]
         },
         "Sum" => AtFunction.from { |inst, list|
             list = inst.cast_list(list)
