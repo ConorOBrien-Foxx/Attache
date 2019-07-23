@@ -172,9 +172,9 @@ module AtFunctionCatalog
         #>>
         "EvalHere" => AtFunction.from { |inst, str, blanks=[]|
             ast(str).map { |tree|
-                inst.save_blanks blanks
+                inst.save_blanks blanks unless blanks.empty?
                 value = inst.evaluate_node tree
-                inst.pop_blanks
+                inst.pop_blanks unless blanks.empty?
                 value
             }.last
         },
@@ -375,7 +375,8 @@ module AtFunctionCatalog
         # @genre meta
         #>>
         "Save" => AtFunction.from { |inst, *args|
-            inst.saved = args
+            inst.pop_blanks
+            inst.save_blanks args
         },
         #<<
         # Reads all of STDIN.
