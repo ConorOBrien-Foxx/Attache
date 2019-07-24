@@ -3677,9 +3677,8 @@ module AtFunctionCatalog
         },
         "Sort" => AtFunction.from { |inst, list, func=nil|
             if String === list
-                return @@functions["Sort"][inst, list.chars].join
-            end
-            if func.nil?
+                @@functions["Sort"][inst, list.chars].join
+            elsif func.nil?
                 list.sort
             else
                 list.sort { |x, y|
