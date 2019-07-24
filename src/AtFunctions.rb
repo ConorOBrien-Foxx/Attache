@@ -4912,6 +4912,9 @@ module AtFunctionCatalog
         ##################
         #### UNSORTED ####
         ##################
+        "CallStack_" => AtFunction.from { |inst|
+            inst.call_stack
+        },
         "WildcardParse" => AtFunction.from { |inst, string|
             # to explain the below regexes:
             # \\\* and \\\? correspond to a literal "*" and "?" in the input

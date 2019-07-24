@@ -1050,37 +1050,45 @@ require_relative 'AtClass.rb'
 require_relative 'AtFunctions.rb'
 
 class AtState
+    def initialize(
+            program,
+            input=STDIN,
+            output=STDOUT,
+            exclude_std: false,
+            auto_save_results: false
+    )
+        @trees = ast(program)
+        if @trees.nil?
+            exit
+        end
+        @variables = @@default_variables.dup
+        @abstract_references = []
+        @locals = [{}]
+        @call_stack = []
+        # TODO: figure out if both @blanks and @saved are necessary
+        @blanks = []
+        @saved = []
+        @position = nil
+        @in = input
+        @out = output
+        @auto_save_results = auto_save_results
+        load_lib "std" unless exclude_std
+    end
+
+    attr_accessor :variables, :locals, :saved, :in, :out,
+                  :abstract_references, :position, :call_stack
+
     def AtState.truthy?(ent)
         return true if AtState.func_like? ent
         res = ent && ent != 0 && (ent.size != 0 rescue true)
     end
 
-    def AtState.typeof(ent)
-        Type.of(ent)
-    end
-
-    def set_op_quote(token, res, arity=nil)
-        op = token.raw[1..-1]
-        hash = {
-            1 => @@unary_operators,
-            2 => @@operators,
-        }
-        if arity.nil?
-            index = res.arity.negative? ? ~res.arity : res.arity
-        else
-            index = arity
-        end
-        index = 2 if index > 2
-
-        if index.zero?
-            hash[1][op] = hash[2][op] = res
-        else
-            hash[index][op] = res
-        end
-    end
-
     def AtState.falsey?(ent)
         !AtState.truthy?(ent)
+    end
+
+    def AtState.typeof(ent)
+        Type.of(ent)
     end
 
     def AtState.func_like?(ent)
@@ -1136,29 +1144,6 @@ class AtState
     }
     @@extended_variables = {}
 
-    def initialize(
-            program,
-            input=STDIN,
-            output=STDOUT,
-            exclude_std: false,
-            auto_save_results: false
-    )
-        @trees = ast(program)
-        if @trees.nil?
-            exit
-        end
-        @variables = @@default_variables.dup
-        @abstract_references = []
-        @locals = [{}]
-        @blanks = []
-        @position = nil
-        @in = input
-        @out = output
-        @auto_save_results = auto_save_results
-        @saved = []
-        load_lib "std" unless exclude_std
-    end
-
     def load_lib(name)
         loc = Dir[File.join(INSTALLATION_LOCATION, "libs", name + ".*")]
         loc = loc.any? ? loc.first : nil
@@ -1177,8 +1162,25 @@ class AtState
         end
     end
 
-    attr_reader :stack
-    attr_accessor :variables, :locals, :saved, :in, :out, :abstract_references, :position
+    def set_op_quote(token, res, arity=nil)
+        op = token.raw[1..-1]
+        hash = {
+            1 => @@unary_operators,
+            2 => @@operators,
+        }
+        if arity.nil?
+            index = res.arity.negative? ? ~res.arity : res.arity
+        else
+            index = arity
+        end
+        index = 2 if index > 2
+
+        if index.zero?
+            hash[1][op] = hash[2][op] = res
+        else
+            hash[index][op] = res
+        end
+    end
 
     def error(message)
         STDERR.puts message
@@ -1597,24 +1599,16 @@ class AtState
         res
     end
 
-    def evaluate_atfunction(fun, merge_with, check_error: true)
-
-    end
-
-    def evaluate_function(fun, merge_with, check_error: true)
-
-    end
-
     def call_function(func, node, args, configurable: false)
-        res = if configurable
-            func[self, *args, **configurable]
+        if configurable
+            result = func[self, *args, **configurable]
         else
             # special call function overloading
             if Array === func || Hash === func || String === func || class_has?(func, "$get")
-                @@functions["Get"][self, func, *args]
+                result = @@functions["Get"][self, func, *args]
             else
                 begin
-                    if class_has? func, "$call"
+                    result = if class_has? func, "$call"
                         func["$call"][self, *args]
                     else
                         func[self, *args]
@@ -1627,7 +1621,7 @@ class AtState
                 end
             end
         end
-        res
+        result
     end
 
     def evaluate_node(node, merge_with = nil, check_error: true)
@@ -1638,6 +1632,8 @@ class AtState
 
         position_holder = node.head == Node ? node.head.raw : node.head
         @position = position_holder.position rescue nil
+
+        # @call_stack << "(#{node.head.position}) #{node.head.raw}"
 
         is_format_string = node.head.type == :format_string rescue false
         # special cases
@@ -1734,6 +1730,8 @@ class AtState
         if result.kind_of?(AtLambda) && !merge_with.nil?
             result.scope.merge! merge_with
         end
+
+        # @call_stack.pop
 
         result
     end
