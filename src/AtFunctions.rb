@@ -1086,6 +1086,17 @@ module AtFunctionCatalog
         #>>
         "Random" => AtFunction.from(configurable: true) { |inst, *args, **opts|
             rng = opts[:rng] || opts[:RNG]
+            seed = opts[:seed]
+            unless seed.nil?
+                if rng.nil?
+                    @@random_rngs ||= {}
+                    rng = @@random_rngs[seed] ||= AtRNG.new(seed)
+                else
+                    raise AttacheArgumentError.new(
+                        "Seed conflict in `Random`: Given both `seed` and `rng`."
+                    )
+                end
+            end
             fn = AtFunction.vectorize(2) { |inst, n=nil, m=nil|
                 if rng.nil?
                     random(n, m)
