@@ -5059,6 +5059,9 @@ module AtFunctionCatalog
             reaper = reap_end
             reaper.build
         },
+        "Reaper" => AtFunction.from { |inst, tag=nil|
+            current_reaper.build.dup
+        },
         "Sow" => AtFunction.from { |inst, expr, tag=nil|
             reap_sow expr, tag
         },

@@ -1128,9 +1128,15 @@ Reaper = Struct.new(:build, :tag) {
     def initialize(tag=nil)
         super([], tag)
     end
+
+    def sow(val)
+        build.push val
+    end
+
     def <<(*vals)
         build.push *vals
     end
+
     def to_s
         "Reaper.new(#{build.inspect}, #{tag.inspect})"
     end
@@ -1140,11 +1146,13 @@ def reap_start(tag=nil)
     REAP_VALUES.push Reaper.new(tag)
 end
 def reap_sow(value, tag=nil)
+    current_reaper(tag)&.sow value
+end
+def current_reaper(tag=nil)
     tag = tag.nil? ? [tag] : [*tag]
     reaper = REAP_VALUES.reverse_each.find { |reaper|
         tag.include? reaper.tag
     }
-    reaper << value unless reaper.nil?
 end
 def reap_end
     REAP_VALUES.pop
