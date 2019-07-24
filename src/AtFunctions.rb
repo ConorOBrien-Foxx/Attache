@@ -1085,11 +1085,12 @@ module AtFunctionCatalog
         # @genre numeric/random
         #>>
         "Random" => AtFunction.from(configurable: true) { |inst, *args, **opts|
+            rng = opts[:rng] || opts[:RNG]
             fn = AtFunction.vectorize(2) { |inst, n=nil, m=nil|
-                if opts.has_key? :RNG
-                    random(n, m, random: opts[:RNG])
-                else
+                if rng.nil?
                     random(n, m)
+                else
+                    random(n, m, random: rng)
                 end
             }
             fn[inst, *args]
