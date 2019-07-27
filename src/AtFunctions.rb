@@ -3358,6 +3358,7 @@ module AtFunctionCatalog
         # @genre list
         #>>
         "Prod" => AtFunction.from { |inst, list|
+            list = inst.cast_list(list)
             list.inject(1) { |a, c|
                 @@operators["*"][inst, a, c]
             }
