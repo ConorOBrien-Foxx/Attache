@@ -6,6 +6,7 @@ require 'nokogiri'
 # <attache>...</attache>
 #    raw attache code; final result stringified
 
+# TODO: find out how to make this useful/more documented
 # compiles a templat document
 def templat(str)
     inst = AtState.new <<EOT

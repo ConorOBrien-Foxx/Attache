@@ -159,7 +159,7 @@ end
 program = read_program(options)
 
 if options[:serve_templat]
-    require_relative 'TemplAt.rb'
+    require_relative 'templat/TemplAt.rb'
     inst = AtState.new "Needs[$socket]\nServeTemplat[get_code]"
     inst.variables['get_code'] = lambda { |inst|
         read_program options
@@ -171,7 +171,7 @@ if options[:serve_templat]
         print templat(program).to_html
     end
 elsif options[:templat]
-    require_relative 'TemplAt.rb'
+    require_relative 'templat/TemplAt.rb'
     print templat(program).to_html
     exit
 end
